@@ -42,4 +42,23 @@ export default function HomePage() {
           <h2 className="text-yellow-500 text-lg font-semibold mb-2">Coming Soon</h2>
           <h1 className="text-3xl font-bold text-white mb-2">Wi-Fi Smart Bulb</h1>
           <p className="text-yellow-400 text-md">Launches in 4 days</p>
-          <Image src="/images/bulb.png" alt="Smart Bulb" width={100} height={100
+          <Image src="/images/bulb.png" alt="Smart Bulb" width={100} height={100} className="mx-auto my-4" />
+          <button className="bg-yellow-600 hover:bg-yellow-500 text-black font-semibold py-2 px-6 rounded transition">
+            Join Waitlist
+          </button>
+        </section>
+
+        {/* Vote Section */}
+        <section className="px-6 py-12 text-center">
+          <h2 className="text-xl font-semibold text-white mb-2">Vote on Next Products</h2>
+          <p className="text-gray-300 mb-4">Vote for your products prepared:</p>
+          <h3 className="text-2xl font-bold text-white mb-4">Multifunctional Laptop Stand</h3>
+          <Image src="/images/laptop-stand.png" alt="Laptop Stand" width={200} height={200} className="mx-auto mb-4" />
+          <button className="bg-yellow-600 hover:bg-yellow-500 text-black font-semibold py-2 px-6 rounded transition">
+            Vote Now
+          </button>
+        </section>
+      </div>
+    </>
+  );
+}
