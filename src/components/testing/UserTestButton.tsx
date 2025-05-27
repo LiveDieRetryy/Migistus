@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-export function UserTestButton({ onCreate }: { onCreate?: () => void }) {
+function UserTestComponent({ onCreate }: { onCreate?: () => void }) {
   const [count, setCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +16,8 @@ export function UserTestButton({ onCreate }: { onCreate?: () => void }) {
   };
 
   return (
-    <div className="mt-4">
+    <div className="p-8">
+      <h1 className="text-xl text-white mb-4">User Test Page</h1>
       <Button onClick={createUser} disabled={loading}>
         {loading ? "Creating..." : "👤 Create Test User"}
       </Button>
@@ -25,4 +26,8 @@ export function UserTestButton({ onCreate }: { onCreate?: () => void }) {
       )}
     </div>
   );
+}
+
+export default function UserTestButtonPage() {
+  return <UserTestComponent />;
 }

@@ -2,26 +2,22 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-export default function VoteTestButton({ onCast }: { onCast?: () => void }) {
+function VoteTestComponent({ onCast }: { onCast?: () => void }) {
   const [count, setCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   const castVote = async () => {
     setLoading(true);
-    try {
-      const res = await fetch("/api/vote", { method: "POST" });
-      const data = await res.json();
-      setCount(data.votesCast);
-      if (onCast) onCast();
-    } catch (error) {
-      console.error("Failed to cast vote:", error);
-    } finally {
-      setLoading(false);
-    }
+    const res = await fetch("/api/vote", { method: "POST" });
+    const data = await res.json();
+    setCount(data.votesCast);
+    setLoading(false);
+    if (onCast) onCast();
   };
 
   return (
-    <div className="mt-4">
+    <div className="p-8">
+      <h1 className="text-xl text-white mb-4">Vote Test Page</h1>
       <Button onClick={castVote} disabled={loading}>
         {loading ? "Voting..." : "🗳️ Cast Test Vote"}
       </Button>
@@ -30,4 +26,8 @@ export default function VoteTestButton({ onCast }: { onCast?: () => void }) {
       )}
     </div>
   );
+}
+
+export default function VoteTestButtonPage() {
+  return <VoteTestComponent />;
 }
