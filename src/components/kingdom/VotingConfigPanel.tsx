@@ -88,7 +88,7 @@ export default function VotingConfigPanel() {
           <span className="text-white">Double Vote Week</span>
           <Switch
             checked={config.doubleVoteWeek}
-            onCheckedChange={(val) => handleChange("doubleVoteWeek", val)}
+            onCheckedChange={(val: boolean) => handleChange("doubleVoteWeek", val)}
           />
         </div>
 
