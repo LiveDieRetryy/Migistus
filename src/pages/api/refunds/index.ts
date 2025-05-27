@@ -13,10 +13,17 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "GET") {
       res.status(200).json(data);
     } else if (req.method === "PUT" || req.method === "POST") {
-      const { pendingRefunds } = req.body;
-      data.pendingRefunds = pendingRefunds ?? data.pendingRefunds;
-      fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-      res.status(200).json({ success: true });
+      // Example: update refund status
+      const { id, status } = req.body;
+      if (id && status) {
+        data = data.map((r: any) =>
+          r.userId === id ? { ...r, status } : r
+        );
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+        res.status(200).json({ success: true });
+      } else {
+        res.status(400).json({ error: "Missing id or status" });
+      }
     } else {
       res.setHeader("Allow", ["GET", "PUT", "POST"]);
       res.status(405).end(`Method ${req.method} Not Allowed`);

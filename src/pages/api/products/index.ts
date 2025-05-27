@@ -23,14 +23,22 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     } else if (req.method === "POST") {
       const newProduct = req.body;
-      const updated = [...data, newProduct];
+      // If editing, replace; else, add
+      const idx = data.findIndex((p: any) => p.id === newProduct.id);
+      let updated;
+      if (idx !== -1) {
+        updated = data.map((p: any) => p.id === newProduct.id ? newProduct : p);
+      } else {
+        updated = [...data, newProduct];
+      }
       writeData(updated);
       res.status(201).json({ success: true, product: newProduct });
 
     } else if (req.method === "PUT") {
       const updatedProduct = req.body;
+      // When updating a product (PUT/POST), allow pledges to be incremented
       const updated = data.map((p: any) =>
-        p.id === updatedProduct.id ? updatedProduct : p
+        p.id === updatedProduct.id ? { ...p, ...updatedProduct, pledges: updatedProduct.pledges } : p
       );
       writeData(updated);
       res.status(200).json({ success: true });

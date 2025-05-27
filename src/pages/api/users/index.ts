@@ -8,7 +8,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const jsonData = readFileSync(filePath, "utf-8");
     const data = JSON.parse(jsonData);
 
-    res.status(200).json({ totalUsers: data.totalUsers ?? 0 });
+    res.status(200).json({ totalUsers: Array.isArray(data) ? data.length : 0 });
   } catch (error) {
     console.error("Failed to read users:", error);
     res.status(500).json({ totalUsers: 0 });

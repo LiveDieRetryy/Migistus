@@ -6,19 +6,24 @@ export default function useRefundStats() {
 
   const fetchRefunds = useCallback(() => {
     fetch("/api/refunds")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch");
-        return res.json();
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setPendingRefunds(data.filter((r) => r.status === "pending").length);
+        } else {
+          setPendingRefunds(0);
+        }
       })
-      .then((data) => setPendingRefunds(data.pendingRefunds ?? 0))
       .catch((err) => {
-        console.error("❌ Failed to load refund stats:", err);
+        console.error("Failed to load refund stats:", err);
         setPendingRefunds(0);
       });
   }, []);
 
   useEffect(() => {
     fetchRefunds();
+    const interval = setInterval(fetchRefunds, 10000); // Poll every 10s
+    return () => clearInterval(interval);
   }, [fetchRefunds]);
 
   return {

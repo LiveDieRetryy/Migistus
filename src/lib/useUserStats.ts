@@ -16,6 +16,8 @@ export default function useUserStats() {
 
   useEffect(() => {
     fetchUserCount();
+    const interval = setInterval(fetchUserCount, 10000); // Poll every 10s
+    return () => clearInterval(interval);
   }, [fetchUserCount]);
 
   return {

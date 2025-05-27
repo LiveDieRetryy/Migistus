@@ -1,9 +1,9 @@
-// pages/api/votes/index.ts
+// pages/api/voting-config/index.ts
 import fs from "fs";
 import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-const filePath = path.resolve("public/data/votes.json");
+const filePath = path.resolve("public/data/voting.json");
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -23,6 +23,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     }
   } catch (err) {
     console.error("Votes API error:", err);
-    res.status(500).json({ error: "Failed to read/write votes.json" });
+    res.status(500).json({ error: "Failed to read/write voting.json" });
   }
 }

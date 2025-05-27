@@ -16,6 +16,8 @@ export default function useProductStats() {
 
   useEffect(() => {
     fetchProductCount();
+    const interval = setInterval(fetchProductCount, 10000); // Poll every 10s
+    return () => clearInterval(interval);
   }, [fetchProductCount]);
 
   return {

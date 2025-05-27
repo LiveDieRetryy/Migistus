@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import Link from "next/link";
 
 const DEPARTMENTS = [
   "All",
@@ -41,6 +42,9 @@ type ProductFormData = {
   timeframe: string;
   category: string;
 };
+
+const slugify = (name: string) =>
+  name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
 
 export default function ProductPoolEditor() {
   const [products, setProducts] = useState<Product[]>([
@@ -403,50 +407,55 @@ return (
             style={{ gap: '28px' }}
           >
             {filteredProducts.map((product) => (
-              <div
+              <Link
                 key={product.id}
-                className="bg-zinc-800/50 backdrop-blur-sm border border-yellow-400/20 rounded-lg shadow-lg hover:shadow-xl hover:border-yellow-400/40 transition-all duration-300 hover:scale-105 cursor-pointer relative group"
-                onClick={() => openEditModal(product)}
-                style={{ padding: '24px', width: '220px' }}
+                href={`/products/${slugify(product.name)}`}
+                className="block"
+                passHref
               >
-                {product.votes !== undefined && (
-                  <div 
-                    className="absolute bg-yellow-400/90 text-black text-[14px] font-bold rounded-full shadow-md z-10"
-                    style={{ 
-                      top: '16px', 
-                      left: '16px', 
-                      padding: '8px 12px' 
-                    }}
-                  >
-                    {product.votes}
-                  </div>
-                )}
-                <div 
-                  className="relative"
-                  style={{ marginBottom: '20px' }}
+                <div
+                  className="bg-zinc-800/50 backdrop-blur-sm border border-yellow-400/20 rounded-lg shadow-lg hover:shadow-xl hover:border-yellow-400/40 transition-all duration-300 hover:scale-105 cursor-pointer relative group"
+                  onClick={() => openEditModal(product)}
+                  style={{ padding: '24px', width: '220px' }}
                 >
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFeatured(product.id);
-                    }}
-                    title="Toggle Staff Pick"
-                    className="absolute bg-black/60 hover:bg-yellow-400/90 text-white hover:text-black text-[14px] rounded z-10 transition-colors"
-                    style={{ 
-                      top: '16px', 
-                      right: '16px', 
-                      padding: '8px 12px' 
-                    }}
+                  {product.votes !== undefined && (
+                    <div 
+                      className="absolute bg-yellow-400/90 text-black text-[14px] font-bold rounded-full shadow-md z-10"
+                      style={{ 
+                        top: '16px', 
+                        left: '16px', 
+                        padding: '8px 12px' 
+                      }}
+                    >
+                      {product.votes}
+                    </div>
+                  )}
+                  <div 
+                    className="relative"
+                    style={{ marginBottom: '20px' }}
                   >
-                    {product.featured ? '⭐' : '✩'}
-                  </button>
-                  {product.image ? (
-                    <div className="relative w-full rounded border border-zinc-600 bg-zinc-700" style={{ height: "170px" }}>
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-cover rounded"
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFeatured(product.id);
+                      }}
+                      title="Toggle Staff Pick"
+                      className="absolute bg-black/60 hover:bg-yellow-400/90 text-white hover:text-black text-[14px] rounded z-10 transition-colors"
+                      style={{ 
+                        top: '16px', 
+                        right: '16px', 
+                        padding: '8px 12px' 
+                      }}
+                    >
+                      {product.featured ? '⭐' : '✩'}
+                    </button>
+                    {product.image ? (
+                      <div className="relative w-full rounded border border-zinc-600 bg-zinc-700" style={{ height: "170px" }}>
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-cover rounded"
                      />
                    </div>
 
@@ -458,37 +467,38 @@ return (
                       <span className="text-zinc-400 text-[14px]">No Image</span>
                     </div>
                   )}
+                  </div>
+                  <div 
+                    className="text-white text-center text-[15px] font-medium truncate px-1" 
+                    title={product.name}
+                    style={{ marginBottom: '10px' }}
+                  >
+                    {product.name}
+                  </div>
+                  <div 
+                    className="text-yellow-400 text-center text-[14px]"
+                    style={{ marginBottom: '8px' }}
+                  >
+                    Goal: {product.goal}
+                  </div>
+                  <div 
+                    className="text-zinc-400 text-center text-[13px]"
+                    style={{ marginBottom: '16px' }}
+                  >
+                    {product.timeframe}
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEditModal(product);
+                    }}
+                    className="w-full bg-yellow-400/80 hover:bg-yellow-400 text-black border border-yellow-400/50 text-[13px] px-1 py-0 leading-none opacity-0 group-hover:opacity-100 transition-opacity rounded font-medium"
+                    style={{ height: '32px' }}
+                  >
+                    Edit
+                  </button>
                 </div>
-                <div 
-                  className="text-white text-center text-[15px] font-medium truncate px-1" 
-                  title={product.name}
-                  style={{ marginBottom: '10px' }}
-                >
-                  {product.name}
-                </div>
-                <div 
-                  className="text-yellow-400 text-center text-[14px]"
-                  style={{ marginBottom: '8px' }}
-                >
-                  Goal: {product.goal}
-                </div>
-                <div 
-                  className="text-zinc-400 text-center text-[13px]"
-                  style={{ marginBottom: '16px' }}
-                >
-                  {product.timeframe}
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openEditModal(product);
-                  }}
-                  className="w-full bg-yellow-400/80 hover:bg-yellow-400 text-black border border-yellow-400/50 text-[13px] px-1 py-0 leading-none opacity-0 group-hover:opacity-100 transition-opacity rounded font-medium"
-                  style={{ height: '32px' }}
-                >
-                  Edit
-                </button>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
