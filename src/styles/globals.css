@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Optional: custom fonts or styles */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap');
 
 :root {
