@@ -142,8 +142,11 @@ export default function ProductPoolEditor() {
     }
   ]);
 
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  // Add missing state hooks
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductFormData>({
@@ -155,7 +158,6 @@ export default function ProductPoolEditor() {
     timeframe: "30 days",
     category: "Electronics"
   });
-  const [isDragOver, setIsDragOver] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -240,14 +242,24 @@ export default function ProductPoolEditor() {
     );
   };
 
-  const deleteProduct = (productId: number) => {
+  const deleteProduct = async (productId: number) => {
+  try {
+    const res = await fetch(`/api/products/${productId}`, {
+      method: "DELETE"
+    });
+
+    if (!res.ok) throw new Error("Delete failed");
+
     setProducts(prev => prev.filter(p => p.id !== productId));
-  };
+  } catch (err) {
+    console.error("Error deleting product:", err);
+  }
+};
 
   const openAddModal = () => {
     setEditingProduct(null);
     setFormData({
-      name: "",
+      name: "", 
       image: "",
       description: "",
       goal: 50,
@@ -277,54 +289,66 @@ export default function ProductPoolEditor() {
     setEditingProduct(null);
   };
 
-  const handleSave = () => {
-    const newProduct = {
-      ...formData,
-      id: editingProduct ? editingProduct.id : Date.now(),
-      votes: editingProduct?.votes ?? 0,
-      featured: editingProduct?.featured ?? false
-    };
-
-    if (editingProduct) {
-      setProducts(prev =>
-        prev.map(p => p.id === editingProduct.id ? newProduct : p)
-      );
-      closeModal();
-    } else {
-      setProducts(prev => [...prev, newProduct]);
-      closeModal();
-    }
+ const handleSave = async () => {
+  const newProduct = {
+    ...formData,
+    id: editingProduct ? editingProduct.id : Date.now(),
+    votes: editingProduct?.votes ?? 0,
+    featured: editingProduct?.featured ?? false,
   };
 
-  return (
-    <div 
-      className="min-h-screen bg-gradient-to-br from-zinc-900 to-zinc-800 relative"
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      {/* Drag overlay */}
-      {isDragOver && (
+  try {
+    const res = await fetch("/api/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newProduct),
+    });
+
+    if (!res.ok) throw new Error("Failed to save product");
+
+    // Optimistically update local state:
+    setProducts(prev =>
+      editingProduct
+        ? prev.map(p => (p.id === editingProduct.id ? newProduct : p))
+        : [...prev, newProduct]
+    );
+
+    closeModal();
+  } catch (err) {
+    console.error("Save failed:", err);
+  }
+};
+
+return (
+  <div 
+    className="min-h-screen bg-gradient-to-br from-zinc-900 to-zinc-800 relative"
+    onDragOver={handleDragOver}
+    onDragLeave={handleDragLeave}
+    onDrop={handleDrop}
+  >
+    {/* Drag overlay */}
+    {isDragOver && (
+      <div 
+        className="fixed inset-0 z-40 bg-yellow-400/20 backdrop-blur-sm flex items-center justify-center"
+        style={{
+          background: 'rgba(250, 204, 21, 0.2)',
+          backdropFilter: 'blur(4px)'
+        }}
+      >
         <div 
-          className="fixed inset-0 z-40 bg-yellow-400/20 backdrop-blur-sm flex items-center justify-center"
+          className="bg-zinc-800/90 border-2 border-dashed border-yellow-400 rounded-xl p-12 text-center"
           style={{
-            background: 'rgba(250, 204, 21, 0.2)',
-            backdropFilter: 'blur(4px)'
+            borderColor: '#fbbf24',
+            backgroundColor: 'rgba(39, 39, 42, 0.9)'
           }}
         >
-          <div 
-            className="bg-zinc-800/90 border-2 border-dashed border-yellow-400 rounded-xl p-12 text-center"
-            style={{
-              borderColor: '#fbbf24',
-              backgroundColor: 'rgba(39, 39, 42, 0.9)'
-            }}
-          >
-            <div className="text-6xl mb-4">📸</div>
-            <h3 className="text-2xl font-bold text-yellow-400 mb-2">Drop Your Image Here</h3>
-            <p className="text-gray-300 text-lg">Release to create a new product with this image</p>
-          </div>
+          <div className="text-6xl mb-4">📸</div>
+          <h3 className="text-2xl font-bold text-yellow-400 mb-2">Drop Your Image Here</h3>
+          <p className="text-gray-300 text-lg">Release to create a new product with this image</p>
         </div>
-      )}
+      </div>
+    )}
+
 
       {/* Single Header Section */}
       <div className="w-full bg-zinc-900/50 border-b border-yellow-400/20 py-6 mb-8">

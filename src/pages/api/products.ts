@@ -1,44 +1,34 @@
-import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
 import path from "path";
+import type { NextApiRequest, NextApiResponse } from "next";
 
-// stats.json for dashboard count
-const STATS_PATH = path.resolve(process.cwd(), "src/data/products.json");
-
-// full list of products
-const LIVE_PRODUCTS_PATH = path.resolve(process.cwd(), "src/data/live-products.json");
+const DATA_PATH = path.resolve(process.cwd(), "src/data/live-products.json");
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     try {
-      const data = fs.readFileSync(LIVE_PRODUCTS_PATH, "utf-8");
+      const data = fs.readFileSync(DATA_PATH, "utf-8");
       res.status(200).json(JSON.parse(data));
     } catch (err) {
-      console.error("GET product list error:", err);
-      res.status(500).json({ error: "Failed to load product list" });
+      res.status(500).json({ error: "Failed to load products" });
     }
-  }
-
-  else if (req.method === "POST") {
+  } else if (req.method === "POST") {
     try {
       const newProduct = req.body;
-
-      const current = JSON.parse(fs.readFileSync(LIVE_PRODUCTS_PATH, "utf-8"));
-      current.push(newProduct);
-      fs.writeFileSync(LIVE_PRODUCTS_PATH, JSON.stringify(current, null, 2));
-
-      const stats = JSON.parse(fs.readFileSync(STATS_PATH, "utf-8"));
-      stats.totalProducts = (stats.totalProducts ?? 0) + 1;
-      fs.writeFileSync(STATS_PATH, JSON.stringify(stats, null, 2));
-
+      const products = JSON.parse(fs.readFileSync(DATA_PATH, "utf-8"));
+      // If editing, replace; else, add
+      const idx = products.findIndex((p: any) => p.id === newProduct.id);
+      if (idx !== -1) {
+        products[idx] = newProduct;
+      } else {
+        products.push(newProduct);
+      }
+      fs.writeFileSync(DATA_PATH, JSON.stringify(products, null, 2));
       res.status(200).json({ success: true, product: newProduct });
     } catch (err) {
-      console.error("POST product creation error:", err);
-      res.status(500).json({ error: "Failed to create product" });
+      res.status(500).json({ error: "Failed to save product" });
     }
-  }
-
-  else {
+  } else {
     res.status(405).json({ error: "Method not allowed" });
   }
 }

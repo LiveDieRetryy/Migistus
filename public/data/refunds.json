@@ -1,0 +1,5 @@
+[
+  { "userId": 1, "amount": 12.5, "status": "pending" },
+  { "userId": 2, "amount": 8.0, "status": "approved" },
+  { "userId": 3, "amount": 10, "status": "pending" }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "email": "knight@realm.com",
+    "tier": "Guild"
+  },
+  {
+    "id": 2,
+    "email": "queen@realm.com",
+    "tier": "MIGISTUS"
+  }
+]

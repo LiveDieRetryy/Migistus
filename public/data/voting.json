@@ -1,0 +1,5 @@
+[
+  { "userId": 1, "productId": 101 },
+  { "userId": 2, "productId": 102 },
+  { "userId": 1, "productId": 103 }
+]

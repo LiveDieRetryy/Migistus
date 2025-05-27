@@ -19,18 +19,20 @@ export default function HomePage() {
           <h1 className="text-4xl font-bold text-white mb-2">Warehouse-15 LED Headlamp</h1>
           <p className="text-yellow-400 text-md">Current Price: $18</p>
           <p className="text-sm text-gray-400 mb-4">Ends in: 2h 9m</p>
-          <div className="relative w-48 h-48 mx-auto mb-4">
-            <Image 
-              src="/images/headlamp.png" 
-              alt="LED Headlamp" 
-              fill
-              className="object-contain"
-              sizes="(max-width: 768px) 100vw, 192px"
-            />
-          </div>
-          <button className="bg-yellow-600 hover:bg-yellow-500 text-black font-semibold py-2 px-6 rounded transition">
-            Join Drop
-          </button>
+          <Link href="/products/led-headlamp">
+            <div className="relative w-48 h-48 mx-auto mb-4 cursor-pointer">
+              <Image 
+                src="/images/headlamp.png" 
+                alt="LED Headlamp" 
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 192px"
+              />
+            </div>
+            <button className="bg-yellow-600 hover:bg-yellow-500 text-black font-semibold py-2 px-6 rounded transition">
+              Join Drop
+            </button>
+          </Link>
         </section>
 
         {/* Category Grid */}

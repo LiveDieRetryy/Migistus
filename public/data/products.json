@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "Gilded Vanguard Headset",
+    "image": "https://placehold.co/400x400?text=Headset",
+    "description": "Premium gaming headset with surround sound",
+    "goal": 100,
+    "link": "https://example.com/headset",
+    "timeframe": "30 days",
+    "category": "Electronics",
+    "votes": 73,
+    "featured": true
+  }
+]
