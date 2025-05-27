@@ -80,7 +80,7 @@ export default function VotingConfigPanel() {
           <span className="text-white">Voting Enabled</span>
           <Switch
             checked={config.votingEnabled}
-            onCheckedChange={(val) => handleChange("votingEnabled", val)}
+            onCheckedChange={(val: boolean) => handleChange("votingEnabled", val)}
           />
         </div>
 
