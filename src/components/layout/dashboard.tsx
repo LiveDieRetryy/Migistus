@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import Link from "next/link";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -15,24 +16,24 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           🜁 Migistus
         </h1>
         <nav className="space-y-3 text-sm">
-          <a
+          <Link
             href="/live"
             className="block px-2 py-1 rounded hover:bg-yellow-500 hover:text-black transition"
           >
             🗡 Live Drops
-          </a>
-          <a
+          </Link>
+          <Link
             href="/pool"
             className="block px-2 py-1 rounded hover:bg-yellow-500 hover:text-black transition"
           >
             📦 Product Pool
-          </a>
-          <a
+          </Link>
+          <Link
             href="/kingdom"
             className="block px-2 py-1 rounded hover:bg-yellow-500 hover:text-black transition"
           >
             🏛 The King’s Domain
-          </a>
+          </Link>
         </nav>
       </aside>
 

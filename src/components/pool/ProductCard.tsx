@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 export default function ProductCard({
@@ -17,7 +18,17 @@ export default function ProductCard({
 
   return (
     <div className="bg-zinc-800 rounded-xl border border-zinc-700 overflow-hidden shadow-md">
-      <img src={image} alt={name} className="w-full h-40 object-cover" />
+      <div className="relative w-full h-40">
+        <Image
+          src={image}
+          alt={name}
+          layout="fill"
+          objectFit="cover"
+          className="rounded-t-xl"
+          priority
+        />
+      </div>
+
       <div className="p-4 space-y-2">
         <h3 className="text-xl font-semibold text-white">{name}</h3>
         <p className="text-sm text-zinc-400">Time left: {timeLeft}</p>

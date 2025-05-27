@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Image from "next/image";
 
 const DEPARTMENTS = [
   "All",
@@ -417,12 +417,15 @@ export default function ProductPoolEditor() {
                     {product.featured ? '⭐' : '✩'}
                   </button>
                   {product.image ? (
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full object-cover rounded border border-zinc-600 bg-zinc-700"
-                      style={{ height: '170px' }}
-                    />
+                    <div className="relative w-full rounded border border-zinc-600 bg-zinc-700" style={{ height: "170px" }}>
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        className="object-cover rounded"
+                     />
+                   </div>
+
                   ) : (
                     <div 
                       className="w-full bg-zinc-700 border border-zinc-600 rounded flex items-center justify-center"
@@ -693,6 +696,7 @@ export default function ProductPoolEditor() {
                 >
                   {editingProduct ? '💾 Update' : '➕ Add'} Product
                 </button>
+              
               </div>
             </div>
           </div>
