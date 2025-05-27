@@ -1,0 +1,76 @@
+"use strict";
+/*
+ * ATTENTION: An "eval-source-map" devtool has been used.
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file with attached SourceMaps in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+(() => {
+var exports = {};
+exports.id = "pages/api/products";
+exports.ids = ["pages/api/products"];
+exports.modules = {
+
+/***/ "next/dist/compiled/next-server/pages-api.runtime.dev.js":
+/*!**************************************************************************!*\
+  !*** external "next/dist/compiled/next-server/pages-api.runtime.dev.js" ***!
+  \**************************************************************************/
+/***/ ((module) => {
+
+module.exports = require("next/dist/compiled/next-server/pages-api.runtime.dev.js");
+
+/***/ }),
+
+/***/ "fs":
+/*!*********************!*\
+  !*** external "fs" ***!
+  \*********************/
+/***/ ((module) => {
+
+module.exports = require("fs");
+
+/***/ }),
+
+/***/ "path":
+/*!***********************!*\
+  !*** external "path" ***!
+  \***********************/
+/***/ ((module) => {
+
+module.exports = require("path");
+
+/***/ }),
+
+/***/ "(api)/./node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js?kind=PAGES_API&page=%2Fapi%2Fproducts&preferredRegion=&absolutePagePath=.%2Fpages%5Capi%5Cproducts.ts&middlewareConfigBase64=e30%3D!":
+/*!**********************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js?kind=PAGES_API&page=%2Fapi%2Fproducts&preferredRegion=&absolutePagePath=.%2Fpages%5Capi%5Cproducts.ts&middlewareConfigBase64=e30%3D! ***!
+  \**********************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   config: () => (/* binding */ config),\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__),\n/* harmony export */   routeModule: () => (/* binding */ routeModule)\n/* harmony export */ });\n/* harmony import */ var next_dist_server_route_modules_pages_api_module_compiled__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! next/dist/server/route-modules/pages-api/module.compiled */ \"(api)/./node_modules/next/dist/server/route-modules/pages-api/module.compiled.js\");\n/* harmony import */ var next_dist_server_route_modules_pages_api_module_compiled__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(next_dist_server_route_modules_pages_api_module_compiled__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var next_dist_server_route_kind__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! next/dist/server/route-kind */ \"(api)/./node_modules/next/dist/server/route-kind.js\");\n/* harmony import */ var next_dist_build_templates_helpers__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! next/dist/build/templates/helpers */ \"(api)/./node_modules/next/dist/build/templates/helpers.js\");\n/* harmony import */ var _pages_api_products_ts__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./pages\\api\\products.ts */ \"(api)/./pages/api/products.ts\");\n\n\n\n// Import the userland code.\n\n// Re-export the handler (should be the default export).\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,next_dist_build_templates_helpers__WEBPACK_IMPORTED_MODULE_2__.hoist)(_pages_api_products_ts__WEBPACK_IMPORTED_MODULE_3__, 'default'));\n// Re-export config.\nconst config = (0,next_dist_build_templates_helpers__WEBPACK_IMPORTED_MODULE_2__.hoist)(_pages_api_products_ts__WEBPACK_IMPORTED_MODULE_3__, 'config');\n// Create and export the route module that will be consumed.\nconst routeModule = new next_dist_server_route_modules_pages_api_module_compiled__WEBPACK_IMPORTED_MODULE_0__.PagesAPIRouteModule({\n    definition: {\n        kind: next_dist_server_route_kind__WEBPACK_IMPORTED_MODULE_1__.RouteKind.PAGES_API,\n        page: \"/api/products\",\n        pathname: \"/api/products\",\n        // The following aren't used in production.\n        bundlePath: '',\n        filename: ''\n    },\n    userland: _pages_api_products_ts__WEBPACK_IMPORTED_MODULE_3__\n});\n\n//# sourceMappingURL=pages-api.js.map//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKGFwaSkvLi9ub2RlX21vZHVsZXMvbmV4dC9kaXN0L2J1aWxkL3dlYnBhY2svbG9hZGVycy9uZXh0LXJvdXRlLWxvYWRlci9pbmRleC5qcz9raW5kPVBBR0VTX0FQSSZwYWdlPSUyRmFwaSUyRnByb2R1Y3RzJnByZWZlcnJlZFJlZ2lvbj0mYWJzb2x1dGVQYWdlUGF0aD0uJTJGcGFnZXMlNUNhcGklNUNwcm9kdWN0cy50cyZtaWRkbGV3YXJlQ29uZmlnQmFzZTY0PWUzMCUzRCEiLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7QUFBK0Y7QUFDdkM7QUFDRTtBQUMxRDtBQUNzRDtBQUN0RDtBQUNBLGlFQUFlLHdFQUFLLENBQUMsbURBQVEsWUFBWSxFQUFDO0FBQzFDO0FBQ08sZUFBZSx3RUFBSyxDQUFDLG1EQUFRO0FBQ3BDO0FBQ08sd0JBQXdCLHlHQUFtQjtBQUNsRDtBQUNBLGNBQWMsa0VBQVM7QUFDdkI7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBLEtBQUs7QUFDTCxZQUFZO0FBQ1osQ0FBQzs7QUFFRCIsInNvdXJjZXMiOlsiIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IFBhZ2VzQVBJUm91dGVNb2R1bGUgfSBmcm9tIFwibmV4dC9kaXN0L3NlcnZlci9yb3V0ZS1tb2R1bGVzL3BhZ2VzLWFwaS9tb2R1bGUuY29tcGlsZWRcIjtcbmltcG9ydCB7IFJvdXRlS2luZCB9IGZyb20gXCJuZXh0L2Rpc3Qvc2VydmVyL3JvdXRlLWtpbmRcIjtcbmltcG9ydCB7IGhvaXN0IH0gZnJvbSBcIm5leHQvZGlzdC9idWlsZC90ZW1wbGF0ZXMvaGVscGVyc1wiO1xuLy8gSW1wb3J0IHRoZSB1c2VybGFuZCBjb2RlLlxuaW1wb3J0ICogYXMgdXNlcmxhbmQgZnJvbSBcIi4vcGFnZXNcXFxcYXBpXFxcXHByb2R1Y3RzLnRzXCI7XG4vLyBSZS1leHBvcnQgdGhlIGhhbmRsZXIgKHNob3VsZCBiZSB0aGUgZGVmYXVsdCBleHBvcnQpLlxuZXhwb3J0IGRlZmF1bHQgaG9pc3QodXNlcmxhbmQsICdkZWZhdWx0Jyk7XG4vLyBSZS1leHBvcnQgY29uZmlnLlxuZXhwb3J0IGNvbnN0IGNvbmZpZyA9IGhvaXN0KHVzZXJsYW5kLCAnY29uZmlnJyk7XG4vLyBDcmVhdGUgYW5kIGV4cG9ydCB0aGUgcm91dGUgbW9kdWxlIHRoYXQgd2lsbCBiZSBjb25zdW1lZC5cbmV4cG9ydCBjb25zdCByb3V0ZU1vZHVsZSA9IG5ldyBQYWdlc0FQSVJvdXRlTW9kdWxlKHtcbiAgICBkZWZpbml0aW9uOiB7XG4gICAgICAgIGtpbmQ6IFJvdXRlS2luZC5QQUdFU19BUEksXG4gICAgICAgIHBhZ2U6IFwiL2FwaS9wcm9kdWN0c1wiLFxuICAgICAgICBwYXRobmFtZTogXCIvYXBpL3Byb2R1Y3RzXCIsXG4gICAgICAgIC8vIFRoZSBmb2xsb3dpbmcgYXJlbid0IHVzZWQgaW4gcHJvZHVjdGlvbi5cbiAgICAgICAgYnVuZGxlUGF0aDogJycsXG4gICAgICAgIGZpbGVuYW1lOiAnJ1xuICAgIH0sXG4gICAgdXNlcmxhbmRcbn0pO1xuXG4vLyMgc291cmNlTWFwcGluZ1VSTD1wYWdlcy1hcGkuanMubWFwIl0sIm5hbWVzIjpbXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(api)/./node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js?kind=PAGES_API&page=%2Fapi%2Fproducts&preferredRegion=&absolutePagePath=.%2Fpages%5Capi%5Cproducts.ts&middlewareConfigBase64=e30%3D!\n");
+
+/***/ }),
+
+/***/ "(api)/./pages/api/products.ts":
+/*!*******************************!*\
+  !*** ./pages/api/products.ts ***!
+  \*******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* binding */ handler)\n/* harmony export */ });\n/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! fs */ \"fs\");\n/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! path */ \"path\");\n/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_1__);\n\n\n// stats.json for dashboard count\nconst STATS_PATH = path__WEBPACK_IMPORTED_MODULE_1___default().resolve(process.cwd(), \"src/data/products.json\");\n// full list of products\nconst LIVE_PRODUCTS_PATH = path__WEBPACK_IMPORTED_MODULE_1___default().resolve(process.cwd(), \"src/data/live-products.json\");\nfunction handler(req, res) {\n    if (req.method === \"GET\") {\n        try {\n            const data = fs__WEBPACK_IMPORTED_MODULE_0___default().readFileSync(LIVE_PRODUCTS_PATH, \"utf-8\");\n            res.status(200).json(JSON.parse(data));\n        } catch (err) {\n            console.error(\"GET product list error:\", err);\n            res.status(500).json({\n                error: \"Failed to load product list\"\n            });\n        }\n    } else if (req.method === \"POST\") {\n        try {\n            const newProduct = req.body;\n            const current = JSON.parse(fs__WEBPACK_IMPORTED_MODULE_0___default().readFileSync(LIVE_PRODUCTS_PATH, \"utf-8\"));\n            current.push(newProduct);\n            fs__WEBPACK_IMPORTED_MODULE_0___default().writeFileSync(LIVE_PRODUCTS_PATH, JSON.stringify(current, null, 2));\n            const stats = JSON.parse(fs__WEBPACK_IMPORTED_MODULE_0___default().readFileSync(STATS_PATH, \"utf-8\"));\n            stats.totalProducts = (stats.totalProducts ?? 0) + 1;\n            fs__WEBPACK_IMPORTED_MODULE_0___default().writeFileSync(STATS_PATH, JSON.stringify(stats, null, 2));\n            res.status(200).json({\n                success: true,\n                product: newProduct\n            });\n        } catch (err) {\n            console.error(\"POST product creation error:\", err);\n            res.status(500).json({\n                error: \"Failed to create product\"\n            });\n        }\n    } else {\n        res.status(405).json({\n            error: \"Method not allowed\"\n        });\n    }\n}\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKGFwaSkvLi9wYWdlcy9hcGkvcHJvZHVjdHMudHMiLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7QUFDb0I7QUFDSTtBQUV4QixpQ0FBaUM7QUFDakMsTUFBTUUsYUFBYUQsbURBQVksQ0FBQ0csUUFBUUMsR0FBRyxJQUFJO0FBRS9DLHdCQUF3QjtBQUN4QixNQUFNQyxxQkFBcUJMLG1EQUFZLENBQUNHLFFBQVFDLEdBQUcsSUFBSTtBQUV4QyxTQUFTRSxRQUFRQyxHQUFtQixFQUFFQyxHQUFvQjtJQUN2RSxJQUFJRCxJQUFJRSxNQUFNLEtBQUssT0FBTztRQUN4QixJQUFJO1lBQ0YsTUFBTUMsT0FBT1gsc0RBQWUsQ0FBQ00sb0JBQW9CO1lBQ2pERyxJQUFJSSxNQUFNLENBQUMsS0FBS0MsSUFBSSxDQUFDQyxLQUFLQyxLQUFLLENBQUNMO1FBQ2xDLEVBQUUsT0FBT00sS0FBSztZQUNaQyxRQUFRQyxLQUFLLENBQUMsMkJBQTJCRjtZQUN6Q1IsSUFBSUksTUFBTSxDQUFDLEtBQUtDLElBQUksQ0FBQztnQkFBRUssT0FBTztZQUE4QjtRQUM5RDtJQUNGLE9BRUssSUFBSVgsSUFBSUUsTUFBTSxLQUFLLFFBQVE7UUFDOUIsSUFBSTtZQUNGLE1BQU1VLGFBQWFaLElBQUlhLElBQUk7WUFFM0IsTUFBTUMsVUFBVVAsS0FBS0MsS0FBSyxDQUFDaEIsc0RBQWUsQ0FBQ00sb0JBQW9CO1lBQy9EZ0IsUUFBUUMsSUFBSSxDQUFDSDtZQUNicEIsdURBQWdCLENBQUNNLG9CQUFvQlMsS0FBS1UsU0FBUyxDQUFDSCxTQUFTLE1BQU07WUFFbkUsTUFBTUksUUFBUVgsS0FBS0MsS0FBSyxDQUFDaEIsc0RBQWUsQ0FBQ0UsWUFBWTtZQUNyRHdCLE1BQU1DLGFBQWEsR0FBRyxDQUFDRCxNQUFNQyxhQUFhLElBQUksS0FBSztZQUNuRDNCLHVEQUFnQixDQUFDRSxZQUFZYSxLQUFLVSxTQUFTLENBQUNDLE9BQU8sTUFBTTtZQUV6RGpCLElBQUlJLE1BQU0sQ0FBQyxLQUFLQyxJQUFJLENBQUM7Z0JBQUVjLFNBQVM7Z0JBQU1DLFNBQVNUO1lBQVc7UUFDNUQsRUFBRSxPQUFPSCxLQUFLO1lBQ1pDLFFBQVFDLEtBQUssQ0FBQyxnQ0FBZ0NGO1lBQzlDUixJQUFJSSxNQUFNLENBQUMsS0FBS0MsSUFBSSxDQUFDO2dCQUFFSyxPQUFPO1lBQTJCO1FBQzNEO0lBQ0YsT0FFSztRQUNIVixJQUFJSSxNQUFNLENBQUMsS0FBS0MsSUFBSSxDQUFDO1lBQUVLLE9BQU87UUFBcUI7SUFDckQ7QUFDRiIsInNvdXJjZXMiOlsiQzpcXFVzZXJzXFxBZG1pblxcbWlnaXN0dXMtYXBwXFxmcm9udGVuZFxccGFnZXNcXGFwaVxccHJvZHVjdHMudHMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHR5cGUgeyBOZXh0QXBpUmVxdWVzdCwgTmV4dEFwaVJlc3BvbnNlIH0gZnJvbSBcIm5leHRcIjtcclxuaW1wb3J0IGZzIGZyb20gXCJmc1wiO1xyXG5pbXBvcnQgcGF0aCBmcm9tIFwicGF0aFwiO1xyXG5cclxuLy8gc3RhdHMuanNvbiBmb3IgZGFzaGJvYXJkIGNvdW50XHJcbmNvbnN0IFNUQVRTX1BBVEggPSBwYXRoLnJlc29sdmUocHJvY2Vzcy5jd2QoKSwgXCJzcmMvZGF0YS9wcm9kdWN0cy5qc29uXCIpO1xyXG5cclxuLy8gZnVsbCBsaXN0IG9mIHByb2R1Y3RzXHJcbmNvbnN0IExJVkVfUFJPRFVDVFNfUEFUSCA9IHBhdGgucmVzb2x2ZShwcm9jZXNzLmN3ZCgpLCBcInNyYy9kYXRhL2xpdmUtcHJvZHVjdHMuanNvblwiKTtcclxuXHJcbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIGhhbmRsZXIocmVxOiBOZXh0QXBpUmVxdWVzdCwgcmVzOiBOZXh0QXBpUmVzcG9uc2UpIHtcclxuICBpZiAocmVxLm1ldGhvZCA9PT0gXCJHRVRcIikge1xyXG4gICAgdHJ5IHtcclxuICAgICAgY29uc3QgZGF0YSA9IGZzLnJlYWRGaWxlU3luYyhMSVZFX1BST0RVQ1RTX1BBVEgsIFwidXRmLThcIik7XHJcbiAgICAgIHJlcy5zdGF0dXMoMjAwKS5qc29uKEpTT04ucGFyc2UoZGF0YSkpO1xyXG4gICAgfSBjYXRjaCAoZXJyKSB7XHJcbiAgICAgIGNvbnNvbGUuZXJyb3IoXCJHRVQgcHJvZHVjdCBsaXN0IGVycm9yOlwiLCBlcnIpO1xyXG4gICAgICByZXMuc3RhdHVzKDUwMCkuanNvbih7IGVycm9yOiBcIkZhaWxlZCB0byBsb2FkIHByb2R1Y3QgbGlzdFwiIH0pO1xyXG4gICAgfVxyXG4gIH1cclxuXHJcbiAgZWxzZSBpZiAocmVxLm1ldGhvZCA9PT0gXCJQT1NUXCIpIHtcclxuICAgIHRyeSB7XHJcbiAgICAgIGNvbnN0IG5ld1Byb2R1Y3QgPSByZXEuYm9keTtcclxuXHJcbiAgICAgIGNvbnN0IGN1cnJlbnQgPSBKU09OLnBhcnNlKGZzLnJlYWRGaWxlU3luYyhMSVZFX1BST0RVQ1RTX1BBVEgsIFwidXRmLThcIikpO1xyXG4gICAgICBjdXJyZW50LnB1c2gobmV3UHJvZHVjdCk7XHJcbiAgICAgIGZzLndyaXRlRmlsZVN5bmMoTElWRV9QUk9EVUNUU19QQVRILCBKU09OLnN0cmluZ2lmeShjdXJyZW50LCBudWxsLCAyKSk7XHJcblxyXG4gICAgICBjb25zdCBzdGF0cyA9IEpTT04ucGFyc2UoZnMucmVhZEZpbGVTeW5jKFNUQVRTX1BBVEgsIFwidXRmLThcIikpO1xyXG4gICAgICBzdGF0cy50b3RhbFByb2R1Y3RzID0gKHN0YXRzLnRvdGFsUHJvZHVjdHMgPz8gMCkgKyAxO1xyXG4gICAgICBmcy53cml0ZUZpbGVTeW5jKFNUQVRTX1BBVEgsIEpTT04uc3RyaW5naWZ5KHN0YXRzLCBudWxsLCAyKSk7XHJcblxyXG4gICAgICByZXMuc3RhdHVzKDIwMCkuanNvbih7IHN1Y2Nlc3M6IHRydWUsIHByb2R1Y3Q6IG5ld1Byb2R1Y3QgfSk7XHJcbiAgICB9IGNhdGNoIChlcnIpIHtcclxuICAgICAgY29uc29sZS5lcnJvcihcIlBPU1QgcHJvZHVjdCBjcmVhdGlvbiBlcnJvcjpcIiwgZXJyKTtcclxuICAgICAgcmVzLnN0YXR1cyg1MDApLmpzb24oeyBlcnJvcjogXCJGYWlsZWQgdG8gY3JlYXRlIHByb2R1Y3RcIiB9KTtcclxuICAgIH1cclxuICB9XHJcblxyXG4gIGVsc2Uge1xyXG4gICAgcmVzLnN0YXR1cyg0MDUpLmpzb24oeyBlcnJvcjogXCJNZXRob2Qgbm90IGFsbG93ZWRcIiB9KTtcclxuICB9XHJcbn1cclxuIl0sIm5hbWVzIjpbImZzIiwicGF0aCIsIlNUQVRTX1BBVEgiLCJyZXNvbHZlIiwicHJvY2VzcyIsImN3ZCIsIkxJVkVfUFJPRFVDVFNfUEFUSCIsImhhbmRsZXIiLCJyZXEiLCJyZXMiLCJtZXRob2QiLCJkYXRhIiwicmVhZEZpbGVTeW5jIiwic3RhdHVzIiwianNvbiIsIkpTT04iLCJwYXJzZSIsImVyciIsImNvbnNvbGUiLCJlcnJvciIsIm5ld1Byb2R1Y3QiLCJib2R5IiwiY3VycmVudCIsInB1c2giLCJ3cml0ZUZpbGVTeW5jIiwic3RyaW5naWZ5Iiwic3RhdHMiLCJ0b3RhbFByb2R1Y3RzIiwic3VjY2VzcyIsInByb2R1Y3QiXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(api)/./pages/api/products.ts\n");
+
+/***/ })
+
+};
+;
+
+// load runtime
+var __webpack_require__ = require("../../webpack-api-runtime.js");
+__webpack_require__.C(exports);
+var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
+var __webpack_exports__ = __webpack_require__.X(0, ["vendor-chunks/next"], () => (__webpack_exec__("(api)/./node_modules/next/dist/build/webpack/loaders/next-route-loader/index.js?kind=PAGES_API&page=%2Fapi%2Fproducts&preferredRegion=&absolutePagePath=.%2Fpages%5Capi%5Cproducts.ts&middlewareConfigBase64=e30%3D!")));
+module.exports = __webpack_exports__;
+
+})();

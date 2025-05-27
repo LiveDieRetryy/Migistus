@@ -1,0 +1,12 @@
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
+  "/": "pages/index.js",
+  "/kingdom": "pages/kingdom.js",
+  "/api/users": "pages/api/users.js",
+  "/kingdom/dashboard": "pages/kingdom/dashboard.js",
+  "/api/products": "pages/api/products.js",
+  "/api/refunds": "pages/api/refunds.js",
+  "/api/voting-config": "pages/api/voting-config.js"
+}

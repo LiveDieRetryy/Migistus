@@ -1,0 +1,16 @@
+{
+  "votingEnabled": true,
+  "topWinners": 3,
+  "doubleVoteWeek": false,
+  "tripleVoteWeek": false,
+  "tierLimits": {
+    "Initiate": 1,
+    "Guild": 2,
+    "MIGISTUS": 4
+  },
+  "tierMultipliers": {
+    "Initiate": 1,
+    "Guild": 2,
+    "MIGISTUS": 4
+  }
+}
