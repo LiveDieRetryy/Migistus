@@ -5,8 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 
+interface VotingConfig {
+  votingEnabled: boolean;
+  doubleVoteWeek: boolean;
+  tripleVoteWeek: boolean;
+  topWinners: number;
+  tierLimits: Record<string, number>;
+  tierMultipliers: Record<string, number>;
+}
+
 export default function VotingConfigPanel() {
-  const [config, setConfig] = useState<any>(null);
+  const [config, setConfig] = useState<VotingConfig | null>(null);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -14,8 +23,7 @@ export default function VotingConfigPanel() {
     fetch("/api/voting-config")
       .then(res => res.json())
       .then(data => {
-        // Safely fill in missing values
-        const filled = {
+        const filled: VotingConfig = {
           votingEnabled: data.votingEnabled ?? false,
           topWinners: data.topWinners ?? 3,
           doubleVoteWeek: data.doubleVoteWeek ?? false,
@@ -37,8 +45,11 @@ export default function VotingConfigPanel() {
       });
   }, []);
 
-  const handleChange = (key: string, value: any) => {
-    setConfig((prev: any) => ({ ...prev, [key]: value }));
+  const handleChange = <T extends keyof VotingConfig>(
+    key: T,
+    value: VotingConfig[T]
+  ) => {
+    setConfig(prev => prev ? { ...prev, [key]: value } : prev);
   };
 
   const handleTierChange = (
@@ -46,13 +57,17 @@ export default function VotingConfigPanel() {
     tier: string,
     value: number
   ) => {
-    setConfig((prev: any) => ({
-      ...prev,
-      [type]: {
-        ...prev[type],
-        [tier]: value,
-      },
-    }));
+    setConfig(prev =>
+      prev
+        ? {
+            ...prev,
+            [type]: {
+              ...prev[type],
+              [tier]: value,
+            },
+          }
+        : prev
+    );
   };
 
   const handleSave = async () => {
@@ -80,7 +95,7 @@ export default function VotingConfigPanel() {
           <span className="text-white">Voting Enabled</span>
           <Switch
             checked={config.votingEnabled}
-            onCheckedChange={(val) => handleChange("votingEnabled", val)}
+            onCheckedChange={(val: boolean) => handleChange("votingEnabled", val)}
           />
         </div>
 
@@ -88,7 +103,7 @@ export default function VotingConfigPanel() {
           <span className="text-white">Double Vote Week</span>
           <Switch
             checked={config.doubleVoteWeek}
-            onCheckedChange={(val) => handleChange("doubleVoteWeek", val)}
+            onCheckedChange={(val: boolean) => handleChange("doubleVoteWeek", val)}
           />
         </div>
 
@@ -96,7 +111,7 @@ export default function VotingConfigPanel() {
           <span className="text-white">Triple Vote Week</span>
           <Switch
             checked={config.tripleVoteWeek}
-            onCheckedChange={(val) => handleChange("tripleVoteWeek", val)}
+            onCheckedChange={(val: boolean) => handleChange("tripleVoteWeek", val)}
           />
         </div>
       </div>
@@ -114,7 +129,7 @@ export default function VotingConfigPanel() {
 
       <div>
         <h3 className="font-bold text-[#FFD700] text-lg mb-2">🧮 Vote Limits Per Tier</h3>
-        {Object.keys(config.tierLimits ?? {}).map((tier) => (
+        {Object.keys(config.tierLimits).map((tier) => (
           <div key={tier} className="mb-2">
             <label className="font-semibold text-white">{tier}</label>
             <Input
@@ -131,7 +146,7 @@ export default function VotingConfigPanel() {
 
       <div>
         <h3 className="font-bold text-[#FFD700] text-lg mb-2">🔢 Vote Multipliers Per Tier</h3>
-        {Object.keys(config.tierMultipliers ?? {}).map((tier) => (
+        {Object.keys(config.tierMultipliers).map((tier) => (
           <div key={tier} className="mb-2">
             <label className="font-semibold text-white">{tier}</label>
             <Input
