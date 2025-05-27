@@ -1,9 +1,13 @@
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import React from "react";
 
-export default function TestDashboard() {
+type Props = {
+  children: React.ReactNode;
+};
+
+export default function DashboardLayout({ children }: Props) {
   return (
-    <DashboardLayout>
-      <div className="text-white text-3xl">✅ Layout loads correctly</div>
-    </DashboardLayout>
+    <div className="min-h-screen bg-zinc-950 text-white p-6">
+      {children}
+    </div>
   );
 }
