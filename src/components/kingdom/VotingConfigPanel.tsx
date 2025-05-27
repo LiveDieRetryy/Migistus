@@ -5,8 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 
+// ✅ Line 7–15: Define proper types
+interface VotingConfig {
+  votingEnabled: boolean;
+  doubleVoteWeek: boolean;
+  tripleVoteWeek: boolean;
+  topWinners: number;
+  tierLimits: Record<string, number>;
+  tierMultipliers: Record<string, number>;
+}
+
+// ✅ Line 17: Use typed state instead of `any`
 export default function VotingConfigPanel() {
-  const [config, setConfig] = useState<any>(null);
+  const [config, setConfig] = useState<VotingConfig | null>(null);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -14,8 +25,7 @@ export default function VotingConfigPanel() {
     fetch("/api/voting-config")
       .then(res => res.json())
       .then(data => {
-        // Safely fill in missing values
-        const filled = {
+        const filled: VotingConfig = {
           votingEnabled: data.votingEnabled ?? false,
           topWinners: data.topWinners ?? 3,
           doubleVoteWeek: data.doubleVoteWeek ?? false,
@@ -37,8 +47,9 @@ export default function VotingConfigPanel() {
       });
   }, []);
 
-  const handleChange = (key: string, value: any) => {
-    setConfig((prev: any) => ({ ...prev, [key]: value }));
+  // ✅ Line 45: Typing dynamic key and value properly
+  const handleChange = (key: keyof VotingConfig, value: boolean | number) => {
+    setConfig((prev) => prev ? { ...prev, [key]: value } : prev);
   };
 
   const handleTierChange = (
@@ -46,13 +57,17 @@ export default function VotingConfigPanel() {
     tier: string,
     value: number
   ) => {
-    setConfig((prev: any) => ({
-      ...prev,
-      [type]: {
-        ...prev[type],
-        [tier]: value,
-      },
-    }));
+    setConfig((prev) =>
+      prev
+        ? {
+            ...prev,
+            [type]: {
+              ...prev[type],
+              [tier]: value,
+            },
+          }
+        : prev
+    );
   };
 
   const handleSave = async () => {
@@ -96,7 +111,7 @@ export default function VotingConfigPanel() {
           <span className="text-white">Triple Vote Week</span>
           <Switch
             checked={config.tripleVoteWeek}
-            onCheckedChange={(val) => handleChange("tripleVoteWeek", val)}
+            onCheckedChange={(val: boolean) => handleChange("tripleVoteWeek", val)}
           />
         </div>
       </div>
@@ -106,9 +121,10 @@ export default function VotingConfigPanel() {
         <Input
           type="number"
           value={config.topWinners}
-          onChange={(e) =>
-            handleChange("topWinners", parseInt(e.target.value) || 0)
-          }
+          onChange={(e) => {
+            const num = parseInt(e.target.value);
+            handleChange("topWinners", Number.isNaN(num) ? 0 : num);
+          }}
         />
       </div>
 
@@ -121,9 +137,10 @@ export default function VotingConfigPanel() {
               type="number"
               className="mt-1"
               value={config.tierLimits[tier]}
-              onChange={(e) =>
-                handleTierChange("tierLimits", tier, parseInt(e.target.value) || 0)
-              }
+              onChange={(e) => {
+                const num = parseInt(e.target.value);
+                handleTierChange("tierLimits", tier, Number.isNaN(num) ? 0 : num);
+              }}
             />
           </div>
         ))}
@@ -138,9 +155,10 @@ export default function VotingConfigPanel() {
               type="number"
               className="mt-1"
               value={config.tierMultipliers[tier]}
-              onChange={(e) =>
-                handleTierChange("tierMultipliers", tier, parseInt(e.target.value) || 0)
-              }
+              onChange={(e) => {
+                const num = parseInt(e.target.value);
+                handleTierChange("tierMultipliers", tier, Number.isNaN(num) ? 0 : num);
+              }}
             />
           </div>
         ))}
