@@ -1,8 +1,5 @@
-"use client";
-
 import Head from "next/head";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Users, Package, Crown, Settings } from "lucide-react";
+import DashboardLayout from "@/components/DashboardLayout";
 import StatCard from "@/components/kingdom/StatCard";
 import useUserStats from "@/lib/useUserStats";
 import useProductStats from "@/lib/useProductStats";
@@ -14,7 +11,7 @@ export default function KingsDomainPage() {
   const { userCount } = useUserStats();
   const { liveProductCount } = useProductStats();
   const { pendingRefunds } = useRefundStats();
-  const { weeklyVotes } = useVotingStats();
+  const { totalVotes } = useVotingStats();
 
   return (
     <DashboardLayout>
@@ -26,10 +23,10 @@ export default function KingsDomainPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto px-4 pb-20">
-        <StatCard title="Total Users" value={userCount} icon={<Users />} color="gold" />
-        <StatCard title="Live Products" value={liveProductCount} icon={<Package />} color="cyan" />
-        <StatCard title="Pending Refunds" value={pendingRefunds} icon={<Crown />} color="red" />
-        <StatCard title="Weekly Votes" value={weeklyVotes} icon={<Settings />} color="purple" />
+        <StatCard label="Total Users" value={userCount} icon={<span>👥</span>} />
+        <StatCard label="Live Products" value={liveProductCount} icon={<span>📦</span>} />
+        <StatCard label="Pending Refunds" value={pendingRefunds} icon={<span>💰</span>} />
+        <StatCard label="Total Votes" value={totalVotes} icon={<span>🗳️</span>} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-10 max-w-6xl mx-auto px-4">
