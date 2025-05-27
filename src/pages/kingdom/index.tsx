@@ -1,7 +1,7 @@
-export default function DashboardFinalTest() {
+export default function KingdomPage() {
   return (
     <div style={{ background: 'black', color: 'white', minHeight: '100vh', padding: '2rem' }}>
-      <h1 style={{ fontSize: '2rem', color: '#FFD700' }}>🚀 BACK IN /src/pages — it works!</h1>
+      <h1 style={{ fontSize: '2rem', color: '#FFD700' }}>🚀 Kingdom page loaded!</h1>
     </div>
   );
 }
