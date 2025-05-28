@@ -320,8 +320,15 @@ export default function ProductPoolEditor() {
     featured: editingProduct?.featured ?? false,
     pledges: editingProduct?.pledges ?? 0,
     pricingTiers: formData.pricingTiers ?? [],
-    slug: slugify(formData.name), // <-- add slug here
+    slug: slugify(formData.name), // <-- slug is auto-generated here
   };
+
+  // Optimistically update local state before API call
+  setProducts(prev =>
+    editingProduct
+      ? prev.map(p => (p.id === editingProduct.id ? newProduct : p))
+      : [...prev, newProduct]
+  );
 
   try {
     const res = await fetch("/api/products", {
@@ -332,16 +339,11 @@ export default function ProductPoolEditor() {
 
     if (!res.ok) throw new Error("Failed to save product");
 
-    // Optimistically update local state:
-    setProducts(prev =>
-      editingProduct
-        ? prev.map(p => (p.id === editingProduct.id ? newProduct : p))
-        : [...prev, newProduct]
-    );
-
+    // No need to update local state again, already done optimistically
     closeModal();
   } catch (err) {
     console.error("Save failed:", err);
+    // Optionally: revert local optimistic update here if desired
   }
 };
 
