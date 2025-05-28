@@ -18,6 +18,7 @@ const nextConfig = {
       },
     ],
   },
+  // No changes needed unless you have custom rewrites or redirects blocking /categories/[category]
 };
 
 module.exports = nextConfig;

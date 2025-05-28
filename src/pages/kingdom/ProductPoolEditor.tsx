@@ -46,6 +46,7 @@ type ProductFormData = {
   timeframe: string;
   category: string;
   pricingTiers?: PricingTier[];
+  slug?: string; // Add slug to form data for modal editing
 };
 
 const slugify = (name: string) =>
@@ -175,7 +176,10 @@ export default function ProductPoolEditor() {
     timeframe: "30 days",
     category: "Electronics",
     pricingTiers: [],
+    slug: "",
   });
+  const [slugError, setSlugError] = useState<string | null>(null);
+  const [copiedSlug, setCopiedSlug] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -234,6 +238,7 @@ export default function ProductPoolEditor() {
           timeframe: "30 days",
           category: "Electronics",
           pricingTiers: [],
+          slug: "",
         });
         setIsModalOpen(true);
       };
@@ -288,7 +293,10 @@ export default function ProductPoolEditor() {
       timeframe: "30 days",
       category: "Electronics",
       pricingTiers: [],
+      slug: "",
     });
+    setSlugError(null);
+    setCopiedSlug(false);
     setIsModalOpen(true);
   };
 
@@ -303,101 +311,145 @@ export default function ProductPoolEditor() {
       timeframe: product.timeframe,
       category: product.category,
       pricingTiers: product.pricingTiers || [],
+      slug: product.slug || slugify(product.name),
     });
+    setSlugError(null);
+    setCopiedSlug(false);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingProduct(null);
-  };
-
- const handleSave = async () => {
-  const newProduct = {
-    ...formData,
-    id: editingProduct ? editingProduct.id : Date.now(),
-    votes: editingProduct?.votes ?? 0,
-    featured: editingProduct?.featured ?? false,
-    pledges: editingProduct?.pledges ?? 0,
-    pricingTiers: formData.pricingTiers ?? [],
-    slug: slugify(formData.name), // <-- slug is auto-generated here
-  };
-
-  // Optimistically update local state before API call
-  setProducts(prev =>
-    editingProduct
-      ? prev.map(p => (p.id === editingProduct.id ? newProduct : p))
-      : [...prev, newProduct]
-  );
-
-  try {
-    const res = await fetch("/api/products", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newProduct),
+    setFormData({
+      name: "",
+      image: "",
+      description: "",
+      goal: 50,
+      link: "",
+      timeframe: "30 days",
+      category: "Electronics",
+      pricingTiers: [],
+      slug: "",
     });
+  };
 
-    if (!res.ok) throw new Error("Failed to save product");
+  // Regenerate slug from name
+  const regenerateSlug = () => {
+    setFormData(prev => ({
+      ...prev,
+      slug: slugify(prev.name)
+    }));
+    setSlugError(null);
+  };
 
-    // No need to update local state again, already done optimistically
+  // Copy slug to clipboard
+  const copySlug = () => {
+    if (formData.slug) {
+      navigator.clipboard.writeText(formData.slug);
+      setCopiedSlug(true);
+      setTimeout(() => setCopiedSlug(false), 1200);
+    }
+  };
+
+  // Validate slug uniqueness before saving
+  const isSlugUnique = (slug: string, ignoreId?: number) => {
+    return !products.some(
+      p => (p.slug ? p.slug : slugify(p.name)) === slug && p.id !== ignoreId
+    );
+  };
+
+  const handleSave = async () => {
+    const slug = formData.slug?.trim() || slugify(formData.name);
+    if (!isSlugUnique(slug, editingProduct?.id)) {
+      setSlugError("Slug must be unique. Please edit or regenerate.");
+      return;
+    }
+    setSlugError(null);
+
+    const newProduct = {
+      ...formData,
+      id: editingProduct ? editingProduct.id : Date.now(),
+      votes: editingProduct?.votes ?? 0,
+      featured: editingProduct?.featured ?? false,
+      pledges: editingProduct?.pledges ?? 0,
+      pricingTiers: formData.pricingTiers ?? [],
+      slug,
+    };
+
+    // Optimistically update local state before API call
+    setProducts(prev =>
+      editingProduct
+        ? prev.map(p => (p.id === editingProduct.id ? newProduct : p))
+        : [...prev, newProduct]
+    );
+
+    try {
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newProduct),
+      });
+
+      if (!res.ok) throw new Error("Failed to save product");
+    } catch (err) {
+      console.error("Save failed:", err);
+      // Optionally: revert local optimistic update here if desired
+    }
     closeModal();
-  } catch (err) {
-    console.error("Save failed:", err);
-    // Optionally: revert local optimistic update here if desired
-  }
-};
+  };
 
-const handlePricingTierChange = (index: number, field: keyof PricingTier, value: number) => {
-  setFormData(prev => {
-    const tiers = prev.pricingTiers ? [...prev.pricingTiers] : [];
-    tiers[index] = { ...tiers[index], [field]: value };
-    return { ...prev, pricingTiers: tiers };
-  });
-};
+  const handlePricingTierChange = (index: number, field: keyof PricingTier, value: number) => {
+    setFormData(prev => {
+      const tiers = prev.pricingTiers ? [...prev.pricingTiers] : [];
+      tiers[index] = { ...tiers[index], [field]: value };
+      return { ...prev, pricingTiers: tiers };
+    });
+  };
 
-const addPricingTier = () => {
-  setFormData(prev => ({
-    ...prev,
-    pricingTiers: [...(prev.pricingTiers || []), { min: 1, max: 10, price: 0 }]
-  }));
-};
+  const addPricingTier = () => {
+    setFormData(prev => ({
+      ...prev,
+      pricingTiers: [...(prev.pricingTiers || []), { min: 1, max: 10, price: 0 }]
+    }));
+  };
 
-const removePricingTier = (index: number) => {
-  setFormData(prev => ({
-    ...prev,
-    pricingTiers: (prev.pricingTiers || []).filter((_, i) => i !== index)
-  }));
-};
+  const removePricingTier = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      pricingTiers: (prev.pricingTiers || []).filter((_, i) => i !== index)
+    }));
+  };
 
-return (
-  <div 
-    className="min-h-screen bg-gradient-to-br from-zinc-900 to-zinc-800 relative"
-    onDragOver={handleDragOver}
-    onDragLeave={handleDragLeave}
-    onDrop={handleDrop}
-  >
-    {/* Drag overlay */}
-    {isDragOver && (
-      <div 
-        className="fixed inset-0 z-40 bg-yellow-400/20 backdrop-blur-sm flex items-center justify-center"
-        style={{
-          background: 'rgba(250, 204, 21, 0.2)',
-          backdropFilter: 'blur(4px)'
-        }}
-      >
+  return (
+    <div 
+      className="min-h-screen bg-gradient-to-br from-zinc-900 to-zinc-800 relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag overlay */}
+      {isDragOver && (
         <div 
-          className="bg-zinc-800/90 border-2 border-dashed border-yellow-400 rounded-xl p-12 text-center"
+          className="fixed inset-0 z-40 bg-yellow-400/20 backdrop-blur-sm flex items-center justify-center"
           style={{
-            borderColor: '#fbbf24',
-            backgroundColor: 'rgba(39, 39, 42, 0.9)'
+            background: 'rgba(250, 204, 21, 0.2)',
+            backdropFilter: 'blur(4px)'
           }}
         >
-          <div className="text-6xl mb-4">📸</div>
-          <h3 className="text-2xl font-bold text-yellow-400 mb-2">Drop Your Image Here</h3>
-          <p className="text-gray-300 text-lg">Release to create a new product with this image</p>
+          <div 
+            className="bg-zinc-800/90 border-2 border-dashed border-yellow-400 rounded-xl p-12 text-center"
+            style={{
+              borderColor: '#fbbf24',
+              backgroundColor: 'rgba(39, 39, 42, 0.9)'
+            }}
+          >
+            <div className="text-6xl mb-4">📸</div>
+            <h3 className="text-2xl font-bold text-yellow-400 mb-2">Drop Your Image Here</h3>
+            <p className="text-gray-300 text-lg">Release to create a new product with this image</p>
+          </div>
         </div>
-      </div>
-    )}
+      )}
 
 
       {/* Single Header Section */}
@@ -409,7 +461,7 @@ return (
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-6">
+      <div className="max-w-7xl mx-auto px-6 py-6">
         <div className="flex flex-col items-center gap-6 mb-8">
           <div className="flex gap-3 items-center justify-center flex-wrap">
             <Input
@@ -444,107 +496,150 @@ return (
           </p>
         </div>
 
-        <div 
-          className="flex justify-center"
-          style={{ marginTop: '40px' }}
-        >
-          <div 
-            className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10"
-            style={{ gap: '28px' }}
+        {/* Product Grid - LESS CONGESTED */}
+        <div className="flex justify-center" style={{ marginTop: '40px' }}>
+          <div
+            className="
+              grid
+              grid-cols-1
+              sm:grid-cols-2
+              md:grid-cols-3
+              lg:grid-cols-4
+              xl:grid-cols-5
+              2xl:grid-cols-6
+              gap-x-10
+              gap-y-14
+              w-full
+              max-w-7xl
+            "
+            style={{
+              // Add a minHeight to ensure grid rows have space
+              minHeight: "500px",
+            }}
           >
             {filteredProducts.map((product) => (
-              <Link
+              <div
                 key={product.id}
-                href={`/products/${product.slug ? product.slug : slugify(product.name)}`}
-                className="block"
-                passHref
+                className="flex justify-center"
+                style={{
+                  // Ensure each card is not overlapping
+                  minWidth: 0,
+                }}
               >
-                <div
-                  className="bg-zinc-800/50 backdrop-blur-sm border border-yellow-400/20 rounded-lg shadow-lg hover:shadow-xl hover:border-yellow-400/40 transition-all duration-300 hover:scale-105 cursor-pointer relative group"
-                  onClick={() => openEditModal(product)}
-                  style={{ padding: '24px', width: '220px' }}
+                <Link
+                  href={`/products/${product.slug ? product.slug : slugify(product.name)}`}
+                  className="block w-full"
+                  passHref
                 >
-                  {product.votes !== undefined && (
-                    <div 
-                      className="absolute bg-yellow-400/90 text-black text-[14px] font-bold rounded-full shadow-md z-10"
-                      style={{ 
-                        top: '16px', 
-                        left: '16px', 
-                        padding: '8px 12px' 
-                      }}
-                    >
-                      {product.votes}
-                    </div>
-                  )}
-                  <div 
-                    className="relative"
-                    style={{ marginBottom: '20px' }}
+                  <div
+                    className="bg-zinc-800/50 backdrop-blur-sm border border-yellow-400/20 rounded-2xl shadow-lg hover:shadow-xl hover:border-yellow-400/40 transition-all duration-300 hover:scale-105 cursor-pointer relative group"
+                    onClick={() => openEditModal(product)}
+                    style={{
+                      padding: '28px 20px 20px 20px',
+                      width: '260px',
+                      minHeight: '410px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'flex-start',
+                      alignItems: 'center',
+                      background: 'linear-gradient(135deg, #23272f 0%, #18181b 100%)',
+                      margin: '0 auto',
+                      boxShadow: '0 8px 32px 0 rgba(0,0,0,0.25), 0 1.5px 6px 0 rgba(250,204,21,0.07)'
+                    }}
                   >
+                    {product.votes !== undefined && (
+                      <div
+                        className="absolute bg-yellow-400/90 text-black text-[14px] font-bold rounded-full shadow-md z-10"
+                        style={{
+                          top: '18px',
+                          left: '18px',
+                          padding: '8px 12px'
+                        }}
+                      >
+                        {product.votes}
+                      </div>
+                    )}
+                    <div
+                      className="relative"
+                      style={{ marginBottom: '22px', width: '100%' }}
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFeatured(product.id);
+                        }}
+                        title="Toggle Staff Pick"
+                        className="absolute bg-black/60 hover:bg-yellow-400/90 text-white hover:text-black text-[14px] rounded z-10 transition-colors"
+                        style={{
+                          top: '18px',
+                          right: '18px',
+                          padding: '8px 12px'
+                        }}
+                      >
+                        {product.featured ? '⭐' : '✩'}
+                      </button>
+                      {product.image ? (
+                        <div className="relative w-full rounded border border-zinc-600 bg-zinc-700" style={{ height: "160px" }}>
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            fill
+                            className="object-cover rounded"
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          className="w-full bg-zinc-700 border border-zinc-600 rounded flex items-center justify-center"
+                          style={{ height: '160px' }}
+                        >
+                          <span className="text-zinc-400 text-[14px]">No Image</span>
+                        </div>
+                      )}
+                    </div>
+                    <div
+                      className="text-white text-center text-[16px] font-semibold truncate px-1"
+                      title={product.name}
+                      style={{ marginBottom: '4px' }}
+                    >
+                      {product.name}
+                    </div>
+                    <div
+                      className="text-xs text-yellow-300 text-center mb-2 break-all"
+                      style={{ marginBottom: '10px' }}
+                    >
+                      <span className="bg-zinc-900/70 px-2 py-0.5 rounded">/{product.slug ? product.slug : slugify(product.name)}</span>
+                    </div>
+                    <div
+                      className="text-yellow-400 text-center text-[15px]"
+                      style={{ marginBottom: '8px' }}
+                    >
+                      Goal: {product.goal}
+                    </div>
+                    <div
+                      className="text-zinc-400 text-center text-[13px]"
+                      style={{ marginBottom: '10px' }}
+                    >
+                      {product.timeframe}
+                    </div>
+                    <div
+                      className="text-gray-400 text-center text-[13px] mb-2 line-clamp-2"
+                      style={{ minHeight: '36px', marginBottom: '14px' }}
+                    >
+                      {product.description}
+                    </div>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        toggleFeatured(product.id);
+                        openEditModal(product);
                       }}
-                      title="Toggle Staff Pick"
-                      className="absolute bg-black/60 hover:bg-yellow-400/90 text-white hover:text-black text-[14px] rounded z-10 transition-colors"
-                      style={{ 
-                        top: '16px', 
-                        right: '16px', 
-                        padding: '8px 12px' 
-                      }}
+                      className="w-full bg-yellow-400/80 hover:bg-yellow-400 text-black border border-yellow-400/50 text-[13px] px-1 py-0 leading-none opacity-0 group-hover:opacity-100 transition-opacity rounded font-medium"
+                      style={{ height: '32px', marginTop: 'auto' }}
                     >
-                      {product.featured ? '⭐' : '✩'}
+                      Edit
                     </button>
-                    {product.image ? (
-                      <div className="relative w-full rounded border border-zinc-600 bg-zinc-700" style={{ height: "170px" }}>
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-cover rounded"
-                     />
-                   </div>
-
-                  ) : (
-                    <div 
-                      className="w-full bg-zinc-700 border border-zinc-600 rounded flex items-center justify-center"
-                      style={{ height: '170px' }}
-                    >
-                      <span className="text-zinc-400 text-[14px]">No Image</span>
-                    </div>
-                  )}
                   </div>
-                  <div 
-                    className="text-white text-center text-[15px] font-medium truncate px-1" 
-                    title={product.name}
-                    style={{ marginBottom: '10px' }}
-                  >
-                    {product.name}
-                  </div>
-                  <div 
-                    className="text-yellow-400 text-center text-[14px]"
-                    style={{ marginBottom: '8px' }}
-                  >
-                    Goal: {product.goal}
-                  </div>
-                  <div 
-                    className="text-zinc-400 text-center text-[13px]"
-                    style={{ marginBottom: '16px' }}
-                  >
-                    {product.timeframe}
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openEditModal(product);
-                    }}
-                    className="w-full bg-yellow-400/80 hover:bg-yellow-400 text-black border border-yellow-400/50 text-[13px] px-1 py-0 leading-none opacity-0 group-hover:opacity-100 transition-opacity rounded font-medium"
-                    style={{ height: '32px' }}
-                  >
-                    Edit
-                  </button>
-                </div>
-              </Link>
+                </Link>
+              </div>
             ))}
           </div>
         </div>
@@ -629,6 +724,54 @@ return (
                       height: '48px'
                     }}
                   />
+                </div>
+                {/* Slug field with copy and regenerate */}
+                <div>
+                  <label className="block text-gray-200 text-base font-semibold mb-3 flex items-center gap-2">
+                    Slug
+                    <button
+                      type="button"
+                      onClick={copySlug}
+                      className="ml-2 px-2 py-1 text-xs bg-zinc-700 text-yellow-300 rounded hover:bg-yellow-400 hover:text-black transition"
+                      title="Copy slug"
+                    >
+                      {copiedSlug ? "Copied!" : "Copy"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={regenerateSlug}
+                      className="ml-2 px-2 py-1 text-xs bg-zinc-700 text-yellow-300 rounded hover:bg-yellow-400 hover:text-black transition"
+                      title="Regenerate slug from name"
+                    >
+                      Regenerate
+                    </button>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={formData.slug ?? ""}
+                      onChange={e => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                      className="bg-zinc-900/50 text-yellow-300 border border-yellow-400/30 rounded-lg px-4 py-3 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 transition-all text-base"
+                      style={{
+                        backgroundColor: 'rgba(24, 24, 27, 0.5)',
+                        border: '1px solid rgba(250, 204, 21, 0.3)',
+                        borderRadius: '8px',
+                        height: '40px'
+                      }}
+                    />
+                    {/* Preview link */}
+                    <a
+                      href={`/products/${formData.slug ?? slugify(formData.name)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-2 px-2 py-1 text-xs bg-yellow-400 text-black rounded hover:bg-yellow-300 transition"
+                      title="Preview live product page"
+                    >
+                      Preview
+                    </a>
+                  </div>
+                  {slugError && (
+                    <div className="text-red-400 text-xs mt-1">{slugError}</div>
+                  )}
                 </div>
                 
                 <div>

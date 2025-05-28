@@ -2,17 +2,25 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
-
-const navItems = [
-  { name: "Home", href: "/" },
-  { name: "Drops", href: "/drops" },
-  { name: "Vote", href: "/voting" },
-  { name: "Kingdom", href: "/kingdom" }
-];
+import { useEffect, useState } from "react";
 
 export default function MainNavbar() {
   const router = useRouter();
-  
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsAdmin(localStorage.getItem("isAdmin") === "true");
+    }
+  }, []);
+
+  const navItems = [
+    { name: "Home", href: "/" },
+    { name: "Drops", href: "/drops" },
+    { name: "Vote", href: "/voting" },
+    ...(isAdmin ? [{ name: "Kingdom", href: "/kingdom" }] : [])
+  ];
+
   const isActive = (path: string) => router.pathname === path;
 
   return (
@@ -61,6 +69,19 @@ export default function MainNavbar() {
                 </span>
               </Link>
             ))}
+            {/* Auth links */}
+            <Link
+              href="/login"
+              className="ml-6 px-4 py-2 rounded bg-yellow-500 text-black font-bold hover:bg-yellow-400 transition"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/register"
+              className="ml-2 px-4 py-2 rounded border border-yellow-500 text-yellow-400 font-bold hover:bg-yellow-500 hover:text-black transition"
+            >
+              Register
+            </Link>
           </div>
         </div>
       </div>
