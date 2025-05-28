@@ -8,7 +8,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const users = JSON.parse(fs.readFileSync(path.resolve("public/data/users.json"), "utf-8"));
-    const votes = JSON.parse(fs.readFileSync(path.resolve("public/data/voting.json"), "utf-8"));
+    const votes = JSON.parse(fs.readFileSync(path.resolve("public/data/votes.json"), "utf-8"));
     const refunds = JSON.parse(fs.readFileSync(path.resolve("public/data/refunds.json"), "utf-8"));
     const products = JSON.parse(fs.readFileSync(path.resolve("public/data/products.json"), "utf-8"));
 
@@ -23,3 +23,5 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     res.status(500).json({ error: "Failed to load stats" });
   }
 }
+
+// (No changes needed if you already use public/data/*.json.)

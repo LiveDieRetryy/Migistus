@@ -1,12 +1,10 @@
 // pages/products/[slug].tsx
 import { useRouter } from "next/router";
-import fs from "fs";
-import path from "path";
-import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
+type PricingTier = { min: number; max: number; price: number };
 type Product = {
   id: number;
   name: string;
@@ -18,25 +16,49 @@ type Product = {
   category: string;
   votes?: number;
   featured?: boolean;
+  pledges: number;
+  pricingTiers?: PricingTier[];
 };
 
-export default function ProductPage({ product }: { product: Product }) {
-  const router = useRouter();
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [pledges, setPledges] = useState(product.pledges || 0);
-  const [pledged, setPledged] = useState(false);
+function slugify(name: string) {
+  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
+}
 
-  useEffect(() => {
-    // Example: parse timeframe as days, convert to seconds
-    if (product?.timeframe) {
-      const days = parseInt(product.timeframe);
+export default function ProductPage() {
+  const router = useRouter();
+  const { slug } = router.query;
+  const [product, setProduct] = useState<Product | null>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [pledges, setPledges] = useState(0);
+  const [pledged, setPledged] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const fetchProduct = async () => {
+    setLoading(true);
+    const res = await fetch("/api/products");
+    const data = await res.json();
+    const match = (data.products || data).find(
+      (p: Product) => slugify(p.name) === slug
+    );
+    setProduct(match || null);
+    setPledges(match?.pledges || 0);
+    // Parse timeframe as days, convert to seconds
+    if (match?.timeframe) {
+      const days = parseInt(match.timeframe);
       setTimeLeft(days * 24 * 60 * 60);
     }
-  }, [product]);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (slug) {
+      fetchProduct();
+    }
+  }, [slug]);
 
   useEffect(() => {
     if (timeLeft > 0) {
-      const interval = setInterval(() => setTimeLeft(t => t - 1), 1000);
+      const interval = setInterval(() => setTimeLeft((t) => t - 1), 1000);
       return () => clearInterval(interval);
     }
   }, [timeLeft]);
@@ -49,22 +71,30 @@ export default function ProductPage({ product }: { product: Product }) {
     return `${d}d ${h}h ${m}m ${s}s`;
   };
 
+  const getCurrentPrice = () => {
+    if (!product?.pricingTiers) return null;
+    const tier = product.pricingTiers.find(
+      (t) => pledges >= t.min && pledges <= t.max
+    );
+    return tier ? tier.price : product.pricingTiers[0].price;
+  };
+
   const handlePledge = async () => {
-    if (pledged) return;
+    if (!product || pledged) return;
+    setLoading(true);
     const res = await fetch("/api/products", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...product, pledges: pledges + 1 }),
     });
     if (res.ok) {
-      setPledges(pledges + 1);
+      await fetchProduct(); // Refetch to sync
       setPledged(true);
     }
+    setLoading(false);
   };
 
-  if (router.isFallback) {
-    return <div className="text-white p-10">Loading product...</div>;
-  }
+  if (!product || loading) return <p className="text-white p-8">Loading product...</p>;
 
   return (
     <>
@@ -90,83 +120,31 @@ export default function ProductPage({ product }: { product: Product }) {
             </p>
             <p className="text-zinc-400 mb-2">Time left: {formatTime(timeLeft)}</p>
             <p className="text-zinc-400 mb-6">Category: {product.category}</p>
+            {product.pricingTiers && (
+              <div className="mb-4">
+                <span className="text-yellow-400 font-bold">
+                  Current Price: ${getCurrentPrice()}
+                </span>
+              </div>
+            )}
             <a
               href={product.link}
-              target="_blank"uct[] = JSON.parse(json);
+              target="_blank"
               rel="noreferrer"
-              className="bg-yellow-400 hover:bg-yellow-300 text-black px-6 py-3 rounded-lg font-bold transition-all"const paths = products.map(p => ({
-            >    params: { slug: slugify(p.name) }
+              className="bg-yellow-400 hover:bg-yellow-300 text-black px-6 py-3 rounded-lg font-bold transition-all"
+            >
               View Product Source ↗
             </a>
             <button
-              onClick={handlePledge}   paths,
-              disabled={pledged || pledges >= product.goal || timeLeft <= 0}    fallback: true // allow dynamic pages for newly added products
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");function slugify(name: string) {// Simple slugifier to match URLs};  };    props: { product },  return {  }    return { notFound: true };  if (!product) {  const product = products.find(p => slugify(p.name) === params?.slug);  const products: Product[] = JSON.parse(json);  const json = fs.readFileSync(filePath, "utf-8");  const filePath = path.resolve("public/data/products.json");export const getStaticProps: GetStaticProps = async ({ params }) => {};  return { paths, fallback: true };  }));    params: { slug: slugify(product.name) },  const paths = products.map(product => ({  const products: Product[] = JSON.parse(json);  const json = fs.readFileSync(filePath, "utf-8");  const filePath = path.resolve("public/data/products.json");export const getStaticPaths: GetStaticPaths = async () => {// Load paths for static build}  );    </>      </div>        </div>          </div>            </button>              {pledged ? "Pledged!" : "Pledge"}            >              className="bg-yellow-400 hover:bg-yellow-300 text-black px-6 py-3 rounded-lg font-bold transition-all mt-4"  };
-};
-
-// Load specific product by slug
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const filePath = path.resolve("public/data/products.json");
-  const json = fs.readFileSync(filePath, "utf-8");
-  const products: Product[] = JSON.parse(json);
-
-  const product = products.find(p => slugify(p.name) === params?.slug);
-
-  if (!product) {
-    return { notFound: true };
-  }
-
-  return {
-    props: { product }
-  };
-};
-
-// Simple slugifier to match URLs
-function slugify(name: string) {
-  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
+              onClick={handlePledge}
+              disabled={pledged || pledges >= product.goal || timeLeft <= 0}
+              className="bg-yellow-400 hover:bg-yellow-300 text-black px-6 py-3 rounded-lg font-bold transition-all mt-4"
+            >
+              {pledged ? "Pledged!" : "Pledge"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }

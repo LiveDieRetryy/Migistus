@@ -23,6 +23,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     } else if (req.method === "POST") {
       const newProduct = req.body;
+      newProduct.pledges = typeof newProduct.pledges === "number" ? newProduct.pledges : 0;
+      newProduct.pricingTiers = Array.isArray(newProduct.pricingTiers) ? newProduct.pricingTiers : [];
       // If editing, replace; else, add
       const idx = data.findIndex((p: any) => p.id === newProduct.id);
       let updated;
@@ -36,9 +38,10 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     } else if (req.method === "PUT") {
       const updatedProduct = req.body;
-      // When updating a product (PUT/POST), allow pledges to be incremented
+      updatedProduct.pledges = typeof updatedProduct.pledges === "number" ? updatedProduct.pledges : 0;
+      updatedProduct.pricingTiers = Array.isArray(updatedProduct.pricingTiers) ? updatedProduct.pricingTiers : [];
       const updated = data.map((p: any) =>
-        p.id === updatedProduct.id ? { ...p, ...updatedProduct, pledges: updatedProduct.pledges } : p
+        p.id === updatedProduct.id ? { ...p, ...updatedProduct } : p
       );
       writeData(updated);
       res.status(200).json({ success: true });

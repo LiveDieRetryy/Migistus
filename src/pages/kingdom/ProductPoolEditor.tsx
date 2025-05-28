@@ -20,6 +20,7 @@ const DEPARTMENTS = [
   "Movies, Music & Games"
 ];
 
+type PricingTier = { min: number; max: number; price: number };
 type Product = {
   id: number;
   name: string;
@@ -31,6 +32,8 @@ type Product = {
   category: string;
   votes?: number;
   featured?: boolean;
+  pledges: number;
+  pricingTiers?: PricingTier[];
 };
 
 type ProductFormData = {
@@ -41,6 +44,7 @@ type ProductFormData = {
   link: string;
   timeframe: string;
   category: string;
+  pricingTiers?: PricingTier[];
 };
 
 const slugify = (name: string) =>
@@ -59,6 +63,7 @@ export default function ProductPoolEditor() {
       category: "Electronics",
       votes: 73,
       featured: true,
+      pledges: 0,
     },
     {
       id: 2,
@@ -71,6 +76,7 @@ export default function ProductPoolEditor() {
       category: "Electronics",
       votes: 42,
       featured: false,
+      pledges: 0,
     },
     {
       id: 3,
@@ -83,6 +89,7 @@ export default function ProductPoolEditor() {
       category: "Electronics",
       votes: 89,
       featured: true,
+      pledges: 0,
     },
     {
       id: 4,
@@ -95,6 +102,7 @@ export default function ProductPoolEditor() {
       category: "Electronics",
       votes: 156,
       featured: false,
+      pledges: 0,
     },
     {
       id: 5,
@@ -107,6 +115,7 @@ export default function ProductPoolEditor() {
       category: "Electronics",
       votes: 31,
       featured: false,
+      pledges: 0,
     },
     {
       id: 6,
@@ -119,6 +128,7 @@ export default function ProductPoolEditor() {
       category: "Smart Home",
       votes: 67,
       featured: true,
+      pledges: 0,
     },
     {
       id: 7,
@@ -131,6 +141,7 @@ export default function ProductPoolEditor() {
       category: "Electronics",
       votes: 123,
       featured: false,
+      pledges: 0,
     },
     {
       id: 8,
@@ -143,6 +154,7 @@ export default function ProductPoolEditor() {
       category: "Electronics",
       votes: 201,
       featured: true,
+      pledges: 0,
     }
   ]);
 
@@ -160,7 +172,8 @@ export default function ProductPoolEditor() {
     goal: 50,
     link: "",
     timeframe: "30 days",
-    category: "Electronics"
+    category: "Electronics",
+    pricingTiers: [],
   });
 
   useEffect(() => {
@@ -168,8 +181,14 @@ export default function ProductPoolEditor() {
       try {
         const response = await fetch("/api/products");
         const data = await response.json();
-        if (Array.isArray(data)) {
-          setProducts(data);
+        if (Array.isArray(data.products)) {
+          // Ensure pledges is present for all products
+          setProducts(
+            data.products.map((p: any) => ({
+              ...p,
+              pledges: typeof p.pledges === "number" ? p.pledges : 0,
+            }))
+          );
         }
       } catch (err) {
         console.error("Failed to fetch products:", err);
@@ -216,7 +235,8 @@ export default function ProductPoolEditor() {
           goal: 50,
           link: "",
           timeframe: "30 days",
-          category: "Electronics"
+          category: "Electronics",
+          pricingTiers: [],
         });
         setIsModalOpen(true);
       };
@@ -269,7 +289,8 @@ export default function ProductPoolEditor() {
       goal: 50,
       link: "",
       timeframe: "30 days",
-      category: "Electronics"
+      category: "Electronics",
+      pricingTiers: [],
     });
     setIsModalOpen(true);
   };
@@ -284,6 +305,7 @@ export default function ProductPoolEditor() {
       link: product.link,
       timeframe: product.timeframe,
       category: product.category,
+      pricingTiers: product.pricingTiers || [],
     });
     setIsModalOpen(true);
   };
@@ -299,6 +321,8 @@ export default function ProductPoolEditor() {
     id: editingProduct ? editingProduct.id : Date.now(),
     votes: editingProduct?.votes ?? 0,
     featured: editingProduct?.featured ?? false,
+    pledges: editingProduct?.pledges ?? 0,
+    pricingTiers: formData.pricingTiers ?? [],
   };
 
   try {
@@ -321,6 +345,28 @@ export default function ProductPoolEditor() {
   } catch (err) {
     console.error("Save failed:", err);
   }
+};
+
+const handlePricingTierChange = (index: number, field: keyof PricingTier, value: number) => {
+  setFormData(prev => {
+    const tiers = prev.pricingTiers ? [...prev.pricingTiers] : [];
+    tiers[index] = { ...tiers[index], [field]: value };
+    return { ...prev, pricingTiers: tiers };
+  });
+};
+
+const addPricingTier = () => {
+  setFormData(prev => ({
+    ...prev,
+    pricingTiers: [...(prev.pricingTiers || []), { min: 1, max: 10, price: 0 }]
+  }));
+};
+
+const removePricingTier = (index: number) => {
+  setFormData(prev => ({
+    ...prev,
+    pricingTiers: (prev.pricingTiers || []).filter((_, i) => i !== index)
+  }));
 };
 
 return (
@@ -687,6 +733,53 @@ return (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
+                </div>
+
+                {/* Pricing Tiers Editor */}
+                <div>
+                  <label className="block text-gray-200 text-base font-semibold mb-3">Pricing Tiers</label>
+                  {(formData.pricingTiers || []).map((tier, idx) => (
+                    <div key={idx} className="flex gap-2 items-center mb-2">
+                      <Input
+                        type="number"
+                        value={tier.min}
+                        onChange={e => handlePricingTierChange(idx, "min", parseInt(e.target.value) || 0)}
+                        placeholder="Min"
+                        className="w-20"
+                      />
+                      <span className="text-gray-400">to</span>
+                      <Input
+                        type="number"
+                        value={tier.max}
+                        onChange={e => handlePricingTierChange(idx, "max", parseInt(e.target.value) || 0)}
+                        placeholder="Max"
+                        className="w-20"
+                      />
+                      <span className="text-gray-400">= $</span>
+                      <Input
+                        type="number"
+                        value={tier.price}
+                        onChange={e => handlePricingTierChange(idx, "price", parseFloat(e.target.value) || 0)}
+                        placeholder="Price"
+                        className="w-24"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removePricingTier(idx)}
+                        className="text-red-400 hover:text-red-600 ml-2"
+                        title="Remove tier"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={addPricingTier}
+                    className="mt-2 px-3 py-1 bg-yellow-400 text-black rounded hover:bg-yellow-300 font-semibold"
+                  >
+                    + Add Tier
+                  </button>
                 </div>
               </div>
               

@@ -1,5 +1,21 @@
-[
-  { "userId": 1, "productId": 101 },
-  { "userId": 2, "productId": 102 },
-  { "userId": 1, "productId": 103 }
-]
+{
+  "votingEnabled": true,
+  "doubleVoteWeek": false,
+  "tripleVoteWeek": false,
+  "topWinners": 3,
+  "tierLimits": {
+    "Initiate": 1,
+    "Guild": 2,
+    "MIGISTUS": 4
+  },
+  "tierMultipliers": {
+    "Initiate": 1,
+    "Guild": 2,
+    "MIGISTUS": 4
+  },
+  "perks": {
+    "Initiate": ["Standard voting", "Basic chat"],
+    "Guild": ["2x voting", "Faster chat", "Cashback"],
+    "MIGISTUS": ["4x voting", "No chat cooldown", "Elite badge", "Priority support"]
+  }
+}

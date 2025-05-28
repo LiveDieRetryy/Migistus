@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Users, TrendingDown, Star, Share2, Heart, MessageCircle, Crown, Zap, Shield, ArrowLeft, Eye } from 'lucide-react';
 
-const ProductPage = () => {
-  const [pledgeCount, setPledgeCount] = useState(147);
+const ProductPage = ({ productId }) => {
+  const [pledgeCount, setPledgeCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(43200); // seconds
   const [hasPledged, setHasPledged] = useState(false);
-  const [currentPrice, setCurrentPrice] = useState(24.99);
+  const [currentPrice, setCurrentPrice] = useState(0);
   const [showPledgeModal, setShowPledgeModal] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [chatMessage, setChatMessage] = useState('');
@@ -13,6 +13,7 @@ const ProductPage = () => {
   const [hoveredProfile, setHoveredProfile] = useState(null);
   const [hoverTimeout, setHoverTimeout] = useState(null);
   const [showProfanityWarning, setShowProfanityWarning] = useState(false);
+  const [product, setProduct] = useState(null);
 
   // Profanity filter - expandable list
   const profanityList = [
@@ -314,11 +315,42 @@ const ProductPage = () => {
     setCurrentPrice(currentTier.price);
   }, [pledgeCount]);
 
-  const handlePledge = () => {
-    if (!hasPledged) {
-      setPledgeCount(prev => prev + 1);
+  // Fetch product data from backend
+  useEffect(() => {
+    if (!productId) return;
+    fetch("/api/products")
+      .then(res => res.json())
+      .then(data => {
+        const match = (data.products || data).find(
+          (p) => p.name.toLowerCase().replace(/\s+/g, "-") === productId
+        );
+        if (match) {
+          setProduct(match);
+          setPledgeCount(match.pledges || 0);
+          setCurrentPrice(getCurrentTierPrice(match.pricingTiers, match.pledges || 0));
+        }
+      });
+  }, [productId]);
+
+  // Helper to get current price from pricingTiers
+  const getCurrentTierPrice = (tiers, pledges) => {
+    if (!tiers) return 0;
+    const tier = tiers.find(t => pledges >= t.min && pledges <= t.max);
+    return tier ? tier.price : tiers[0].price;
+  };
+
+  // Handle pledge (update backend)
+  const handlePledge = async () => {
+    if (!product || hasPledged) return;
+    const res = await fetch("/api/products", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...product, pledges: pledgeCount + 1 }),
+    });
+    if (res.ok) {
+      setPledgeCount(pledgeCount + 1);
+      setCurrentPrice(getCurrentTierPrice(product.pricingTiers, pledgeCount + 1));
       setHasPledged(true);
-      setShowPledgeModal(false);
     }
   };
 

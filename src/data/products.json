@@ -4,13 +4,15 @@
     "name": "Headset",
     "goal": 100,
     "votes": 73,
-    "featured": true
+    "featured": true,
+    "pledges": 0
   },
   {
     "id": 2,
     "name": "Mouse",
     "goal": 75,
     "votes": 42,
-    "featured": false
+    "featured": false,
+    "pledges": 0
   }
 ]

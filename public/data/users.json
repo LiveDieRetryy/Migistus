@@ -2,11 +2,15 @@
   {
     "id": 1,
     "email": "knight@realm.com",
-    "tier": "Guild"
+    "tier": "Guild",
+    "wishlist": [],
+    "referrals": []
   },
   {
     "id": 2,
     "email": "queen@realm.com",
-    "tier": "MIGISTUS"
+    "tier": "MIGISTUS",
+    "wishlist": [],
+    "referrals": []
   }
 ]
