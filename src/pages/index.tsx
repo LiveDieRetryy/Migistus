@@ -19,7 +19,7 @@ export default function HomePage() {
           <h1 className="text-4xl font-bold text-white mb-2">Warehouse-15 LED Headlamp</h1>
           <p className="text-yellow-400 text-md">Current Price: $18</p>
           <p className="text-sm text-gray-400 mb-4">Ends in: 2h 9m</p>
-          <Link href={`/products/warehouse-15-led-headlamp`}>
+          <Link href={`/drops/warehouse-15-led-headlamp`}>
             <div className="relative w-48 h-48 mx-auto mb-4 cursor-pointer">
               <Image 
                 src="/images/headlamp.png" 

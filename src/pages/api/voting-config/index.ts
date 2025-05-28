@@ -14,7 +14,13 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       res.status(200).json(data);
     } else if (req.method === "PUT" || req.method === "POST") {
       const updates = req.body;
-      data = { ...data, ...updates };
+      // Deep merge for tierLimits and tierMultipliers
+      data = {
+        ...data,
+        ...updates,
+        tierLimits: { ...(data.tierLimits || {}), ...(updates.tierLimits || {}) },
+        tierMultipliers: { ...(data.tierMultipliers || {}), ...(updates.tierMultipliers || {}) }
+      };
       fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
       res.status(200).json({ success: true });
     } else {

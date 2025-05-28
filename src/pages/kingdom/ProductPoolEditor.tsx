@@ -34,6 +34,7 @@ type Product = {
   featured?: boolean;
   pledges: number;
   pricingTiers?: PricingTier[];
+  slug?: string;
 };
 
 type ProductFormData = {
@@ -194,12 +195,8 @@ export default function ProductPoolEditor() {
         console.error("Failed to fetch products:", err);
       }
     };
-    
-    // Only fetch if we want to replace the sample data with real API data
-    // Comment out this condition to keep the sample products
-    // if (products.length === 8) {
-    //   fetchProducts();
-    // }
+
+    fetchProducts(); // Always fetch on mount
   }, []);
 
   // Drag and drop handlers
@@ -323,6 +320,7 @@ export default function ProductPoolEditor() {
     featured: editingProduct?.featured ?? false,
     pledges: editingProduct?.pledges ?? 0,
     pricingTiers: formData.pricingTiers ?? [],
+    slug: slugify(formData.name), // <-- add slug here
   };
 
   try {
@@ -455,7 +453,7 @@ return (
             {filteredProducts.map((product) => (
               <Link
                 key={product.id}
-                href={`/products/${slugify(product.name)}`}
+                href={`/products/${product.slug ? product.slug : slugify(product.name)}`}
                 className="block"
                 passHref
               >

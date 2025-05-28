@@ -44,7 +44,9 @@ export default function ProductPage() {
     setPledges(match?.pledges || 0);
     // Parse timeframe as days, convert to seconds
     if (match?.timeframe) {
-      const days = parseInt(match.timeframe);
+      // Extract number from string like "30 days"
+      const daysMatch = match.timeframe.match(/(\d+)/);
+      const days = daysMatch ? parseInt(daysMatch[1]) : 30;
       setTimeLeft(days * 24 * 60 * 60);
     }
     setLoading(false);

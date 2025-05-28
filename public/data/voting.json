@@ -12,10 +12,5 @@
     "Initiate": 1,
     "Guild": 2,
     "MIGISTUS": 4
-  },
-  "perks": {
-    "Initiate": ["Standard voting", "Basic chat"],
-    "Guild": ["2x voting", "Faster chat", "Cashback"],
-    "MIGISTUS": ["4x voting", "No chat cooldown", "Elite badge", "Priority support"]
   }
 }

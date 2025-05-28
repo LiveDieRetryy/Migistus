@@ -5,8 +5,13 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 const filePath = path.resolve("public/data/refunds.json");
 
+function ensureFile() {
+  if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, "[]");
+}
+
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    ensureFile();
     const json = fs.readFileSync(filePath, "utf-8");
     let data = JSON.parse(json);
 

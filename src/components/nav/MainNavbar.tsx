@@ -1,16 +1,20 @@
 // components/nav/MainNavbar.tsx
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 const navItems = [
-  { name: "Store", href: "/products" },
-  { name: "Staff Picks", href: "/staff-picks" },
-  { name: "Live Drops", href: "/live-drops" },
+  { name: "Home", href: "/" },
+  { name: "Drops", href: "/drops" },
   { name: "Vote", href: "/voting" },
-  { name: "Community", href: "/chat" }
+  { name: "Kingdom", href: "/kingdom" }
 ];
 
 export default function MainNavbar() {
+  const router = useRouter();
+  
+  const isActive = (path: string) => router.pathname === path;
+
   return (
     <nav className="w-full px-12 py-6 bg-zinc-950 border-b border-yellow-500 shadow-md">
       <div className="max-w-8xl mx-auto flex items-center justify-between relative">
@@ -40,7 +44,11 @@ export default function MainNavbar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="relative hover:text-yellow-400 transition-colors duration-200 whitespace-nowrap"
+                className={`relative hover:text-yellow-400 transition-colors duration-200 whitespace-nowrap ${
+                  isActive(item.href)
+                    ? "text-yellow-400 border-b-2 border-yellow-400"
+                    : "text-gray-300"
+                }`}
                 style={{
                   marginRight: index < navItems.length - 1 ? '32px' : '0',
                   paddingLeft: '8px',

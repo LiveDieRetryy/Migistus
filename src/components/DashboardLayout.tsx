@@ -1,17 +1,60 @@
 import { ReactNode } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+type DashboardLayoutProps = {
+  children: ReactNode;
+};
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const router = useRouter();
+
+  const isActive = (path: string) => router.pathname.startsWith(path);
+
   return (
-    <div className="bg-zinc-900 min-h-screen text-white font-sans px-8 py-6">
-      <header className="text-[#FFD700] text-2xl font-bold mb-8 font-[Cinzel]">
-        MIGISTUS Admin
-      </header>
-
-      <main>{children}</main>
-
-      <footer className="mt-16 text-sm text-zinc-500 text-center">
-        © 2025 MIGISTUS · The King’s Domain is sovereign software.
-      </footer>
+    <div className="min-h-screen bg-zinc-950">
+      <nav className="fixed w-64 h-screen bg-zinc-900 border-r border-yellow-500/20 p-6">
+        <div className="mb-8">
+          <Link href="/">
+            <span className="text-2xl font-bold text-yellow-400">🏰 Kingdom</span>
+          </Link>
+        </div>
+        <div className="space-y-2">
+          <Link
+            href="/kingdom"
+            className={`block px-4 py-2 rounded-lg ${
+              isActive("/kingdom") && !router.pathname.includes("/kingdom/")
+                ? "bg-yellow-400 text-black"
+                : "text-gray-300 hover:bg-yellow-400/10"
+            }`}
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/kingdom/voting-config"
+            className={`block px-4 py-2 rounded-lg ${
+              isActive("/kingdom/voting-config")
+                ? "bg-yellow-400 text-black"
+                : "text-gray-300 hover:bg-yellow-400/10"
+            }`}
+          >
+            Voting Config
+          </Link>
+          <Link
+            href="/kingdom/product-pool"
+            className={`block px-4 py-2 rounded-lg ${
+              isActive("/kingdom/product-pool")
+                ? "bg-yellow-400 text-black"
+                : "text-gray-300 hover:bg-yellow-400/10"
+            }`}
+          >
+            Product Pool
+          </Link>
+        </div>
+      </nav>
+      <div className="pl-64">
+        <main className="p-8">{children}</main>
+      </div>
     </div>
   );
 }

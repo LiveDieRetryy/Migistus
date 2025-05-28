@@ -1,10 +1,11 @@
-import { readFileSync } from "fs";
+import { readFileSync, existsSync, writeFileSync } from "fs";
 import path from "path";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const filePath = path.join(process.cwd(), "public", "data", "users.json");
+    if (!existsSync(filePath)) writeFileSync(filePath, "[]");
     const jsonData = readFileSync(filePath, "utf-8");
     const data = JSON.parse(jsonData);
 

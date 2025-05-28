@@ -4,7 +4,12 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 const filePath = path.resolve("public/data/votes.json");
 
+function ensureFile() {
+  if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, "[]");
+}
+
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  ensureFile();
   if (req.method === "GET") {
     try {
       const votes = JSON.parse(fs.readFileSync(filePath, "utf-8"));

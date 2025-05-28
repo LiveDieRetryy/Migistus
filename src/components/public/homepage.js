@@ -3,7 +3,6 @@ import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 import MainNavbar from "@/components/nav/MainNavbar";
-import { useState, useEffect } from "react";
 import { Clock, Users, TrendingDown, Star, Crown, Zap } from "lucide-react";
 
 export default function HomePage() {
@@ -50,12 +49,12 @@ export default function HomePage() {
 
       <MainNavbar />
 
-      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white font-sans">
+      <div className="min-h-screen bg-gradient-to-b from-black to-black text-white font-sans">
         
         {/* Enhanced Trending Drop Section */}
         <section className="relative px-6 py-16 text-center overflow-hidden">
           {/* Background Effects */}
-          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 via-transparent to-yellow-500/5"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 to-yellow-500/5"></div>
           <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-10 right-10 w-24 h-24 bg-yellow-500/10 rounded-full blur-2xl"></div>
           
@@ -149,7 +148,7 @@ export default function HomePage() {
         </section>
 
         {/* Enhanced Coming Soon Section */}
-        <section className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 py-16 border-y border-gray-700">
+        <section className="bg-gradient-to-r from-gray-900 to-gray-900 py-16 border-y border-gray-700">
           <div className="text-center">
             <div className="inline-flex items-center bg-blue-500/20 text-blue-300 px-4 py-2 rounded-full text-sm font-medium mb-4 border border-blue-500/30">
               <Clock className="w-4 h-4 mr-2" />

@@ -56,4 +56,9 @@ module.exports = {
     }
   },
   plugins: [],
+  safelist: [
+    'via-gray-800',
+    'via-gray-900',
+    // add more if needed
+  ],
 }

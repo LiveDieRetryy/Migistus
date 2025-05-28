@@ -1,6 +1,6 @@
 import Head from "next/head";
 import DashboardLayout from "@/components/DashboardLayout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function ChatModerationPage() {
   const [profanityList, setProfanityList] = useState([
@@ -17,6 +17,19 @@ export default function ChatModerationPage() {
     enableUrlBlocking: true,
     autoModeration: true
   });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  // Load moderation settings from backend
+  useEffect(() => {
+    fetch("/api/moderation")
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data.profanityList)) setProfanityList(data.profanityList);
+        if (typeof data.filterSettings === "object") setFilterSettings(data.filterSettings);
+      })
+      .catch(() => {});
+  }, []);
 
   const addProfanityWord = () => {
     if (newWord.trim() && !profanityList.includes(newWord.toLowerCase())) {
@@ -27,6 +40,18 @@ export default function ChatModerationPage() {
 
   const removeProfanityWord = (word) => {
     setProfanityList(profanityList.filter(w => w !== word));
+  };
+
+  const saveModerationSettings = async () => {
+    setSaving(true);
+    await fetch("/api/moderation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ profanityList, filterSettings }),
+    });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   };
 
   const recentChatActivity = [
@@ -71,9 +96,14 @@ export default function ChatModerationPage() {
               ))}
             </div>
 
-            <button className="w-full mt-6 bg-yellow-500 text-black px-4 py-2 rounded font-semibold hover:bg-yellow-400 transition">
-              Save Settings
+            <button
+              className="w-full mt-6 bg-yellow-500 text-black px-4 py-2 rounded font-semibold hover:bg-yellow-400 transition"
+              onClick={saveModerationSettings}
+              disabled={saving}
+            >
+              {saving ? "Saving..." : "Save Settings"}
             </button>
+            {saved && <div className="text-green-400 mt-2 text-sm">Saved!</div>}
           </div>
 
           {/* Profanity Word List */}

@@ -6,6 +6,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 const filePath = path.resolve("public/data/products.json");
 
 function readData() {
+  if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, "[]");
   const json = fs.readFileSync(filePath, "utf-8");
   return JSON.parse(json);
 }

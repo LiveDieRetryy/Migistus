@@ -1,8 +1,4 @@
 {
-  "bannedUsers": [],
-  "profanityList": [
-    "damn", "hell", "crap", "shit", "fuck", "bitch", "ass", "bastard", "piss",
-    "scam", "fake", "spam", "bot", "phishing", "virus", "malware",
-    "better deal", "cheaper elsewhere", "dont buy", "don't buy", "overpriced", "ripoff", "rip off"
-  ]
+  "profanityList": [],
+  "filterSettings": {}
 }

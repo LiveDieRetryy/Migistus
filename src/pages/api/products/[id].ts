@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-const DATA_PATH = path.resolve("public/data/products.json");
+const DATA_PATH = path.resolve(process.cwd(), "public/data/products.json");
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;

@@ -1,6 +1,6 @@
 import Head from "next/head";
 import MainNavbar from "@/components/nav/MainNavbar";
-import VotingBoardComponent from "@/components/voting/VotingBoard";
+import VotingBoard from "@/components/voting/VotingBoard";
 
 export default function VotingPage() {
   return (
@@ -11,7 +11,7 @@ export default function VotingPage() {
       </Head>
 
       <MainNavbar />
-      <VotingBoardComponent />
+      <VotingBoard />
     </>
   );
 }

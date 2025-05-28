@@ -5,12 +5,21 @@ import fs from "fs";
 import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
 
+function safeRead(file: string) {
+  try {
+    if (!fs.existsSync(file)) return [];
+    return JSON.parse(fs.readFileSync(file, "utf-8"));
+  } catch {
+    return [];
+  }
+}
+
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const users = JSON.parse(fs.readFileSync(path.resolve("public/data/users.json"), "utf-8"));
-    const votes = JSON.parse(fs.readFileSync(path.resolve("public/data/votes.json"), "utf-8"));
-    const refunds = JSON.parse(fs.readFileSync(path.resolve("public/data/refunds.json"), "utf-8"));
-    const products = JSON.parse(fs.readFileSync(path.resolve("public/data/products.json"), "utf-8"));
+    const users = safeRead(path.resolve("public/data/users.json"));
+    const votes = safeRead(path.resolve("public/data/votes.json"));
+    const refunds = safeRead(path.resolve("public/data/refunds.json"));
+    const products = safeRead(path.resolve("public/data/products.json"));
 
     res.status(200).json({
       userCount: Array.isArray(users) ? users.length : 0,

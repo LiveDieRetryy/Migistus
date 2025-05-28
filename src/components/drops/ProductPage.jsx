@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Users, TrendingDown, Star, Share2, Heart, MessageCircle, Crown, Zap, Shield, ArrowLeft, Eye } from 'lucide-react';
+import { containsProfanity, filterProfanity } from "@/components/chat/ProfanityFilter";
+
+function isInappropriateContent(text) {
+  if (!text) return false;
+  if (containsProfanity(text)) return true;
+  if (text.length > 200) return true;
+  if (/([A-Z]{6,})/.test(text)) return true;
+  if (/(\w)\1{4,}/.test(text)) return true;
+  if (/http(s)?:\/\//.test(text)) return true;
+  if (/buy now|free|discount|deal/i.test(text)) return true;
+  return false;
+}
 
 const ProductPage = ({ productId }) => {
   const [pledgeCount, setPledgeCount] = useState(0);
@@ -14,149 +26,16 @@ const ProductPage = ({ productId }) => {
   const [hoverTimeout, setHoverTimeout] = useState(null);
   const [showProfanityWarning, setShowProfanityWarning] = useState(false);
   const [product, setProduct] = useState(null);
+  const [communityMessages, setCommunityMessages] = useState([]);
 
-  // Profanity filter - expandable list
-  const profanityList = [
-    // Basic profanity (partial list for demo - real implementation would be more comprehensive)
-    'damn', 'hell', 'crap', 'shit', 'fuck', 'bitch', 'ass', 'bastard', 'piss',
-    // Scam/spam terms
-    'scam', 'fake', 'spam', 'bot', 'phishing', 'virus', 'malware',
-    // Inappropriate sales terms
-    'better deal', 'cheaper elsewhere', 'dont buy', "don't buy", 'overpriced', 'ripoff', 'rip off'
-  ];
-
-  // Check for profanity/inappropriate content
-  const containsProfanity = (text) => {
-    const lowerText = text.toLowerCase();
-    return profanityList.some(word => {
-      // Check for exact word matches (with word boundaries)
-      const regex = new RegExp(`\\b${word}\\b`, 'i');
-      return regex.test(lowerText);
-    });
-  };
-
-  // Filter profanity from text
-  const filterProfanity = (text) => {
-    let filteredText = text;
-    profanityList.forEach(word => {
-      const regex = new RegExp(`\\b${word}\\b`, 'gi');
-      filteredText = filteredText.replace(regex, '*'.repeat(word.length));
-    });
-    return filteredText;
-  };
-
-  // Advanced content filtering
-  const isInappropriateContent = (text) => {
-    const lowerText = text.toLowerCase();
-    
-    // Check for spam patterns (repeated characters)
-    if (/(.)\1{4,}/.test(text)) return true;
-    
-    // Check for excessive caps
-    if (text.length > 10 && (text.match(/[A-Z]/g) || []).length / text.length > 0.7) return true;
-    
-    // Check for promotional content
-    const promoTerms = ['buy now', 'click here', 'limited time', 'act fast', 'www.', 'http', '.com', '.net'];
-    if (promoTerms.some(term => lowerText.includes(term))) return true;
-    
-    return false;
-  };
-  const [communityMessages, setCommunityMessages] = useState([
-    { 
-      id: 1, 
-      user: "TechGuru92", 
-      tier: "MIGISTUS", 
-      avatar: "🎧", 
-      message: "These are incredible! Already pre-ordered 2 pairs.", 
-      time: "2m ago", 
-      verified: true, 
-      likes: 5,
-      profile: {
-        banner: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        title: "Audio Engineer",
-        joinDate: "March 2024",
-        totalPledges: 47,
-        totalSaved: "$2,340"
-      }
-    },
-    { 
-      id: 2, 
-      user: "AudioPhile", 
-      tier: "Guild", 
-      avatar: "🎵", 
-      message: "Perfect for my daily commute. Love the noise cancellation.", 
-      time: "5m ago", 
-      verified: false, 
-      likes: 2,
-      profile: {
-        banner: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-        title: "Music Producer",
-        joinDate: "January 2025",
-        totalPledges: 23,
-        totalSaved: "$890"
-      }
-    },
-    { 
-      id: 3, 
-      user: "WorkFromHome", 
-      tier: "Initiate", 
-      avatar: "💼", 
-      message: "Finally, earbuds that last all day for video calls!", 
-      time: "8m ago", 
-      verified: false, 
-      likes: 1,
-      profile: {
-        banner: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
-        title: "Remote Worker",
-        joinDate: "February 2025",
-        totalPledges: 8,
-        totalSaved: "$156"
-      }
-    },
-    { 
-      id: 4, 
-      user: "MusicLover", 
-      tier: "Guild", 
-      avatar: "🎶", 
-      message: "Sound quality is amazing for this price point.", 
-      time: "12m ago", 
-      verified: true, 
-      likes: 3,
-      profile: {
-        banner: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
-        title: "Audiophile",
-        joinDate: "November 2024",
-        totalPledges: 31,
-        totalSaved: "$1,245"
-      }
-    }
-  ]);
-
-  // Pricing tiers
-  const pricingTiers = [
+  // Default pricing tiers
+  const defaultPricingTiers = [
     { min: 1, max: 9, price: 29.99, label: "1-9 units", tier: "Initiate" },
     { min: 10, max: 49, price: 24.99, label: "10-49 units", tier: "Gathering" },
     { min: 50, max: 99, price: 19.99, label: "50-99 units", tier: "Coalition" },
     { min: 100, max: 199, price: 16.99, label: "100-199 units", tier: "Legion" },
     { min: 200, max: 999, price: 12.99, label: "200+ units", tier: "Empire" }
   ];
-
-  // Mock product data
-  const product = {
-    name: "Premium Wireless Earbuds Pro",
-    images: [
-      "/api/placeholder/600/600",
-      "/api/placeholder/600/600", 
-      "/api/placeholder/600/600",
-      "/api/placeholder/600/600"
-    ],
-    rating: 4.7,
-    reviews: 2341,
-    originalPrice: 89.99,
-    moq: 200,
-    description: "High-quality wireless earbuds with active noise cancellation, 30-hour battery life, and premium sound quality. Perfect for audiophiles and professionals.",
-    category: "Electronics"
-  };
 
   // Community messages
   const currentUser = {
@@ -206,91 +85,82 @@ const ProductPage = ({ productId }) => {
     }
   };
 
-  // Handle chat message posting
-  const handleSendMessage = () => {
-    if (chatMessage.trim() && hasPledged) {
-      const trimmedMessage = chatMessage.trim();
-      
-      // Check for inappropriate content
-      if (isInappropriateContent(trimmedMessage)) {
-        setShowProfanityWarning(true);
-        setTimeout(() => setShowProfanityWarning(false), 4000);
-        return;
-      }
-      
-      // Check for profanity and filter if needed
-      let finalMessage = trimmedMessage;
-      if (containsProfanity(trimmedMessage)) {
-        finalMessage = filterProfanity(trimmedMessage);
-        setShowProfanityWarning(true);
-        setTimeout(() => setShowProfanityWarning(false), 3000);
-      }
-      
-      const newMessage = {
-        id: Date.now(),
-        user: currentUser.user,
-        tier: currentUser.tier,
-        avatar: currentUser.avatar,
-        message: finalMessage,
-        time: "now",
-        verified: currentUser.verified,
-        likes: 0,
-        profile: currentUser.profile,
-        filtered: finalMessage !== trimmedMessage
-      };
-      
-      setCommunityMessages(prev => [newMessage, ...prev]);
-      setChatMessage('');
-      setIsTyping(false);
-    }
-  };
+  // Fetch product data from backend
+  useEffect(() => {
+    if (!productId) return;
+    fetch("/api/products")
+      .then(res => res.json())
+      .then(data => {
+        const match = (data.products || data).find(
+          (p) => p.name.toLowerCase().replace(/\s+/g, "-") === productId
+        );
+        if (match) {
+          setProduct(match);
+          setPledgeCount(match.pledges || 0);
+          setCurrentPrice(getCurrentTierPrice(match.pricingTiers || defaultPricingTiers, match.pledges || 0));
+        }
+      })
+      .catch(err => {
+        console.error("Error fetching product:", err);
+        // Set default product if fetch fails
+        setProduct({
+          name: "Product",
+          description: "Product description",
+          category: "Category",
+          image: "/api/placeholder/600/600",
+          originalPrice: 39.99,
+          pricingTiers: defaultPricingTiers,
+          pledges: 0,
+          goal: 100,
+          rating: 0,
+          reviews: 0
+        });
+      });
+  }, [productId]);
 
-  // Handle emoji reactions
-  const handleEmojiReaction = (emoji) => {
-    if (hasPledged) {
-      const reactionMessage = {
-        id: Date.now(),
-        user: currentUser.user,
-        tier: currentUser.tier,
-        avatar: currentUser.avatar,
-        message: emoji,
-        time: "now",
-        verified: currentUser.verified,
-        likes: 0,
-        isReaction: true,
-        profile: currentUser.profile
-      };
-      
-      setCommunityMessages(prev => [reactionMessage, ...prev]);
-    }
-  };
+  // Fetch chat messages from backend (with polling)
+  useEffect(() => {
+    if (!productId) return;
+    let isMounted = true;
+    const fetchMessages = () => {
+      fetch(`/api/chat/${productId}`)
+        .then(res => res.json())
+        .then(msgs => { 
+          if (isMounted && Array.isArray(msgs)) {
+            // Ensure each message has an id
+            const messagesWithIds = msgs.map((msg, index) => ({
+              ...msg,
+              id: msg.id || `msg-${Date.now()}-${index}`
+            }));
+            setCommunityMessages(messagesWithIds);
+          }
+        })
+        .catch(() => { 
+          if (isMounted) setCommunityMessages([]); 
+        });
+    };
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 5000); // Poll every 5s
+    return () => { 
+      isMounted = false; 
+      clearInterval(interval); 
+    };
+  }, [productId]);
 
-  // Handle liking messages
-  const handleLikeMessage = (messageId) => {
-    setCommunityMessages(prev => 
-      prev.map(msg => 
-        msg.id === messageId 
-          ? { ...msg, likes: msg.likes + 1 }
-          : msg
-      )
-    );
-  };
-
-  // Handle typing indicator
-  const handleTyping = (value) => {
-    setChatMessage(value);
-    setIsTyping(value.length > 0);
-  };
+  // Get effective pricing tiers
+  const effectivePricingTiers = product?.pricingTiers && product.pricingTiers.length > 0
+    ? product.pricingTiers
+    : defaultPricingTiers;
 
   // Calculate current price based on pledge count
   const getCurrentTier = () => {
-    return pricingTiers.find(tier => pledgeCount >= tier.min && pledgeCount <= tier.max) || pricingTiers[0];
+    return effectivePricingTiers.find(tier => pledgeCount >= tier.min && pledgeCount <= tier.max) || effectivePricingTiers[0];
   };
 
   const getNextTier = () => {
     const currentTier = getCurrentTier();
-    const currentIndex = pricingTiers.indexOf(currentTier);
-    return currentIndex < pricingTiers.length - 1 ? pricingTiers[currentIndex + 1] : null;
+    const currentIndex = effectivePricingTiers.indexOf(currentTier);
+    return currentIndex < effectivePricingTiers.length - 1 ? effectivePricingTiers[currentIndex + 1] : null;
   };
 
   // Format time remaining
@@ -313,28 +183,11 @@ const ProductPage = ({ productId }) => {
   useEffect(() => {
     const currentTier = getCurrentTier();
     setCurrentPrice(currentTier.price);
-  }, [pledgeCount]);
-
-  // Fetch product data from backend
-  useEffect(() => {
-    if (!productId) return;
-    fetch("/api/products")
-      .then(res => res.json())
-      .then(data => {
-        const match = (data.products || data).find(
-          (p) => p.name.toLowerCase().replace(/\s+/g, "-") === productId
-        );
-        if (match) {
-          setProduct(match);
-          setPledgeCount(match.pledges || 0);
-          setCurrentPrice(getCurrentTierPrice(match.pricingTiers, match.pledges || 0));
-        }
-      });
-  }, [productId]);
+  }, [pledgeCount, product]);
 
   // Helper to get current price from pricingTiers
   const getCurrentTierPrice = (tiers, pledges) => {
-    if (!tiers) return 0;
+    if (!tiers || !Array.isArray(tiers) || tiers.length === 0) return 29.99; // Default price
     const tier = tiers.find(t => pledges >= t.min && pledges <= t.max);
     return tier ? tier.price : tiers[0].price;
   };
@@ -342,19 +195,104 @@ const ProductPage = ({ productId }) => {
   // Handle pledge (update backend)
   const handlePledge = async () => {
     if (!product || hasPledged) return;
-    const res = await fetch("/api/products", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...product, pledges: pledgeCount + 1 }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch("/api/products", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...product, pledges: pledgeCount + 1 }),
+      });
+      if (res.ok) {
+        setPledgeCount(pledgeCount + 1);
+        setCurrentPrice(getCurrentTierPrice(effectivePricingTiers, pledgeCount + 1));
+        setHasPledged(true);
+        setShowPledgeModal(false);
+      }
+    } catch (err) {
+      console.error("Error updating pledge:", err);
+      // Still update local state even if backend fails
       setPledgeCount(pledgeCount + 1);
-      setCurrentPrice(getCurrentTierPrice(product.pricingTiers, pledgeCount + 1));
       setHasPledged(true);
+      setShowPledgeModal(false);
     }
   };
 
-  const progressPercentage = Math.min((pledgeCount / product.moq) * 100, 100);
+  // Post chat message to backend
+  const handleSendMessage = async () => {
+    if (chatMessage.trim() && hasPledged) {
+      const trimmedMessage = chatMessage.trim();
+      // Only do local inappropriate content check (spam, caps, promo)
+      if (isInappropriateContent(trimmedMessage)) {
+        setShowProfanityWarning(true);
+        setTimeout(() => setShowProfanityWarning(false), 4000);
+        return;
+      }
+      const newMessage = {
+        id: `msg-${Date.now()}`,
+        user: currentUser.user,
+        tier: currentUser.tier,
+        avatar: currentUser.avatar,
+        message: trimmedMessage,
+        time: "now",
+        verified: currentUser.verified,
+        likes: 0,
+        profile: currentUser.profile
+      };
+      
+      // Optimistically add the message
+      setCommunityMessages(prev => [newMessage, ...prev]);
+      setChatMessage('');
+      setIsTyping(false);
+      
+      try {
+        await fetch(`/api/chat/${productId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newMessage)
+        });
+      } catch (err) {
+        console.error("Error sending message:", err);
+      }
+    }
+  };
+
+  // Handle emoji reactions
+  const handleEmojiReaction = (emoji) => {
+    if (hasPledged) {
+      const reactionMessage = {
+        id: `reaction-${Date.now()}`,
+        user: currentUser.user,
+        tier: currentUser.tier,
+        avatar: currentUser.avatar,
+        message: emoji,
+        time: "now",
+        verified: currentUser.verified,
+        likes: 0,
+        isReaction: true,
+        profile: currentUser.profile
+      };
+      
+      setCommunityMessages(prev => [reactionMessage, ...prev]);
+    }
+  };
+
+  // Handle liking messages
+  const handleLikeMessage = (messageId) => {
+    setCommunityMessages(prev => 
+      prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, likes: (msg.likes || 0) + 1 }
+          : msg
+      )
+    );
+  };
+
+  // Handle typing indicator
+  const handleTyping = (value) => {
+    setChatMessage(value);
+    setIsTyping(value.length > 0);
+  };
+
+  const progressPercentage = product && product.goal ? Math.min((pledgeCount / product.goal) * 100, 100) : 0;
   const currentTier = getCurrentTier();
   const nextTier = getNextTier();
 
@@ -366,8 +304,33 @@ const ProductPage = ({ productId }) => {
     }
   };
 
+  // Defensive fallback for productImages
+  const productImages = product?.image ? [product.image] : ["/api/placeholder/600/600"];
+  const safeActiveImageIndex = Math.min(activeImageIndex, productImages.length - 1);
+
+  // Add early return for loading state
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-white">
+        <span className="text-lg">Loading product...</span>
+      </div>
+    );
+  }
+
+  // Safe values with fallbacks
+  const safeProduct = {
+    name: product.name || "Product",
+    description: product.description || "No description available.",
+    category: product.category || "Category",
+    originalPrice: product.originalPrice || 39.99,
+    rating: product.rating || 0,
+    reviews: product.reviews || 0,
+    goal: product.goal || 100,
+    ...product
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white">
+    <div className="min-h-screen bg-gradient-to-b from-black to-black text-white">
       {/* Navigation */}
       <nav className="bg-black/80 backdrop-blur-sm border-b border-yellow-500/20">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -399,8 +362,8 @@ const ProductPage = ({ productId }) => {
           <div className="space-y-4">
             <div className="relative aspect-square bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden border border-gray-700">
               <img 
-                src={product.images[activeImageIndex]} 
-                alt={product.name}
+                src={productImages[safeActiveImageIndex]} 
+                alt={safeProduct.name}
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-4 right-4">
@@ -413,7 +376,7 @@ const ProductPage = ({ productId }) => {
               </div>
             </div>
             <div className="flex space-x-3">
-              {product.images.map((image, index) => (
+              {productImages.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveImageIndex(index)}
@@ -434,18 +397,20 @@ const ProductPage = ({ productId }) => {
             {/* Title and Rating */}
             <div>
               <div className="inline-block bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm font-medium mb-4 border border-blue-500/30">
-                {product.category}
+                {safeProduct.category}
               </div>
-              <h1 className="text-4xl font-bold text-white mb-4 leading-tight">{product.name}</h1>
+              <h1 className="text-4xl font-bold text-white mb-4 leading-tight">{safeProduct.name}</h1>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <Star 
                       key={i} 
-                      className={`w-5 h-5 ${i < Math.floor(product.rating) ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
+                      className={`w-5 h-5 ${i < Math.floor(safeProduct.rating) ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
                     />
                   ))}
-                  <span className="ml-2 text-gray-300">{product.rating} ({product.reviews} reviews)</span>
+                  <span className="ml-2 text-gray-300">
+                    {safeProduct.rating > 0 ? `${safeProduct.rating} (${safeProduct.reviews} reviews)` : "No reviews yet"}
+                  </span>
                 </div>
                 <div className="h-4 w-px bg-gray-600"></div>
                 <div className="flex items-center space-x-1 text-yellow-400">
@@ -456,8 +421,8 @@ const ProductPage = ({ productId }) => {
             </div>
 
             {/* Drop Status */}
-            <div className="relative bg-gradient-to-r from-gray-800/80 via-gray-800/80 to-gray-800/80 rounded-2xl p-8 border border-gray-700 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 via-transparent to-yellow-500/5 rounded-2xl"></div>
+            <div className="relative bg-gradient-to-r from-gray-800/80 to-gray-800/80 rounded-2xl p-8 border border-gray-700 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 to-yellow-500/5 rounded-2xl"></div>
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-3">
@@ -488,7 +453,7 @@ const ProductPage = ({ productId }) => {
                   </div>
                   <div className="text-right">
                     <span className="text-gray-300">Target</span>
-                    <div className="text-2xl font-bold text-white">{product.moq}</div>
+                    <div className="text-2xl font-bold text-white">{safeProduct.goal}</div>
                   </div>
                 </div>
                 
@@ -500,9 +465,9 @@ const ProductPage = ({ productId }) => {
                 </div>
                 
                 <div className="text-center">
-                  {product.moq - pledgeCount > 0 ? (
+                  {safeProduct.goal - pledgeCount > 0 ? (
                     <p className="text-yellow-300 font-medium">
-                      {product.moq - pledgeCount} more pledges needed to reach minimum order quantity
+                      {safeProduct.goal - pledgeCount} more pledges needed to reach minimum order quantity
                     </p>
                   ) : (
                     <p className="text-green-400 font-bold">
@@ -527,14 +492,14 @@ const ProductPage = ({ productId }) => {
                     </div>
                     <p className="text-gray-300 font-medium">Current price ({currentTier.label})</p>
                     <p className="text-sm text-gray-500">Tier: <span className="text-yellow-400 font-medium">{currentTier.tier}</span></p>
-                    <p className="text-sm text-gray-500 line-through">MSRP: ${product.originalPrice}</p>
+                    <p className="text-sm text-gray-500 line-through">MSRP: ${safeProduct.originalPrice.toFixed(2)}</p>
                   </div>
                   <div className="text-right">
                     <div className="text-3xl font-bold text-green-400 mb-1">
-                      {Math.round(((product.originalPrice - currentPrice) / product.originalPrice) * 100)}% OFF
+                      {Math.round(((safeProduct.originalPrice - currentPrice) / safeProduct.originalPrice) * 100)}% OFF
                     </div>
                     <p className="text-sm text-gray-400">You save</p>
-                    <p className="text-xl font-bold text-green-400">${(product.originalPrice - currentPrice).toFixed(2)}</p>
+                    <p className="text-xl font-bold text-green-400">${(safeProduct.originalPrice - currentPrice).toFixed(2)}</p>
                   </div>
                 </div>
 
@@ -600,7 +565,7 @@ const ProductPage = ({ productId }) => {
                 <span>Volume Pricing Tiers</span>
               </h3>
               <div className="space-y-3">
-                {pricingTiers.map((tier, index) => (
+                {effectivePricingTiers.map((tier, index) => (
                   <div 
                     key={index}
                     className={`flex justify-between items-center p-4 rounded-xl transition-all ${
@@ -611,9 +576,9 @@ const ProductPage = ({ productId }) => {
                   >
                     <div>
                       <span className={`font-bold ${tier === currentTier ? 'text-yellow-300' : 'text-gray-300'}`}>
-                        {tier.tier}
+                        {tier.tier || `Tier ${index + 1}`}
                       </span>
-                      <p className="text-sm text-gray-500">{tier.label}</p>
+                      <p className="text-sm text-gray-500">{tier.label || `${tier.min}-${tier.max} units`}</p>
                     </div>
                     <div className="text-right">
                       <span className={`text-xl font-bold ${tier === currentTier ? 'text-yellow-400' : 'text-gray-400'}`}>
@@ -643,7 +608,7 @@ const ProductPage = ({ productId }) => {
               </div>
               <span>Product Details</span>
             </h2>
-            <p className="text-gray-300 leading-relaxed text-lg mb-8">{product.description}</p>
+            <p className="text-gray-300 leading-relaxed text-lg mb-8">{safeProduct.description}</p>
             
             {/* Features */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -729,7 +694,7 @@ const ProductPage = ({ productId }) => {
                           className="flex items-center space-x-1 text-xs text-gray-500 hover:text-yellow-400 transition-colors"
                         >
                           <Heart className="w-3 h-3" />
-                          <span>{msg.likes}</span>
+                          <span>{msg.likes || 0}</span>
                         </button>
                         <button className="text-xs text-gray-500 hover:text-yellow-400 transition-colors">
                           Reply
@@ -762,7 +727,7 @@ const ProductPage = ({ productId }) => {
             </div>
 
             {/* Profile Hover Card */}
-            {hoveredProfile && (
+            {hoveredProfile && hoveredProfile.profile && (
               <div 
                 className="absolute z-50 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-gray-600 shadow-2xl p-4 w-72 transform -translate-x-1/2 left-1/2 bottom-full mb-2"
                 onMouseEnter={() => handleProfileCardHover(true)}
@@ -992,7 +957,7 @@ const ProductPage = ({ productId }) => {
               <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-gray-400">Product:</span>
-                  <span className="font-semibold text-white">{product.name}</span>
+                  <span className="font-semibold text-white">{safeProduct.name}</span>
                 </div>
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-gray-400">Current Price:</span>

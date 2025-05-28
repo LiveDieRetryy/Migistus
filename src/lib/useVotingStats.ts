@@ -5,13 +5,10 @@ export default function useVotingStats() {
   const [totalVotes, setTotalVotes] = useState(0);
 
   const fetchVotes = useCallback(() => {
-    fetch("/api/voting-config")
+    fetch("/api/stats")
       .then(res => res.json())
       .then(data => {
-        // If voting.json is an array of votes
-        if (Array.isArray(data)) {
-          setTotalVotes(data.length);
-        } else if (typeof data === "object" && typeof data.votesCast === "number") {
+        if (typeof data.votesCast === "number") {
           setTotalVotes(data.votesCast);
         } else {
           setTotalVotes(0);
