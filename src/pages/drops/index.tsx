@@ -103,8 +103,8 @@ export default function DropsPage() {
       <MainNavbar />
 
       {/* Trending Drops Section */}
-      <section className="px-6 py-12 text-center">
-        <h2 className="text-yellow-500 text-lg font-semibold mb-6">Trending Drops</h2>
+      <section className="px-2 sm:px-6 py-8 sm:py-12 text-center">
+        <h2 className="text-yellow-500 text-lg sm:text-2xl font-semibold mb-6">Trending Drops</h2>
         <div className="relative overflow-hidden" style={{ height: 320 }}>
           <div
             className="flex items-center"
@@ -134,22 +134,22 @@ export default function DropsPage() {
                 <Link
                   key={drop.name + idx}
                   href={drop.link}
-                  className="flex-shrink-0 w-64 mx-4 snap-center block text-center hover:scale-105 transition-transform"
-                  style={{ minWidth: 240, pointerEvents: "auto" }}
+                  className="flex-shrink-0 w-56 sm:w-64 mx-2 sm:mx-4 snap-center block text-center hover:scale-105 transition-transform"
+                  style={{ minWidth: 200, pointerEvents: "auto" }}
                 >
-                  <div className="relative w-48 h-48 mx-auto mb-4 cursor-pointer rounded-2xl border border-yellow-400/10 bg-zinc-800/80 shadow-inner hover:border-yellow-400/40 transition-all flex items-center justify-center">
+                  <div className="relative w-40 h-40 sm:w-48 sm:h-48 mx-auto mb-4 cursor-pointer rounded-2xl border border-yellow-400/10 bg-zinc-800/80 shadow-inner hover:border-yellow-400/40 transition-all flex items-center justify-center">
                     <Image 
                       src={drop.image} 
                       alt={drop.name} 
                       fill
                       className="object-contain rounded-2xl"
-                      sizes="192px"
+                      sizes="(max-width: 640px) 160px, 192px"
                     />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">{drop.name}</h3>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">{drop.name}</h3>
                   <p className="text-yellow-400 text-md">{drop.description}</p>
                   <p className="text-sm text-gray-400 mb-2">Ends in: {drop.endsIn}</p>
-                  <button className="bg-yellow-600 hover:bg-yellow-500 text-black font-semibold py-2 px-6 rounded transition">
+                  <button className="bg-yellow-600 hover:bg-yellow-500 text-black font-semibold py-2 px-4 sm:px-6 rounded transition text-sm sm:text-base">
                     Join Drop
                   </button>
                 </Link>
@@ -159,14 +159,14 @@ export default function DropsPage() {
         </div>
       </section>
 
-      <div className="min-h-screen bg-zinc-950 text-white p-8">
-        <h1 className="text-4xl font-bold text-yellow-400 mb-8">Active Drops</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="min-h-screen bg-zinc-950 text-white px-2 sm:px-8 py-6">
+        <h1 className="text-2xl sm:text-4xl font-bold text-yellow-400 mb-8">Active Drops</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {products.map(product => (
             <Link key={product.id} href={`/drops/${product.slug || product.id}`}>
-              <div className="bg-zinc-900 border border-yellow-500/20 rounded-lg p-6 hover:border-yellow-500 transition-all">
-                <h2 className="text-xl font-bold mb-2">{product.name}</h2>
-                <p className="text-gray-400">{product.description}</p>
+              <div className="bg-zinc-900 border border-yellow-500/20 rounded-lg p-4 sm:p-6 hover:border-yellow-500 transition-all">
+                <h2 className="text-lg sm:text-xl font-bold mb-2">{product.name}</h2>
+                <p className="text-gray-400 text-sm sm:text-base">{product.description}</p>
               </div>
             </Link>
           ))}

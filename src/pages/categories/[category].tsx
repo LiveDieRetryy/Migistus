@@ -64,7 +64,7 @@ export default function CategoryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white">
+      <div className="min-h-screen flex items-center justify-center bg-black text-white px-4">
         Loading...
       </div>
     );
@@ -77,23 +77,23 @@ export default function CategoryPage() {
           {displayCategory} Drops - MIGISTUS
         </title>
       </Head>
-      <div className="min-h-screen bg-zinc-950 text-white p-8">
+      <div className="min-h-screen bg-zinc-950 text-white px-2 sm:px-8 py-6">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-4xl font-bold text-yellow-400 mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold text-yellow-400 mb-8">
             {displayCategory} Drops
           </h1>
           {products.length === 0 ? (
             <div className="text-gray-400">No drops found in this category.</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {products.map((product) => (
                 <Link
                   key={product.id}
-                  href={`/products/${product.id}`}
+                  href={`/products/${product.slug || product.id}`}
                   className="block"
                 >
-                  <div className="bg-zinc-900 border border-yellow-500/20 rounded-lg p-6 hover:border-yellow-500 transition-all">
-                    <div className="relative w-full h-40 mb-4">
+                  <div className="bg-zinc-900 border border-yellow-500/20 rounded-lg p-4 sm:p-6 hover:border-yellow-500 transition-all">
+                    <div className="relative w-full h-32 sm:h-40 mb-4">
                       <Image
                         src={product.image}
                         alt={product.name}
@@ -102,8 +102,8 @@ export default function CategoryPage() {
                         sizes="(max-width: 768px) 100vw, 256px"
                       />
                     </div>
-                    <h2 className="text-xl font-bold mb-2">{product.name}</h2>
-                    <p className="text-gray-400">{product.description}</p>
+                    <h2 className="text-lg sm:text-xl font-bold mb-2">{product.name}</h2>
+                    <p className="text-gray-400 text-sm sm:text-base">{product.description}</p>
                   </div>
                 </Link>
               ))}

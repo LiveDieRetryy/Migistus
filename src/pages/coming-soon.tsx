@@ -78,12 +78,12 @@ export default function ComingSoonPage() {
       </Head>
       <MainNavbar />
       <div className="min-h-screen bg-zinc-900 text-white font-sans">
-        <section className="relative px-6 py-12 text-center">
+        <section className="relative px-2 sm:px-6 py-8 sm:py-12 text-center">
           <div className="mb-6 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-yellow-400 drop-shadow-lg tracking-wide">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-400 drop-shadow-lg tracking-wide">
               Coming Soon
             </h2>
-            <p className="text-gray-400 text-base mt-2">
+            <p className="text-gray-400 text-sm sm:text-base mt-2">
               Upcoming drops by category — join the waitlist!
             </p>
           </div>
@@ -115,24 +115,24 @@ export default function ComingSoonPage() {
                 {[...comingSoonCategories, ...comingSoonCategories].map((cat, idx) => (
                   <div
                     key={cat.name + idx}
-                    className="flex-shrink-0 w-48 mx-2 snap-center block text-center hover:scale-105 transition-transform"
-                    style={{ minWidth: 180, pointerEvents: "auto" }}
+                    className="flex-shrink-0 w-40 sm:w-48 mx-1 sm:mx-2 snap-center block text-center hover:scale-105 transition-transform"
+                    style={{ minWidth: 140, pointerEvents: "auto" }}
                   >
-                    <div className="relative w-32 h-32 mx-auto rounded-2xl mb-2 border border-yellow-400/10 bg-zinc-800/80 shadow-inner hover:border-yellow-400/40 transition-all">
+                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto rounded-2xl mb-2 border border-yellow-400/10 bg-zinc-800/80 shadow-inner hover:border-yellow-400/40 transition-all">
                       <Image 
                         src={cat.image} 
                         alt={cat.name} 
                         fill
                         className="object-cover rounded-2xl"
-                        sizes="128px"
+                        sizes="(max-width: 640px) 96px, 128px"
                       />
-                      <div className="absolute bottom-2 right-2 bg-yellow-400 text-black text-sm px-3 py-1 rounded-full shadow">
+                      <div className="absolute bottom-2 right-2 bg-yellow-400 text-black text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full shadow">
                         {cat.date}
                       </div>
                     </div>
-                    <span className="text-yellow-300 font-medium text-lg">{cat.name}</span>
+                    <span className="text-yellow-300 font-medium text-base sm:text-lg">{cat.name}</span>
                     <div className="mt-3">
-                      <button className="bg-yellow-600 hover:bg-yellow-500 text-black font-semibold py-2 px-6 rounded transition text-base">
+                      <button className="bg-yellow-600 hover:bg-yellow-500 text-black font-semibold py-2 px-4 sm:px-6 rounded transition text-sm sm:text-base">
                         Join Waitlist
                       </button>
                     </div>
@@ -144,7 +144,7 @@ export default function ComingSoonPage() {
           {/* View All Incoming Drops Button */}
           <div className="mt-6 flex justify-center">
             <Link href="/drops">
-              <button className="bg-yellow-600 hover:bg-yellow-500 text-black font-semibold py-2 px-6 rounded transition text-lg shadow-md">
+              <button className="bg-yellow-600 hover:bg-yellow-500 text-black font-semibold py-2 px-4 sm:px-6 rounded transition text-base sm:text-lg shadow-md">
                 View All Drops
               </button>
             </Link>

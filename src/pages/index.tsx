@@ -75,15 +75,14 @@ export default function LandingPage() {
         <title>MIGISTUS — The Guilded Marketplace</title>
         <meta name="description" content="Migistus is a movement. A marketplace forged by the people, for the people — where unity drives down prices, and your voice helps shape what comes next." />
       </Head>
-      {/* Move TwinklingStars below the navbar so stars are behind content but not behind navbar */}
       <MainNavbar />
-      <div className="relative bg-black text-white font-sans px-6 py-12 space-y-16 min-h-screen overflow-hidden">
+      <div className="relative bg-black text-white font-sans px-2 sm:px-6 py-6 sm:py-12 space-y-10 sm:space-y-16 min-h-screen overflow-hidden">
         {/* Animated twinkling gold stars background */}
         <TwinklingStars count={60} />
         {/* Hero Section */}
-        <section className="text-center max-w-3xl mx-auto bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-8 backdrop-blur-md">
+        <section className="text-center max-w-3xl mx-auto bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
           <h1
-            className="text-5xl font-bold text-yellow-400 mb-2"
+            className="text-3xl sm:text-5xl font-bold text-yellow-400 mb-2"
             style={{
               letterSpacing: "0.01em"
             }}
@@ -91,19 +90,19 @@ export default function LandingPage() {
             🛡️ Welcome to MIGISTUS
           </h1>
           <p
-            className="text-2xl md:text-3xl font-semibold text-yellow-400 mb-4"
+            className="text-xl sm:text-2xl md:text-3xl font-semibold text-yellow-400 mb-4"
             style={{
               letterSpacing: "0.02em"
             }}
           >
             The Guilded Marketplace
           </p>
-          <p className="mt-4 text-zinc-400 max-w-2xl mx-auto">
+          <p className="mt-4 text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
             Migistus is not just a store. It’s a movement. A marketplace forged by the people, for the people — where unity drives down prices, and your voice helps shape what comes next.
           </p>
           <div className="mt-8 flex justify-center">
             <Link href="/drops">
-              <button className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 px-10 rounded-2xl shadow-lg text-xl transition-all">
+              <button className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 sm:py-4 px-6 sm:px-10 rounded-2xl shadow-lg text-lg sm:text-xl transition-all">
                 Explore Drops
               </button>
             </Link>
@@ -111,10 +110,10 @@ export default function LandingPage() {
         </section>
 
         {/* Features */}
-        <section className="relative max-w-5xl mx-auto bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-8 backdrop-blur-md">
-          <div className="absolute left-1/2 -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-yellow-400/30 via-yellow-400/60 to-yellow-400/30 rounded-full mb-10 top-0" />
-          <h2 className="text-2xl text-yellow-400 font-semibold mb-6 text-center mt-10">🔥 What Makes Migistus Different?</h2>
-          <div className="grid md:grid-cols-2 gap-8">
+        <section className="relative max-w-5xl mx-auto bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
+          <div className="absolute left-1/2 -translate-x-1/2 w-20 sm:w-32 h-1 bg-gradient-to-r from-yellow-400/30 via-yellow-400/60 to-yellow-400/30 rounded-full mb-10 top-0" />
+          <h2 className="text-lg sm:text-2xl text-yellow-400 font-semibold mb-6 text-center mt-10">🔥 What Makes Migistus Different?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             <Feature icon="💠" title="Group Buying Reimagined" text="Instead of paying full price alone, you pledge into product drops with others. As more people join, prices fall. When the threshold is met, the drop locks in." />
             <Feature icon="💠" title="Vote-Driven Curation" text="You don’t just shop — you vote. Help decide what launches next. Guild and MIGISTUS tiers get extra voting power." />
             <Feature icon="💠" title="Limited Drops, Big Rewards" text="Each drop is time-limited. Once it expires, it's gone — unless voted back. It creates urgency and strategy in every drop." />
@@ -124,9 +123,9 @@ export default function LandingPage() {
         </section>
 
         {/* How It Works */}
-        <section className="max-w-3xl mx-auto text-center bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-8 backdrop-blur-md">
-          <h2 className="text-yellow-400 text-2xl font-semibold mb-4">🧠 How It Works</h2>
-          <ol className="text-zinc-300 space-y-2 text-left list-decimal list-inside">
+        <section className="max-w-3xl mx-auto text-center bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
+          <h2 className="text-yellow-400 text-lg sm:text-2xl font-semibold mb-4">🧠 How It Works</h2>
+          <ol className="text-zinc-300 space-y-2 text-left list-decimal list-inside text-base sm:text-lg">
             <li>Vote for what you want to see in the store</li>
             <li>Pledge to drops that excite you</li>
             <li>Watch the price fall as others join</li>
@@ -136,16 +135,16 @@ export default function LandingPage() {
         </section>
 
         {/* Why Migistus */}
-        <section className="text-center max-w-3xl mx-auto bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-8 backdrop-blur-md">
-          <h2 className="text-yellow-400 text-2xl font-semibold mb-2">⚔️ Why MIGISTUS?</h2>
-          <blockquote className="text-xl italic text-zinc-200 mb-4">“Alone, you're just a buyer. Together, you're a guild.”</blockquote>
-          <p className="text-zinc-400">
+        <section className="text-center max-w-3xl mx-auto bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
+          <h2 className="text-yellow-400 text-lg sm:text-2xl font-semibold mb-2">⚔️ Why MIGISTUS?</h2>
+          <blockquote className="text-lg sm:text-xl italic text-zinc-200 mb-4">“Alone, you're just a buyer. Together, you're a guild.”</blockquote>
+          <p className="text-zinc-400 text-base sm:text-lg">
             Migistus challenges the standard retail model. It’s a platform where demand shapes supply, community unlocks savings, and every purchase is a shared conquest.
           </p>
         </section>
 
         {/* Call to Action Buttons */}
-        <section className="flex flex-col sm:flex-row gap-4 justify-center pt-8 max-w-3xl mx-auto bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-8 backdrop-blur-md">
+        <section className="flex flex-col sm:flex-row gap-4 justify-center pt-8 max-w-3xl mx-auto bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
           <Link href="/drops">
             <button className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 px-8 rounded-xl shadow transition-all text-lg">
               Explore Drops

@@ -90,33 +90,33 @@ export default function Categories() {
         </div>
 
         <div className="w-full bg-zinc-900/50 border-b border-yellow-400/20 py-6 mb-8">
-          <div className="max-w-6xl mx-auto px-6">
-            <h1 className="text-4xl font-bold text-yellow-400 text-center drop-shadow-lg">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <h1 className="text-3xl sm:text-4xl font-bold text-yellow-400 text-center drop-shadow-lg">
               Explore Categories
             </h1>
-            <p className="text-blue-200 text-center mt-2">
+            <p className="text-blue-200 text-center mt-2 text-base sm:text-lg">
               Browse by department and discover exclusive drops
             </p>
           </div>
         </div>
         <div className="flex justify-center">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-10 gap-y-14 w-full max-w-7xl">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 sm:gap-x-10 gap-y-8 sm:gap-y-14 w-full max-w-7xl px-2 sm:px-0">
             {DEPARTMENTS.map((cat) => (
               <Link
                 key={cat}
                 href={`/categories/${slugify(cat)}`}
                 className="flex flex-col items-center group"
               >
-                <div className="w-40 h-40 bg-zinc-900 border border-yellow-400 rounded-xl flex items-center justify-center mb-2 overflow-hidden group-hover:border-yellow-300 transition">
+                <div className="w-24 h-24 sm:w-40 sm:h-40 bg-zinc-900 border border-yellow-400 rounded-xl flex items-center justify-center mb-2 overflow-hidden group-hover:border-yellow-300 transition">
                   <Image
                     src={departmentImages[cat] || "/images/placeholder.png"}
                     alt={cat}
-                    width={160}
-                    height={160}
-                    className="object-cover rounded"
+                    width={96}
+                    height={96}
+                    className="object-cover rounded sm:w-40 sm:h-40"
                   />
                 </div>
-                <div className="text-yellow-400 text-lg font-semibold text-center group-hover:text-yellow-300 transition">
+                <div className="text-yellow-400 text-base sm:text-lg font-semibold text-center group-hover:text-yellow-300 transition">
                   {cat}
                 </div>
               </Link>
@@ -124,7 +124,7 @@ export default function Categories() {
           </div>
         </div>
         <div className="flex justify-center mt-10">
-          <Link href="/drops" className="bg-yellow-400 text-black font-bold px-6 py-3 rounded hover:bg-yellow-300 transition">
+          <Link href="/drops" className="bg-yellow-400 text-black font-bold px-6 py-3 rounded hover:bg-yellow-300 transition text-base sm:text-lg">
             View All Drops
           </Link>
         </div>
