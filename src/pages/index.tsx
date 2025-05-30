@@ -80,7 +80,7 @@ export default function LandingPage() {
         {/* Animated twinkling gold stars background */}
         <TwinklingStars count={60} />
         {/* Hero Section */}
-        <section className="text-center max-w-3xl mx-auto bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
+        <section className="text-center mx-auto max-w-md sm:max-w-3xl bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
           <h1
             className="text-3xl sm:text-5xl font-bold text-yellow-400 mb-2"
             style={{
@@ -110,7 +110,7 @@ export default function LandingPage() {
         </section>
 
         {/* Features */}
-        <section className="relative max-w-5xl mx-auto bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
+        <section className="relative mx-auto max-w-md sm:max-w-5xl bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
           <div className="absolute left-1/2 -translate-x-1/2 w-20 sm:w-32 h-1 bg-gradient-to-r from-yellow-400/30 via-yellow-400/60 to-yellow-400/30 rounded-full mb-10 top-0" />
           <h2 className="text-lg sm:text-2xl text-yellow-400 font-semibold mb-6 text-center mt-10">🔥 What Makes Migistus Different?</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
@@ -123,7 +123,7 @@ export default function LandingPage() {
         </section>
 
         {/* How It Works */}
-        <section className="max-w-3xl mx-auto text-center bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
+        <section className="mx-auto max-w-md sm:max-w-3xl text-center bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
           <h2 className="text-yellow-400 text-lg sm:text-2xl font-semibold mb-4">🧠 How It Works</h2>
           <ol className="text-zinc-300 space-y-2 text-left list-decimal list-inside text-base sm:text-lg">
             <li>Vote for what you want to see in the store</li>
@@ -135,7 +135,7 @@ export default function LandingPage() {
         </section>
 
         {/* Why Migistus */}
-        <section className="text-center max-w-3xl mx-auto bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
+        <section className="text-center mx-auto max-w-md sm:max-w-3xl bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
           <h2 className="text-yellow-400 text-lg sm:text-2xl font-semibold mb-2">⚔️ Why MIGISTUS?</h2>
           <blockquote className="text-lg sm:text-xl italic text-zinc-200 mb-4">“Alone, you're just a buyer. Together, you're a guild.”</blockquote>
           <p className="text-zinc-400 text-base sm:text-lg">
@@ -144,7 +144,7 @@ export default function LandingPage() {
         </section>
 
         {/* Call to Action Buttons */}
-        <section className="flex flex-col sm:flex-row gap-4 justify-center pt-8 max-w-3xl mx-auto bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
+        <section className="flex flex-col sm:flex-row gap-4 justify-center pt-8 mx-auto max-w-md sm:max-w-3xl bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
           <Link href="/drops">
             <button className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 px-8 rounded-xl shadow transition-all text-lg">
               Explore Drops

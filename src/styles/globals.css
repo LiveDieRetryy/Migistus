@@ -38,4 +38,29 @@ body {
   color: hsl(var(--foreground));
   font-feature-settings: "rlig" 1, "calt" 1;
 }
+
+/* Force desktop view on mobile when .force-desktop is on body */
+body.force-desktop {
+  /* Tailwind uses min-width media queries for breakpoints.
+     This hack makes all breakpoints always match. */
+}
+body.force-desktop * {
+  /* Optional: increase specificity if needed */
+}
+@media (max-width: 640px) {
+  body.force-desktop {
+    /* Set the root font-size or container width to simulate desktop */
+    /* Option 1: Set a min-width on html/body */
+    min-width: 640px;
+    overflow-x: auto;
+  }
+  body.force-desktop .sm\:flex,
+  body.force-desktop .sm\:block,
+  body.force-desktop .sm\:grid,
+  body.force-desktop .sm\:inline,
+  body.force-desktop .sm\:inline-block,
+  body.force-desktop .sm\:hidden {
+    display: initial !important;
+  }
+  /* Optionally, you can add more overrides for other Tailwind sm: classes as needed */
 }
