@@ -15,9 +15,66 @@ function writeData(data: any) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
+function getDefaultProducts() {
+  return [
+    {
+      id: 1,
+      name: "Gilded Vanguard Headset",
+      image: "https://placehold.co/400x400.png?text=Headset",
+      description: "Premium gaming headset with surround sound",
+      goal: 100,
+      link: "https://example.com/headset",
+      timeframe: "30 days",
+      category: "Electronics",
+      votes: 73,
+      featured: true,
+      pledges: 0,
+      pricingTiers: [],
+      slug: "gilded-vanguard-headset"
+    },
+    {
+      id: 2,
+      name: "Wireless Mouse Pro",
+      image: "https://placehold.co/400x400.png?text=Mouse",
+      description: "High-precision wireless gaming mouse",
+      goal: 75,
+      link: "https://example.com/mouse",
+      timeframe: "45 days",
+      category: "Electronics",
+      votes: 42,
+      featured: false,
+      pledges: 0,
+      pricingTiers: [],
+      slug: "wireless-mouse-pro"
+    },
+    {
+      id: 3,
+      name: "Mechanical Keyboard",
+      image: "https://placehold.co/400x400.png?text=Keyboard",
+      description: "RGB backlit mechanical keyboard",
+      goal: 120,
+      link: "https://example.com/keyboard",
+      timeframe: "60 days",
+      category: "Electronics",
+      votes: 89,
+      featured: true,
+      pledges: 0,
+      pricingTiers: [],
+      slug: "mechanical-keyboard"
+    }
+    // ...add more if desired
+  ];
+}
+
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const data = readData();
+    let data = readData();
+
+    // Auto-add default products if empty and GET
+    if (req.method === "GET" && Array.isArray(data) && data.length === 0) {
+      data = getDefaultProducts();
+      writeData(data);
+    }
 
     if (req.method === "GET") {
       res.status(200).json({ products: data, totalProducts: data.length });

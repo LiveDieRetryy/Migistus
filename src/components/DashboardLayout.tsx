@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import Image from "next/image";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -14,9 +15,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-zinc-950">
       <nav className="fixed w-64 h-screen bg-zinc-900 border-r border-yellow-500/20 p-6">
-        <div className="mb-8">
-          <Link href="/">
-            <span className="text-2xl font-bold text-yellow-400">🏰 Kingdom</span>
+        <div className="mb-8 flex flex-col items-center gap-3">
+          <Link href="/" className="flex flex-col items-center gap-2">
+            <Image
+              src="/images/migistus_logo.png"
+              alt="MIGISTUS"
+              width={140}
+              height={140}
+              className="object-contain"
+              priority
+            />
+            <span className="text-2xl font-bold text-yellow-400 mt-2">
+              The King's Domain
+            </span>
           </Link>
         </div>
         <div className="space-y-2">

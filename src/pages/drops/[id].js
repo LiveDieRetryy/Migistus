@@ -9,7 +9,7 @@ export default function DropPage({ id }) {
         <title>MIGISTUS Drop</title>
         <meta name="description" content="Join the drop and save with the community." />
       </Head>
-      <ProductPage productId={id} />
+      <ProductPage productId={id} /> {/* id is actually the slug */}
     </>
   );
 }
@@ -17,7 +17,7 @@ export default function DropPage({ id }) {
 export async function getServerSideProps({ params }) {
   return {
     props: {
-      id: params.id
+      id: params.id // this is the slug
     }
   };
 }

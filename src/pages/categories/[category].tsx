@@ -29,10 +29,6 @@ const DEPARTMENTS = [
   "Movies, Music & Games"
 ];
 
-function slugify(name: string) {
-  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
-}
-
 export default function CategoryPage() {
   const router = useRouter();
   const { category } = router.query;
@@ -43,7 +39,7 @@ export default function CategoryPage() {
   const displayCategory =
     typeof category === "string"
       ? DEPARTMENTS.find(
-          (d) => slugify(d) === category.toLowerCase()
+          (d) => d.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "") === category.toLowerCase()
         ) || category
       : "";
 
@@ -57,7 +53,7 @@ export default function CategoryPage() {
             data.products.filter(
               (p: Product) =>
                 p.category &&
-                slugify(p.category) === category.toString().toLowerCase()
+                p.category.toString().toLowerCase() === category.toString().toLowerCase()
             )
           );
         }
@@ -93,7 +89,7 @@ export default function CategoryPage() {
               {products.map((product) => (
                 <Link
                   key={product.id}
-                  href={`/products/${product.slug ? product.slug : slugify(product.name)}`}
+                  href={`/products/${product.id}`}
                   className="block"
                 >
                   <div className="bg-zinc-900 border border-yellow-500/20 rounded-lg p-6 hover:border-yellow-500 transition-all">

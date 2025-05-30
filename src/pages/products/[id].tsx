@@ -1,8 +1,8 @@
-// pages/products/[slug].tsx
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import MainNavbar from "@/components/nav/MainNavbar";
 
 type PricingTier = { min: number; max: number; price: number };
 type Product = {
@@ -20,13 +20,9 @@ type Product = {
   pricingTiers?: PricingTier[];
 };
 
-function slugify(name: string) {
-  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
-}
-
 export default function ProductPage() {
   const router = useRouter();
-  const { slug } = router.query;
+  const { id } = router.query;
   const [product, setProduct] = useState<Product | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [pledges, setPledges] = useState(0);
@@ -37,14 +33,14 @@ export default function ProductPage() {
     setLoading(true);
     const res = await fetch("/api/products");
     const data = await res.json();
+    // Find by id (as string or number)
     const match = (data.products || data).find(
-      (p: Product) => slugify(p.name) === slug
+      (p: Product) => String(p.id) === String(id)
     );
     setProduct(match || null);
     setPledges(match?.pledges || 0);
     // Parse timeframe as days, convert to seconds
     if (match?.timeframe) {
-      // Extract number from string like "30 days"
       const daysMatch = match.timeframe.match(/(\d+)/);
       const days = daysMatch ? parseInt(daysMatch[1]) : 30;
       setTimeLeft(days * 24 * 60 * 60);
@@ -53,10 +49,10 @@ export default function ProductPage() {
   };
 
   useEffect(() => {
-    if (slug) {
-      fetchProduct();
-    }
-  }, [slug]);
+    if (!id) return; // Wait for id to be defined
+    fetchProduct();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -74,11 +70,15 @@ export default function ProductPage() {
   };
 
   const getCurrentPrice = () => {
-    if (!product?.pricingTiers) return null;
+    if (!product?.pricingTiers || product.pricingTiers.length === 0) return null;
     const tier = product.pricingTiers.find(
       (t) => pledges >= t.min && pledges <= t.max
     );
-    return tier ? tier.price : product.pricingTiers[0].price;
+    return tier
+      ? tier.price
+      : product.pricingTiers.length > 0
+      ? product.pricingTiers[0].price
+      : null;
   };
 
   const handlePledge = async () => {
@@ -90,19 +90,21 @@ export default function ProductPage() {
       body: JSON.stringify({ ...product, pledges: pledges + 1 }),
     });
     if (res.ok) {
-      await fetchProduct(); // Refetch to sync
+      await fetchProduct();
       setPledged(true);
     }
     setLoading(false);
   };
 
-  if (!product || loading) return <p className="text-white p-8">Loading product...</p>;
+  if (loading) return <><MainNavbar /><p className="text-white p-8">Loading product...</p></>;
+  if (!product) return <><MainNavbar /><p className="text-white p-8">Product not found.</p></>;
 
   return (
     <>
       <Head>
         <title>{product.name} — MIGISTUS</title>
       </Head>
+      <MainNavbar />
       <div className="min-h-screen bg-zinc-900 text-white p-10">
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-10 items-center">
           <div className="rounded-xl overflow-hidden border border-yellow-400/30 shadow-lg">

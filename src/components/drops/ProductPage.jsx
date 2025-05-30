@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Users, TrendingDown, Star, Share2, Heart, MessageCircle, Crown, Zap, Shield, ArrowLeft, Eye } from 'lucide-react';
 import { containsProfanity, filterProfanity } from "@/components/chat/ProfanityFilter";
+import MainNavbar from "@/components/nav/MainNavbar";
+import { useRouter } from "next/router"; // <-- Add this import
 
 function isInappropriateContent(text) {
   if (!text) return false;
@@ -27,6 +29,7 @@ const ProductPage = ({ productId }) => {
   const [showProfanityWarning, setShowProfanityWarning] = useState(false);
   const [product, setProduct] = useState(null);
   const [communityMessages, setCommunityMessages] = useState([]);
+  const router = useRouter(); // <-- Add this line
 
   // Default pricing tiers
   const defaultPricingTiers = [
@@ -92,7 +95,9 @@ const ProductPage = ({ productId }) => {
       .then(res => res.json())
       .then(data => {
         const match = (data.products || data).find(
-          (p) => p.name.toLowerCase().replace(/\s+/g, "-") === productId
+          (p) =>
+            (p.slug && p.slug === productId) ||
+            p.name.toLowerCase().replace(/\s+/g, "-") === productId
         );
         if (match) {
           setProduct(match);
@@ -311,9 +316,12 @@ const ProductPage = ({ productId }) => {
   // Add early return for loading state
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white">
-        <span className="text-lg">Loading product...</span>
-      </div>
+      <>
+        <MainNavbar />
+        <div className="min-h-screen flex items-center justify-center bg-black text-white">
+          <span className="text-lg">Loading product...</span>
+        </div>
+      </>
     );
   }
 
@@ -330,489 +338,493 @@ const ProductPage = ({ productId }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-black text-white">
-      {/* Navigation */}
-      <nav className="bg-black/80 backdrop-blur-sm border-b border-yellow-500/20">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button className="flex items-center space-x-2 text-gray-400 hover:text-yellow-400 transition-colors">
-                <ArrowLeft className="w-5 h-5" />
-                <span>Back to Drops</span>
-              </button>
-              <div className="w-px h-6 bg-gray-700"></div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent">
-                MIGISTUS
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-700">
-                <Crown className="w-4 h-4 text-yellow-400" />
-                <span className="text-sm text-yellow-300 font-medium">Guild Member</span>
-              </div>
-              <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full"></div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Product Images */}
-          <div className="space-y-4">
-            <div className="relative aspect-square bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden border border-gray-700">
-              <img 
-                src={productImages[safeActiveImageIndex]} 
-                alt={safeProduct.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-4 right-4">
-                <div className="bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full border border-yellow-500/30">
-                  <span className="text-yellow-300 text-sm font-medium flex items-center">
-                    <Eye className="w-4 h-4 mr-1" />
-                    Live Drop
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="flex space-x-3">
-              {productImages.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setActiveImageIndex(index)}
-                  className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                    activeImageIndex === index 
-                      ? 'border-yellow-500 shadow-lg shadow-yellow-500/25' 
-                      : 'border-gray-700 hover:border-gray-600'
-                  }`}
-                >
-                  <img src={image} alt="" className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Product Info */}
-          <div className="space-y-8">
-            {/* Title and Rating */}
-            <div>
-              <div className="inline-block bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm font-medium mb-4 border border-blue-500/30">
-                {safeProduct.category}
-              </div>
-              <h1 className="text-4xl font-bold text-white mb-4 leading-tight">{safeProduct.name}</h1>
+    <>
+      <MainNavbar />
+      <div className="min-h-screen bg-gradient-to-b from-black to-black text-white">
+        {/* Navigation */}
+        <nav className="bg-black/80 backdrop-blur-sm border-b border-yellow-500/20">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className={`w-5 h-5 ${i < Math.floor(safeProduct.rating) ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
-                    />
-                  ))}
-                  <span className="ml-2 text-gray-300">
-                    {safeProduct.rating > 0 ? `${safeProduct.rating} (${safeProduct.reviews} reviews)` : "No reviews yet"}
-                  </span>
-                </div>
-                <div className="h-4 w-px bg-gray-600"></div>
-                <div className="flex items-center space-x-1 text-yellow-400">
-                  <Zap className="w-4 h-4" />
-                  <span className="text-sm font-medium">Verified Quality</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Drop Status */}
-            <div className="relative bg-gradient-to-r from-gray-800/80 to-gray-800/80 rounded-2xl p-8 border border-gray-700 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 to-yellow-500/5 rounded-2xl"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-3 bg-yellow-500/20 rounded-xl">
-                      <Clock className="w-6 h-6 text-yellow-400" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-yellow-300 block text-lg">Drop Ends In</span>
-                      <span className="text-sm text-gray-400">Limited time offer</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-4xl font-bold text-yellow-400 font-mono">
-                      {formatTime(timeLeft)}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-3 bg-blue-500/20 rounded-xl">
-                      <Users className="w-6 h-6 text-blue-400" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-blue-300 text-lg">{pledgeCount} Pledged</span>
-                      <div className="text-sm text-gray-400">Current tier: {currentTier.tier}</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-gray-300">Target</span>
-                    <div className="text-2xl font-bold text-white">{safeProduct.goal}</div>
-                  </div>
-                </div>
-                
-                <div className="relative w-full bg-gray-700 rounded-full h-4 mb-4 overflow-hidden">
-                  <div 
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-400 rounded-full transition-all duration-500 shadow-lg shadow-yellow-500/50"
-                    style={{ width: `${progressPercentage}%` }}
-                  ></div>
-                </div>
-                
-                <div className="text-center">
-                  {safeProduct.goal - pledgeCount > 0 ? (
-                    <p className="text-yellow-300 font-medium">
-                      {safeProduct.goal - pledgeCount} more pledges needed to reach minimum order quantity
-                    </p>
-                  ) : (
-                    <p className="text-green-400 font-bold">
-                      ✓ Minimum order quantity reached!
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Current Price */}
-            <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-700 p-8 overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-yellow-500/10 to-transparent rounded-full"></div>
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <div className="flex items-center space-x-3 mb-2">
-                      <span className="text-5xl font-bold text-yellow-400">${currentPrice}</span>
-                      <div className="p-2 bg-green-500/20 rounded-lg">
-                        <TrendingDown className="w-6 h-6 text-green-400" />
-                      </div>
-                    </div>
-                    <p className="text-gray-300 font-medium">Current price ({currentTier.label})</p>
-                    <p className="text-sm text-gray-500">Tier: <span className="text-yellow-400 font-medium">{currentTier.tier}</span></p>
-                    <p className="text-sm text-gray-500 line-through">MSRP: ${safeProduct.originalPrice.toFixed(2)}</p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-green-400 mb-1">
-                      {Math.round(((safeProduct.originalPrice - currentPrice) / safeProduct.originalPrice) * 100)}% OFF
-                    </div>
-                    <p className="text-sm text-gray-400">You save</p>
-                    <p className="text-xl font-bold text-green-400">${(safeProduct.originalPrice - currentPrice).toFixed(2)}</p>
-                  </div>
-                </div>
-
-                {nextTier && (
-                  <div className="bg-gradient-to-r from-yellow-900/30 to-yellow-800/30 border border-yellow-500/40 rounded-xl p-4 mb-6">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Crown className="w-5 h-5 text-yellow-400" />
-                      <span className="text-yellow-300 font-semibold">Next Price Drop</span>
-                    </div>
-                    <p className="text-yellow-200 text-sm">
-                      Reach <strong>{nextTier.tier}</strong> tier at ${nextTier.price} when {nextTier.min} pledges unite
-                    </p>
-                    <p className="text-xs text-yellow-400 mt-1">
-                      {nextTier.min - pledgeCount} more pledges needed
-                    </p>
-                  </div>
-                )}
-
-                {/* Pledge Button */}
-                <button 
-                  onClick={() => setShowPledgeModal(true)}
-                  disabled={hasPledged}
-                  className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform ${
-                    hasPledged 
-                      ? 'bg-gradient-to-r from-green-800 to-green-700 text-green-200 border border-green-600/50 shadow-lg shadow-green-500/25'
-                      : 'bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 text-black hover:shadow-2xl hover:shadow-yellow-500/50 hover:-translate-y-1 border border-yellow-400/50'
-                  }`}
+                <button
+                  className="flex items-center space-x-2 text-gray-400 hover:text-yellow-400 transition-colors"
+                  onClick={() => router.push("/drops")} // <-- Add this onClick
                 >
-                  {hasPledged ? (
-                    <span className="flex items-center justify-center space-x-2">
-                      <Shield className="w-5 h-5" />
-                      <span>Pledge Complete</span>
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center space-x-2">
-                      <Zap className="w-5 h-5" />
-                      <span>Join Drop - ${currentPrice}</span>
-                    </span>
-                  )}
+                  <ArrowLeft className="w-5 h-5" />
+                  <span>Back to Drops</span>
                 </button>
-
-                <div className="flex items-center justify-center space-x-6 mt-4">
-                  <button className="flex items-center space-x-2 text-gray-400 hover:text-yellow-400 transition-colors">
-                    <Heart className="w-5 h-5" />
-                    <span className="text-sm font-medium">Wishlist</span>
-                  </button>
-                  <button className="flex items-center space-x-2 text-gray-400 hover:text-yellow-400 transition-colors">
-                    <Share2 className="w-5 h-5" />
-                    <span className="text-sm font-medium">Share</span>
-                  </button>
-                  <button className="flex items-center space-x-2 text-gray-400 hover:text-yellow-400 transition-colors">
-                    <MessageCircle className="w-5 h-5" />
-                    <span className="text-sm font-medium">Discuss</span>
-                  </button>
+                <div className="w-px h-6 bg-gray-700"></div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent">
+                  MIGISTUS
+                </h1>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-700">
+                  <Crown className="w-4 h-4 text-yellow-400" />
+                  <span className="text-sm text-yellow-300 font-medium">Guild Member</span>
                 </div>
+                <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full"></div>
               </div>
             </div>
+          </div>
+        </nav>
 
-            {/* Pricing Tiers */}
-            <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-700 p-6">
-              <h3 className="font-bold text-xl text-yellow-300 mb-4 flex items-center space-x-2">
-                <Crown className="w-6 h-6" />
-                <span>Volume Pricing Tiers</span>
-              </h3>
-              <div className="space-y-3">
-                {effectivePricingTiers.map((tier, index) => (
-                  <div 
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Product Images */}
+            <div className="space-y-4">
+              <div className="relative aspect-square bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden border border-gray-700">
+                <img 
+                  src={productImages[safeActiveImageIndex]} 
+                  alt={safeProduct.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-4 right-4">
+                  <div className="bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full border border-yellow-500/30">
+                    <span className="text-yellow-300 text-sm font-medium flex items-center">
+                      <Eye className="w-4 h-4 mr-1" />
+                      Live Drop
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex space-x-3">
+                {productImages.map((image, index) => (
+                  <button
                     key={index}
-                    className={`flex justify-between items-center p-4 rounded-xl transition-all ${
-                      tier === currentTier 
-                        ? 'bg-gradient-to-r from-yellow-900/40 to-yellow-800/40 border border-yellow-500/50 shadow-lg shadow-yellow-500/25' 
-                        : 'bg-gray-800/50 border border-gray-700 hover:border-gray-600'
+                    onClick={() => setActiveImageIndex(index)}
+                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                      activeImageIndex === index 
+                        ? 'border-yellow-500 shadow-lg shadow-yellow-500/25' 
+                        : 'border-gray-700 hover:border-gray-600'
                     }`}
                   >
-                    <div>
-                      <span className={`font-bold ${tier === currentTier ? 'text-yellow-300' : 'text-gray-300'}`}>
-                        {tier.tier || `Tier ${index + 1}`}
-                      </span>
-                      <p className="text-sm text-gray-500">{tier.label || `${tier.min}-${tier.max} units`}</p>
+                    <img src={image} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Product Info */}
+            <div className="space-y-8">
+              {/* Title and Rating */}
+              <div>
+                <div className="inline-block bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm font-medium mb-4 border border-blue-500/30">
+                  {safeProduct.category}
+                </div>
+                <h1 className="text-4xl font-bold text-white mb-4 leading-tight">{safeProduct.name}</h1>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star 
+                        key={i} 
+                        className={`w-5 h-5 ${i < Math.floor(safeProduct.rating) ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
+                      />
+                    ))}
+                    <span className="ml-2 text-gray-300">
+                      {safeProduct.rating > 0 ? `${safeProduct.rating} (${safeProduct.reviews} reviews)` : "No reviews yet"}
+                    </span>
+                  </div>
+                  <div className="h-4 w-px bg-gray-600"></div>
+                  <div className="flex items-center space-x-1 text-yellow-400">
+                    <Zap className="w-4 h-4" />
+                    <span className="text-sm font-medium">Verified Quality</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Drop Status */}
+              <div className="relative bg-gradient-to-r from-gray-800/80 to-gray-800/80 rounded-2xl p-8 border border-gray-700 backdrop-blur-sm">
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 to-yellow-500/5 rounded-2xl"></div>
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-3 bg-yellow-500/20 rounded-xl">
+                        <Clock className="w-6 h-6 text-yellow-400" />
+                      </div>
+                      <div>
+                        <span className="font-bold text-yellow-300 block text-lg">Drop Ends In</span>
+                        <span className="text-sm text-gray-400">Limited time offer</span>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <span className={`text-xl font-bold ${tier === currentTier ? 'text-yellow-400' : 'text-gray-400'}`}>
-                        ${tier.price}
-                      </span>
-                      {tier === currentTier && (
-                        <div className="text-xs text-yellow-300 flex items-center justify-end space-x-1">
-                          <span>Current</span>
-                          <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                        </div>
-                      )}
+                      <div className="text-4xl font-bold text-yellow-400 font-mono">
+                        {formatTime(timeLeft)}
+                      </div>
                     </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-3 bg-blue-500/20 rounded-xl">
+                        <Users className="w-6 h-6 text-blue-400" />
+                      </div>
+                      <div>
+                        <span className="font-bold text-blue-300 text-lg">{pledgeCount} Pledged</span>
+                        <div className="text-sm text-gray-400">Current tier: {currentTier.tier}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-gray-300">Target</span>
+                      <div className="text-2xl font-bold text-white">{safeProduct.goal}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="relative w-full bg-gray-700 rounded-full h-4 mb-4 overflow-hidden">
+                    <div 
+                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-400 rounded-full transition-all duration-500 shadow-lg shadow-yellow-500/50"
+                      style={{ width: `${progressPercentage}%` }}
+                    ></div>
+                  </div>
+                  
+                  <div className="text-center">
+                    {safeProduct.goal - pledgeCount > 0 ? (
+                      <p className="text-yellow-300 font-medium">
+                        {safeProduct.goal - pledgeCount} more pledges needed to reach minimum order quantity
+                      </p>
+                    ) : (
+                      <p className="text-green-400 font-bold">
+                        ✓ Minimum order quantity reached!
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Current Price */}
+              <div className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-700 p-8 overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-yellow-500/10 to-transparent rounded-full"></div>
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <div className="flex items-center space-x-3 mb-2">
+                        <span className="text-5xl font-bold text-yellow-400">${currentPrice}</span>
+                        <div className="p-2 bg-green-500/20 rounded-lg">
+                          <TrendingDown className="w-6 h-6 text-green-400" />
+                        </div>
+                      </div>
+                      <p className="text-gray-300 font-medium">Current price ({currentTier.label})</p>
+                      <p className="text-sm text-gray-500">Tier: <span className="text-yellow-400 font-medium">{currentTier.tier}</span></p>
+                      <p className="text-sm text-gray-500 line-through">MSRP: ${safeProduct.originalPrice.toFixed(2)}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold text-green-400 mb-1">
+                        {Math.round(((safeProduct.originalPrice - currentPrice) / safeProduct.originalPrice) * 100)}% OFF
+                      </div>
+                      <p className="text-sm text-gray-400">You save</p>
+                      <p className="text-xl font-bold text-green-400">${(safeProduct.originalPrice - currentPrice).toFixed(2)}</p>
+                    </div>
+                  </div>
+
+                  {nextTier && (
+                    <div className="bg-gradient-to-r from-yellow-900/30 to-yellow-800/30 border border-yellow-500/40 rounded-xl p-4 mb-6">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Crown className="w-5 h-5 text-yellow-400" />
+                        <span className="text-yellow-300 font-semibold">Next Price Drop</span>
+                      </div>
+                      <p className="text-yellow-200 text-sm">
+                        Reach <strong>{nextTier.tier}</strong> tier at ${nextTier.price} when {nextTier.min} pledges unite
+                      </p>
+                      <p className="text-xs text-yellow-400 mt-1">
+                        {nextTier.min - pledgeCount} more pledges needed
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Pledge Button */}
+                  <button 
+                    onClick={() => setShowPledgeModal(true)}
+                    disabled={hasPledged}
+                    className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform ${
+                      hasPledged 
+                        ? 'bg-gradient-to-r from-green-800 to-green-700 text-green-200 border border-green-600/50 shadow-lg shadow-green-500/25'
+                        : 'bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 text-black hover:shadow-2xl hover:shadow-yellow-500/50 hover:-translate-y-1 border border-yellow-400/50'
+                    }`}
+                  >
+                    {hasPledged ? (
+                      <span className="flex items-center justify-center space-x-2">
+                        <Shield className="w-5 h-5" />
+                        <span>Pledge Complete</span>
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center space-x-2">
+                        <Zap className="w-5 h-5" />
+                        <span>Join Drop - ${currentPrice}</span>
+                      </span>
+                    )}
+                  </button>
+
+                  <div className="flex items-center justify-center space-x-6 mt-4">
+                    <button className="flex items-center space-x-2 text-gray-400 hover:text-yellow-400 transition-colors">
+                      <Heart className="w-5 h-5" />
+                      <span className="text-sm font-medium">Wishlist</span>
+                    </button>
+                    <button className="flex items-center space-x-2 text-gray-400 hover:text-yellow-400 transition-colors">
+                      <Share2 className="w-5 h-5" />
+                      <span className="text-sm font-medium">Share</span>
+                    </button>
+                    <button className="flex items-center space-x-2 text-gray-400 hover:text-yellow-400 transition-colors">
+                      <MessageCircle className="w-5 h-5" />
+                      <span className="text-sm font-medium">Discuss</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pricing Tiers */}
+              <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-700 p-6">
+                <h3 className="font-bold text-xl text-yellow-300 mb-4 flex items-center space-x-2">
+                  <Crown className="w-6 h-6" />
+                  <span>Volume Pricing Tiers</span>
+                </h3>
+                <div className="space-y-3">
+                  {effectivePricingTiers.map((tier, index) => (
+                    <div 
+                      key={index}
+                      className={`flex justify-between items-center p-4 rounded-xl transition-all ${
+                        tier === currentTier 
+                          ? 'bg-gradient-to-r from-yellow-900/40 to-yellow-800/40 border border-yellow-500/50 shadow-lg shadow-yellow-500/25' 
+                          : 'bg-gray-800/50 border border-gray-700 hover:border-gray-600'
+                      }`}
+                    >
+                      <div>
+                        <span className={`font-bold ${tier === currentTier ? 'text-yellow-300' : 'text-gray-300'}`}>
+                          {tier.tier || `Tier ${index + 1}`}
+                        </span>
+                        <p className="text-sm text-gray-500">{tier.label || `${tier.min}-${tier.max} units`}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-xl font-bold ${tier === currentTier ? 'text-yellow-400' : 'text-gray-400'}`}>
+                          ${tier.price}
+                        </span>
+                        {tier === currentTier && (
+                          <div className="text-xs text-yellow-300 flex items-center justify-end space-x-1">
+                            <span>Current</span>
+                            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Product Description & Community */}
+          <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Product Details */}
+            <div className="lg:col-span-2 bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-700 p-8">
+              <h2 className="text-3xl font-bold text-yellow-300 mb-6 flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center">
+                  <span className="text-black font-bold">⚡</span>
+                </div>
+                <span>Product Details</span>
+              </h2>
+              <p className="text-gray-300 leading-relaxed text-lg mb-8">{safeProduct.description}</p>
+              
+              {/* Features */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                  "Active Noise Cancellation",
+                  "30-Hour Battery Life", 
+                  "Premium Sound Quality",
+                  "Wireless Charging Case",
+                  "IPX4 Water Resistance",
+                  "Touch Controls"
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center space-x-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700">
+                    <div className="w-3 h-3 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex-shrink-0"></div>
+                    <span className="text-gray-300 font-medium">{feature}</span>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Product Description & Community */}
-        <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Product Details */}
-          <div className="lg:col-span-2 bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-700 p-8">
-            <h2 className="text-3xl font-bold text-yellow-300 mb-6 flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center">
-                <span className="text-black font-bold">⚡</span>
-              </div>
-              <span>Product Details</span>
-            </h2>
-            <p className="text-gray-300 leading-relaxed text-lg mb-8">{safeProduct.description}</p>
-            
-            {/* Features */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[
-                "Active Noise Cancellation",
-                "30-Hour Battery Life", 
-                "Premium Sound Quality",
-                "Wireless Charging Case",
-                "IPX4 Water Resistance",
-                "Touch Controls"
-              ].map((feature, index) => (
-                <div key={index} className="flex items-center space-x-3 bg-gray-800/50 p-4 rounded-xl border border-gray-700">
-                  <div className="w-3 h-3 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex-shrink-0"></div>
-                  <span className="text-gray-300 font-medium">{feature}</span>
+            {/* Advanced Community Chat System */}
+            <div className="relative bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-700 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-yellow-300 flex items-center space-x-2">
+                  <MessageCircle className="w-5 h-5" />
+                  <span>Community Discussion</span>
+                </h3>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-gray-400">247 online</span>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Advanced Community Chat System */}
-          <div className="relative bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl shadow-2xl border border-gray-700 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-yellow-300 flex items-center space-x-2">
-                <MessageCircle className="w-5 h-5" />
-                <span>Community Discussion</span>
-              </h3>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-xs text-gray-400">247 online</span>
               </div>
-            </div>
 
-            {/* Chat Messages */}
-            <div className="space-y-4 max-h-80 overflow-y-auto mb-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-              {communityMessages.map((msg) => (
-                <div key={msg.id} className="group hover:bg-gray-800/30 rounded-xl p-3 transition-all">
-                  <div className="flex items-start space-x-3">
-                    <div className="relative">
-                      <div className="w-10 h-10 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center text-lg border-2 border-gray-600">
-                        {msg.avatar}
+              {/* Chat Messages */}
+              <div className="space-y-4 max-h-80 overflow-y-auto mb-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                {communityMessages.map((msg) => (
+                  <div key={msg.id} className="group hover:bg-gray-800/30 rounded-xl p-3 transition-all">
+                    <div className="flex items-start space-x-3">
+                      <div className="relative">
+                        <div className="w-10 h-10 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center text-lg border-2 border-gray-600">
+                          {msg.avatar}
+                        </div>
+                        {msg.tier === 'MIGISTUS' && (
+                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center">
+                            <Crown className="w-3 h-3 text-black" />
+                          </div>
+                        )}
+                        {msg.tier === 'Guild' && (
+                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                            <Shield className="w-3 h-3 text-white" />
+                          </div>
+                        )}
                       </div>
-                      {msg.tier === 'MIGISTUS' && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center">
-                          <Crown className="w-3 h-3 text-black" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span 
+                            className="font-medium text-white hover:text-yellow-400 cursor-pointer transition-colors"
+                            onMouseEnter={() => handleProfileHover(msg, true)}
+                            onMouseLeave={() => handleProfileHover(msg, false)}
+                          >
+                            {msg.user}
+                          </span>
+                          <span className={`text-xs px-2 py-1 rounded-full border ${getTierColor(msg.tier)}`}>
+                            {msg.tier}
+                          </span>
+                          {msg.verified && (
+                            <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center" title="Verified Purchaser">
+                              <span className="text-white text-xs">✓</span>
+                            </div>
+                          )}
+                          <span className="text-xs text-gray-500">{msg.time}</span>
+                        </div>
+                        <p className={`text-gray-300 text-sm leading-relaxed ${msg.isReaction ? 'text-2xl' : ''} ${msg.filtered ? 'opacity-75' : ''}`}>
+                          {msg.message}
+                          {msg.filtered && (
+                            <span className="ml-2 text-xs text-yellow-400 opacity-60">[filtered]</span>
+                          )}
+                        </p>
+                        
+                        {/* Message Actions */}
+                        <div className="flex items-center space-x-4 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            onClick={() => handleLikeMessage(msg.id)}
+                            className="flex items-center space-x-1 text-xs text-gray-500 hover:text-yellow-400 transition-colors"
+                          >
+                            <Heart className="w-3 h-3" />
+                            <span>{msg.likes || 0}</span>
+                          </button>
+                          <button className="text-xs text-gray-500 hover:text-yellow-400 transition-colors">
+                            Reply
+                          </button>
+                          <button className="text-xs text-gray-500 hover:text-red-400 transition-colors">
+                            Report
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Live Typing Indicator */}
+                {isTyping && (
+                  <div className="flex items-center space-x-3 opacity-70">
+                    <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
+                      <span className="text-black text-sm font-bold">😎</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <span className="text-sm text-gray-400">You are typing</span>
+                      <div className="flex space-x-1">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Profile Hover Card */}
+              {hoveredProfile && hoveredProfile.profile && (
+                <div 
+                  className="absolute z-50 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-gray-600 shadow-2xl p-4 w-72 transform -translate-x-1/2 left-1/2 bottom-full mb-2"
+                  onMouseEnter={() => handleProfileCardHover(true)}
+                  onMouseLeave={() => handleProfileCardHover(false)}
+                >
+                  {/* Profile Banner */}
+                  <div 
+                    className="h-20 rounded-lg mb-3 relative overflow-hidden"
+                    style={{ background: hoveredProfile.profile.banner }}
+                  >
+                    <div className="absolute inset-0 bg-black/20"></div>
+                  </div>
+
+                  {/* Avatar and Basic Info */}
+                  <div className="flex items-start space-x-3 mb-4">
+                    <div className="relative -mt-8">
+                      <div className="w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center text-2xl border-4 border-gray-800 shadow-lg">
+                        {hoveredProfile.avatar}
+                      </div>
+                      {hoveredProfile.tier === 'MIGISTUS' && (
+                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
+                          <Crown className="w-4 h-4 text-black" />
                         </div>
                       )}
-                      {msg.tier === 'Guild' && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                          <Shield className="w-3 h-3 text-white" />
+                      {hoveredProfile.tier === 'Guild' && (
+                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                          <Shield className="w-4 h-4 text-white" />
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
-                        <span 
-                          className="font-medium text-white hover:text-yellow-400 cursor-pointer transition-colors"
-                          onMouseEnter={() => handleProfileHover(msg, true)}
-                          onMouseLeave={() => handleProfileHover(msg, false)}
-                        >
-                          {msg.user}
-                        </span>
-                        <span className={`text-xs px-2 py-1 rounded-full border ${getTierColor(msg.tier)}`}>
-                          {msg.tier}
-                        </span>
-                        {msg.verified && (
-                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center" title="Verified Purchaser">
+                        <h4 className="font-bold text-white text-lg">{hoveredProfile.user}</h4>
+                        {hoveredProfile.verified && (
+                          <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
                             <span className="text-white text-xs">✓</span>
                           </div>
                         )}
-                        <span className="text-xs text-gray-500">{msg.time}</span>
                       </div>
-                      <p className={`text-gray-300 text-sm leading-relaxed ${msg.isReaction ? 'text-2xl' : ''} ${msg.filtered ? 'opacity-75' : ''}`}>
-                        {msg.message}
-                        {msg.filtered && (
-                          <span className="ml-2 text-xs text-yellow-400 opacity-60">[filtered]</span>
-                        )}
-                      </p>
-                      
-                      {/* Message Actions */}
-                      <div className="flex items-center space-x-4 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
-                          onClick={() => handleLikeMessage(msg.id)}
-                          className="flex items-center space-x-1 text-xs text-gray-500 hover:text-yellow-400 transition-colors"
-                        >
-                          <Heart className="w-3 h-3" />
-                          <span>{msg.likes || 0}</span>
-                        </button>
-                        <button className="text-xs text-gray-500 hover:text-yellow-400 transition-colors">
-                          Reply
-                        </button>
-                        <button className="text-xs text-gray-500 hover:text-red-400 transition-colors">
-                          Report
-                        </button>
-                      </div>
+                      <p className="text-yellow-400 font-medium text-sm">{hoveredProfile.profile.title}</p>
+                      <span className={`text-xs px-2 py-1 rounded-full border ${getTierColor(hoveredProfile.tier)} inline-block mt-1`}>
+                        {hoveredProfile.tier} Member
+                      </span>
                     </div>
                   </div>
-                </div>
-              ))}
 
-              {/* Live Typing Indicator */}
-              {isTyping && (
-                <div className="flex items-center space-x-3 opacity-70">
-                  <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
-                    <span className="text-black text-sm font-bold">😎</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <span className="text-sm text-gray-400">You are typing</span>
-                    <div className="flex space-x-1">
-                      <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-4 mb-3">
+                    <div className="bg-gray-800/50 rounded-lg p-3 text-center">
+                      <div className="text-yellow-400 font-bold text-lg">{hoveredProfile.profile.totalPledges}</div>
+                      <div className="text-gray-400 text-xs">Total Pledges</div>
                     </div>
+                    <div className="bg-gray-800/50 rounded-lg p-3 text-center">
+                      <div className="text-green-400 font-bold text-lg">{hoveredProfile.profile.totalSaved}</div>
+                      <div className="text-gray-400 text-xs">Total Saved</div>
+                    </div>
+                  </div>
+
+                  {/* Member Since */}
+                  <div className="text-center text-xs text-gray-500 border-t border-gray-700 pt-3">
+                    Member since {hoveredProfile.profile.joinDate}
+                  </div>
+
+                  {/* Arrow pointer */}
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
+                    <div className="w-3 h-3 bg-gray-800 rotate-45 border-r border-b border-gray-600"></div>
                   </div>
                 </div>
               )}
-            </div>
 
-            {/* Profile Hover Card */}
-            {hoveredProfile && hoveredProfile.profile && (
-              <div 
-                className="absolute z-50 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl border border-gray-600 shadow-2xl p-4 w-72 transform -translate-x-1/2 left-1/2 bottom-full mb-2"
-                onMouseEnter={() => handleProfileCardHover(true)}
-                onMouseLeave={() => handleProfileCardHover(false)}
-              >
-                {/* Profile Banner */}
-                <div 
-                  className="h-20 rounded-lg mb-3 relative overflow-hidden"
-                  style={{ background: hoveredProfile.profile.banner }}
-                >
-                  <div className="absolute inset-0 bg-black/20"></div>
-                </div>
-
-                {/* Avatar and Basic Info */}
-                <div className="flex items-start space-x-3 mb-4">
-                  <div className="relative -mt-8">
-                    <div className="w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center text-2xl border-4 border-gray-800 shadow-lg">
-                      {hoveredProfile.avatar}
-                    </div>
-                    {hoveredProfile.tier === 'MIGISTUS' && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
-                        <Crown className="w-4 h-4 text-black" />
-                      </div>
-                    )}
-                    {hoveredProfile.tier === 'Guild' && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                        <Shield className="w-4 h-4 text-white" />
-                      </div>
-                    )}
+              {/* Profanity Warning */}
+              {showProfanityWarning && (
+                <div className="mb-4 bg-gradient-to-r from-red-900/40 to-orange-900/40 border border-red-500/50 rounded-xl p-3">
+                  <div className="flex items-center space-x-2">
+                    <Shield className="w-4 h-4 text-red-400" />
+                    <span className="text-red-300 text-sm font-medium">Content filtered for community standards</span>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <h4 className="font-bold text-white text-lg">{hoveredProfile.user}</h4>
-                      {hoveredProfile.verified && (
-                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs">✓</span>
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-yellow-400 font-medium text-sm">{hoveredProfile.profile.title}</p>
-                    <span className={`text-xs px-2 py-1 rounded-full border ${getTierColor(hoveredProfile.tier)} inline-block mt-1`}>
-                      {hoveredProfile.tier} Member
-                    </span>
-                  </div>
+                  <p className="text-red-200 text-xs mt-1">
+                    Please keep discussions respectful and on-topic. Continued violations may result in chat restrictions.
+                  </p>
                 </div>
+              )}
 
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-4 mb-3">
-                  <div className="bg-gray-800/50 rounded-lg p-3 text-center">
-                    <div className="text-yellow-400 font-bold text-lg">{hoveredProfile.profile.totalPledges}</div>
-                    <div className="text-gray-400 text-xs">Total Pledges</div>
-                  </div>
-                  <div className="bg-gray-800/50 rounded-lg p-3 text-center">
-                    <div className="text-green-400 font-bold text-lg">{hoveredProfile.profile.totalSaved}</div>
-                    <div className="text-gray-400 text-xs">Total Saved</div>
-                  </div>
-                </div>
-
-                {/* Member Since */}
-                <div className="text-center text-xs text-gray-500 border-t border-gray-700 pt-3">
-                  Member since {hoveredProfile.profile.joinDate}
-                </div>
-
-                {/* Arrow pointer */}
-                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
-                  <div className="w-3 h-3 bg-gray-800 rotate-45 border-r border-b border-gray-600"></div>
-                </div>
-              </div>
-            )}
-
-            {/* Profanity Warning */}
-            {showProfanityWarning && (
-              <div className="mb-4 bg-gradient-to-r from-red-900/40 to-orange-900/40 border border-red-500/50 rounded-xl p-3">
-                <div className="flex items-center space-x-2">
-                  <Shield className="w-4 h-4 text-red-400" />
-                  <span className="text-red-300 text-sm font-medium">Content filtered for community standards</span>
-                </div>
-                <p className="text-red-200 text-xs mt-1">
-                  Please keep discussions respectful and on-topic. Continued violations may result in chat restrictions.
-                </p>
-              </div>
-            )}
-
-            {/* Chat Input */}
-            {hasPledged ? (
+              {/* Chat Input */}
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
@@ -887,119 +899,103 @@ const ProductPage = ({ productId }) => {
                   </span>
                 </div>
               </div>
-            ) : (
-              <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl p-4 border border-gray-600 text-center">
-                <div className="flex items-center justify-center space-x-2 mb-2">
-                  <MessageCircle className="w-5 h-5 text-gray-400" />
-                  <span className="text-gray-300 font-medium">Join the conversation</span>
-                </div>
-                <p className="text-sm text-gray-400 mb-3">
-                  Pledge to this drop to unlock community chat, reactions, and exclusive discussions.
-                </p>
-                <button 
-                  onClick={() => setShowPledgeModal(true)}
-                  className="bg-gradient-to-r from-yellow-600 to-yellow-500 text-black px-6 py-2 rounded-lg font-semibold hover:shadow-lg hover:shadow-yellow-500/50 transition-all"
-                >
-                  Join Drop to Chat
-                </button>
-              </div>
-            )}
 
-            {/* Chat Rules */}
-            <div className="mt-4 pt-4 border-t border-gray-700">
-              <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-                <span className="flex items-center space-x-1">
-                  <Shield className="w-3 h-3" />
-                  <span>Community Guidelines</span>
-                </span>
-                <div className="flex items-center space-x-3">
-                  <span>No spam</span>
-                  <span>Be respectful</span>
-                  <span>Stay on topic</span>
+              {/* Chat Rules */}
+              <div className="mt-4 pt-4 border-t border-gray-700">
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                  <span className="flex items-center space-x-1">
+                    <Shield className="w-3 h-3" />
+                    <span>Community Guidelines</span>
+                  </span>
+                  <div className="flex items-center space-x-3">
+                    <span>No spam</span>
+                    <span>Be respectful</span>
+                    <span>Stay on topic</span>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600">
+                  Automated content filtering • Report inappropriate messages • Verified purchasers have higher trust
                 </div>
               </div>
-              <div className="text-xs text-gray-600">
-                Automated content filtering • Report inappropriate messages • Verified purchasers have higher trust
-              </div>
-            </div>
 
-            {/* Moderation Panel (for admins) */}
-            <div className="mt-4 bg-red-900/20 border border-red-700/50 rounded-xl p-3 hidden">
-              <div className="flex items-center justify-between">
-                <span className="text-red-300 text-sm font-medium">Moderation Panel</span>
-                <div className="flex space-x-2">
-                  <button className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700 transition-colors">
-                    Clear Chat
-                  </button>
-                  <button className="bg-yellow-600 text-black px-3 py-1 rounded text-xs hover:bg-yellow-700 transition-colors">
-                    Slow Mode
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Pledge Modal */}
-      {showPledgeModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl max-w-md w-full p-8 border border-gray-700 shadow-2xl">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="w-8 h-8 text-black" />
-              </div>
-              <h3 className="text-2xl font-bold text-yellow-300 mb-2">Confirm Your Pledge</h3>
-              <p className="text-gray-400">Join the collective buying power</p>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-gray-400">Product:</span>
-                  <span className="font-semibold text-white">{safeProduct.name}</span>
-                </div>
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-gray-400">Current Price:</span>
-                  <span className="font-bold text-yellow-400">${currentPrice}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">You'll Pay:</span>
-                  <span className="font-bold text-white">${currentPrice}</span>
-                </div>
-              </div>
-              
-              <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/30 border border-blue-500/40 rounded-xl p-4">
-                <div className="flex items-start space-x-3">
-                  <Shield className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-blue-300 font-semibold text-sm mb-1">Price Protection</p>
-                    <p className="text-blue-200 text-sm">
-                      If more people join and the price drops further, you'll automatically receive a refund for the difference.
-                    </p>
+              {/* Moderation Panel (for admins) */}
+              <div className="mt-4 bg-red-900/20 border border-red-700/50 rounded-xl p-3 hidden">
+                <div className="flex items-center justify-between">
+                  <span className="text-red-300 text-sm font-medium">Moderation Panel</span>
+                  <div className="flex space-x-2">
+                    <button className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700 transition-colors">
+                      Clear Chat
+                    </button>
+                    <button className="bg-yellow-600 text-black px-3 py-1 rounded text-xs hover:bg-yellow-700 transition-colors">
+                      Slow Mode
+                    </button>
                   </div>
                 </div>
               </div>
-
-              <div className="flex space-x-4 pt-4">
-                <button 
-                  onClick={() => setShowPledgeModal(false)}
-                  className="flex-1 py-3 px-4 border border-gray-600 rounded-xl text-gray-300 hover:bg-gray-800 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handlePledge}
-                  className="flex-1 py-3 px-4 bg-gradient-to-r from-yellow-600 to-yellow-500 text-black rounded-xl hover:shadow-lg hover:shadow-yellow-500/50 transition-all font-bold"
-                >
-                  Confirm Pledge
-                </button>
-              </div>
             </div>
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Pledge Modal */}
+        {showPledgeModal && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl max-w-md w-full p-8 border border-gray-700 shadow-2xl">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Zap className="w-8 h-8 text-black" />
+                </div>
+                <h3 className="text-2xl font-bold text-yellow-300 mb-2">Confirm Your Pledge</h3>
+                <p className="text-gray-400">Join the collective buying power</p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-gray-400">Product:</span>
+                    <span className="font-semibold text-white">{safeProduct.name}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-gray-400">Current Price:</span>
+                    <span className="font-bold text-yellow-400">${currentPrice}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">You'll Pay:</span>
+                    <span className="font-bold text-white">${currentPrice}</span>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/30 border border-blue-500/40 rounded-xl p-4">
+                  <div className="flex items-start space-x-3">
+                    <Shield className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-blue-300 font-semibold text-sm mb-1">Price Protection</p>
+                      <p className="text-blue-200 text-sm">
+                        If more people join and the price drops further, you'll automatically receive a refund for the difference.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex space-x-4 pt-4">
+                  <button 
+                    onClick={() => setShowPledgeModal(false)}
+                    className="flex-1 py-3 px-4 border border-gray-600 rounded-xl text-gray-300 hover:bg-gray-800 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handlePledge}
+                    className="flex-1 py-3 px-4 bg-gradient-to-r from-yellow-600 to-yellow-500 text-black rounded-xl hover:shadow-lg hover:shadow-yellow-500/50 transition-all font-bold"
+                  >
+                    Confirm Pledge
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 

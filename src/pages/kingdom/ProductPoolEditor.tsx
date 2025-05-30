@@ -46,7 +46,7 @@ type ProductFormData = {
   timeframe: string;
   category: string;
   pricingTiers?: PricingTier[];
-  slug?: string; // Add slug to form data for modal editing
+  slug?: string;
 };
 
 const slugify = (name: string) =>
@@ -57,7 +57,7 @@ export default function ProductPoolEditor() {
     {
       id: 1,
       name: "Gilded Vanguard Headset",
-      image: "https://placehold.co/400x400?text=Headset",
+      image: "https://placehold.co/400x400.png?text=Headset",
       description: "Premium gaming headset with surround sound",
       goal: 100,
       link: "https://example.com/headset",
@@ -66,11 +66,12 @@ export default function ProductPoolEditor() {
       votes: 73,
       featured: true,
       pledges: 0,
+      slug: "gilded-vanguard-headset",
     },
     {
       id: 2,
       name: "Wireless Mouse Pro",
-      image: "https://placehold.co/400x400?text=Mouse",
+      image: "https://placehold.co/400x400.png?text=Mouse",
       description: "High-precision wireless gaming mouse",
       goal: 75,
       link: "https://example.com/mouse",
@@ -79,11 +80,12 @@ export default function ProductPoolEditor() {
       votes: 42,
       featured: false,
       pledges: 0,
+      slug: "wireless-mouse-pro",
     },
     {
       id: 3,
       name: "Mechanical Keyboard",
-      image: "https://placehold.co/400x400?text=Keyboard",
+      image: "https://placehold.co/400x400.png?text=Keyboard",
       description: "RGB backlit mechanical keyboard",
       goal: 120,
       link: "https://example.com/keyboard",
@@ -92,11 +94,12 @@ export default function ProductPoolEditor() {
       votes: 89,
       featured: true,
       pledges: 0,
+      slug: "mechanical-keyboard",
     },
     {
       id: 4,
       name: "Gaming Monitor",
-      image: "https://placehold.co/400x400?text=Monitor",
+      image: "https://placehold.co/400x400.png?text=Monitor",
       description: "4K 144Hz gaming monitor",
       goal: 200,
       link: "https://example.com/monitor",
@@ -105,11 +108,12 @@ export default function ProductPoolEditor() {
       votes: 156,
       featured: false,
       pledges: 0,
+      slug: "gaming-monitor",
     },
     {
       id: 5,
       name: "Webcam HD",
-      image: "https://placehold.co/400x400?text=Webcam",
+      image: "https://placehold.co/400x400.png?text=Webcam",
       description: "1080p HD webcam for streaming",
       goal: 60,
       link: "https://example.com/webcam",
@@ -118,11 +122,12 @@ export default function ProductPoolEditor() {
       votes: 31,
       featured: false,
       pledges: 0,
+      slug: "webcam-hd",
     },
     {
       id: 6,
       name: "Smart Speaker",
-      image: "https://placehold.co/400x400?text=Speaker",
+      image: "https://placehold.co/400x400.png?text=Speaker",
       description: "Voice-controlled smart speaker",
       goal: 85,
       link: "https://example.com/speaker",
@@ -131,11 +136,12 @@ export default function ProductPoolEditor() {
       votes: 67,
       featured: true,
       pledges: 0,
+      slug: "smart-speaker",
     },
     {
       id: 7,
       name: "Fitness Tracker",
-      image: "https://placehold.co/400x400?text=Tracker",
+      image: "https://placehold.co/400x400.png?text=Tracker",
       description: "Advanced fitness and health tracker",
       goal: 95,
       link: "https://example.com/tracker",
@@ -144,11 +150,12 @@ export default function ProductPoolEditor() {
       votes: 123,
       featured: false,
       pledges: 0,
+      slug: "fitness-tracker",
     },
     {
       id: 8,
       name: "Bluetooth Earbuds",
-      image: "https://placehold.co/400x400?text=Earbuds",
+      image: "https://placehold.co/400x400.png?text=Earbuds",
       description: "Wireless noise-canceling earbuds",
       goal: 110,
       link: "https://example.com/earbuds",
@@ -157,12 +164,11 @@ export default function ProductPoolEditor() {
       votes: 201,
       featured: true,
       pledges: 0,
+      slug: "bluetooth-earbuds",
     }
   ]);
 
   const [isDragOver, setIsDragOver] = useState(false);
-
-  // Add missing state hooks
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -187,7 +193,6 @@ export default function ProductPoolEditor() {
         const response = await fetch("/api/products");
         const data = await response.json();
         if (Array.isArray(data.products)) {
-          // Ensure pledges is present for all products
           setProducts(
             data.products.map((p: any) => ({
               ...p,
@@ -200,7 +205,7 @@ export default function ProductPoolEditor() {
       }
     };
 
-    fetchProducts(); // Always fetch on mount
+    fetchProducts();
   }, []);
 
   // Drag and drop handlers
@@ -222,12 +227,10 @@ export default function ProductPoolEditor() {
     const imageFile = files.find(file => file.type.startsWith('image/'));
     
     if (imageFile) {
-      // Create a data URL for the dropped image
       const reader = new FileReader();
       reader.onload = (event) => {
         const imageUrl = event.target?.result as string;
         
-        // Open modal with the dropped image
         setEditingProduct(null);
         setFormData({
           name: "",
@@ -269,18 +272,18 @@ export default function ProductPoolEditor() {
   };
 
   const deleteProduct = async (productId: number) => {
-  try {
-    const res = await fetch(`/api/products/${productId}`, {
-      method: "DELETE"
-    });
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        method: "DELETE"
+      });
 
-    if (!res.ok) throw new Error("Delete failed");
+      if (!res.ok) throw new Error("Delete failed");
 
-    setProducts(prev => prev.filter(p => p.id !== productId));
-  } catch (err) {
-    console.error("Error deleting product:", err);
-  }
-};
+      setProducts(prev => prev.filter(p => p.id !== productId));
+    } catch (err) {
+      console.error("Error deleting product:", err);
+    }
+  };
 
   const openAddModal = () => {
     setEditingProduct(null);
@@ -334,7 +337,6 @@ export default function ProductPoolEditor() {
     });
   };
 
-  // Regenerate slug from name
   const regenerateSlug = () => {
     setFormData(prev => ({
       ...prev,
@@ -343,7 +345,6 @@ export default function ProductPoolEditor() {
     setSlugError(null);
   };
 
-  // Copy slug to clipboard
   const copySlug = () => {
     if (formData.slug) {
       navigator.clipboard.writeText(formData.slug);
@@ -352,7 +353,6 @@ export default function ProductPoolEditor() {
     }
   };
 
-  // Validate slug uniqueness before saving
   const isSlugUnique = (slug: string, ignoreId?: number) => {
     return !products.some(
       p => (p.slug ? p.slug : slugify(p.name)) === slug && p.id !== ignoreId
@@ -377,7 +377,6 @@ export default function ProductPoolEditor() {
       slug,
     };
 
-    // Optimistically update local state before API call
     setProducts(prev =>
       editingProduct
         ? prev.map(p => (p.id === editingProduct.id ? newProduct : p))
@@ -394,7 +393,6 @@ export default function ProductPoolEditor() {
       if (!res.ok) throw new Error("Failed to save product");
     } catch (err) {
       console.error("Save failed:", err);
-      // Optionally: revert local optimistic update here if desired
     }
     closeModal();
   };
@@ -451,7 +449,6 @@ export default function ProductPoolEditor() {
         </div>
       )}
 
-
       {/* Single Header Section */}
       <div className="w-full bg-zinc-900/50 border-b border-yellow-400/20 py-6 mb-8">
         <div className="max-w-6xl mx-auto px-6">
@@ -496,154 +493,104 @@ export default function ProductPoolEditor() {
           </p>
         </div>
 
-        {/* Product Grid - LESS CONGESTED */}
-        <div className="flex justify-center" style={{ marginTop: '40px' }}>
-          <div
-            className="
-              grid
-              grid-cols-1
-              sm:grid-cols-2
-              md:grid-cols-3
-              lg:grid-cols-4
-              xl:grid-cols-5
-              2xl:grid-cols-6
-              gap-x-10
-              gap-y-14
-              w-full
-              max-w-7xl
-            "
-            style={{
-              // Add a minHeight to ensure grid rows have space
-              minHeight: "500px",
-            }}
-          >
-            {filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                className="flex justify-center"
-                style={{
-                  // Ensure each card is not overlapping
-                  minWidth: 0,
+        {/* Product Grid - Fixed consistent sizing */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 max-w-7xl mx-auto">
+          {filteredProducts.map((product) => (
+            <div
+              key={product.id}
+              className="bg-zinc-800/50 backdrop-blur-sm border border-yellow-400/20 rounded-2xl shadow-lg hover:shadow-xl hover:border-yellow-400/40 transition-all duration-300 hover:scale-105 cursor-pointer relative group flex flex-col p-5"
+              onClick={() => openEditModal(product)}
+              style={{
+                background: 'linear-gradient(135deg, #23272f 0%, #18181b 100%)',
+                boxShadow: '0 8px 32px 0 rgba(0,0,0,0.25), 0 1.5px 6px 0 rgba(250,204,21,0.07)',
+                height: '480px' // Fixed height for all cards
+              }}
+            >
+              {/* Votes badge */}
+              {product.votes !== undefined && (
+                <div className="absolute top-4 left-4 bg-yellow-400/90 text-black text-sm font-bold rounded-full px-3 py-1 shadow-md z-10">
+                  {product.votes}
+                </div>
+              )}
+              
+              {/* Featured star */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFeatured(product.id);
                 }}
+                title="Toggle Staff Pick"
+                className="absolute top-4 right-4 bg-black/60 hover:bg-yellow-400/90 text-white hover:text-black text-sm rounded px-3 py-1 z-10 transition-colors"
               >
-                <Link
-                  href={`/products/${product.slug ? product.slug : slugify(product.name)}`}
-                  className="block w-full"
-                  passHref
-                >
-                  <div
-                    className="bg-zinc-800/50 backdrop-blur-sm border border-yellow-400/20 rounded-2xl shadow-lg hover:shadow-xl hover:border-yellow-400/40 transition-all duration-300 hover:scale-105 cursor-pointer relative group"
-                    onClick={() => openEditModal(product)}
-                    style={{
-                      padding: '28px 20px 20px 20px',
-                      width: '260px',
-                      minHeight: '410px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'flex-start',
-                      alignItems: 'center',
-                      background: 'linear-gradient(135deg, #23272f 0%, #18181b 100%)',
-                      margin: '0 auto',
-                      boxShadow: '0 8px 32px 0 rgba(0,0,0,0.25), 0 1.5px 6px 0 rgba(250,204,21,0.07)'
-                    }}
-                  >
-                    {product.votes !== undefined && (
-                      <div
-                        className="absolute bg-yellow-400/90 text-black text-[14px] font-bold rounded-full shadow-md z-10"
-                        style={{
-                          top: '18px',
-                          left: '18px',
-                          padding: '8px 12px'
-                        }}
-                      >
-                        {product.votes}
-                      </div>
-                    )}
-                    <div
-                      className="relative"
-                      style={{ marginBottom: '22px', width: '100%' }}
-                    >
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFeatured(product.id);
-                        }}
-                        title="Toggle Staff Pick"
-                        className="absolute bg-black/60 hover:bg-yellow-400/90 text-white hover:text-black text-[14px] rounded z-10 transition-colors"
-                        style={{
-                          top: '18px',
-                          right: '18px',
-                          padding: '8px 12px'
-                        }}
-                      >
-                        {product.featured ? '⭐' : '✩'}
-                      </button>
-                      {product.image ? (
-                        <div className="relative w-full rounded border border-zinc-600 bg-zinc-700" style={{ height: "160px" }}>
-                          <Image
-                            src={product.image}
-                            alt={product.name}
-                            fill
-                            className="object-cover rounded"
-                          />
-                        </div>
-                      ) : (
-                        <div
-                          className="w-full bg-zinc-700 border border-zinc-600 rounded flex items-center justify-center"
-                          style={{ height: '160px' }}
-                        >
-                          <span className="text-zinc-400 text-[14px]">No Image</span>
-                        </div>
-                      )}
-                    </div>
-                    <div
-                      className="text-white text-center text-[16px] font-semibold truncate px-1"
-                      title={product.name}
-                      style={{ marginBottom: '4px' }}
-                    >
-                      {product.name}
-                    </div>
-                    <div
-                      className="text-xs text-yellow-300 text-center mb-2 break-all"
-                      style={{ marginBottom: '10px' }}
-                    >
-                      <span className="bg-zinc-900/70 px-2 py-0.5 rounded">/{product.slug ? product.slug : slugify(product.name)}</span>
-                    </div>
-                    <div
-                      className="text-yellow-400 text-center text-[15px]"
-                      style={{ marginBottom: '8px' }}
-                    >
-                      Goal: {product.goal}
-                    </div>
-                    <div
-                      className="text-zinc-400 text-center text-[13px]"
-                      style={{ marginBottom: '10px' }}
-                    >
-                      {product.timeframe}
-                    </div>
-                    <div
-                      className="text-gray-400 text-center text-[13px] mb-2 line-clamp-2"
-                      style={{ minHeight: '36px', marginBottom: '14px' }}
-                    >
-                      {product.description}
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEditModal(product);
-                      }}
-                      className="w-full bg-yellow-400/80 hover:bg-yellow-400 text-black border border-yellow-400/50 text-[13px] px-1 py-0 leading-none opacity-0 group-hover:opacity-100 transition-opacity rounded font-medium"
-                      style={{ height: '32px', marginTop: 'auto' }}
-                    >
-                      Edit
-                    </button>
+                {product.featured ? '⭐' : '✩'}
+              </button>
+
+              {/* Product Image */}
+              <div className="relative w-full h-40 mb-4 rounded-lg overflow-hidden bg-zinc-700">
+                {product.image ? (
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-zinc-400 text-sm">No Image</span>
                   </div>
-                </Link>
+                )}
               </div>
-            ))}
-          </div>
+
+              {/* Product Info */}
+              <div className="flex-1 flex flex-col">
+                <h3 className="text-white text-lg font-semibold mb-1 truncate">
+                  {product.name}
+                </h3>
+                
+                <div className="text-xs text-yellow-300 mb-2">
+                  <span className="bg-zinc-900/70 px-2 py-0.5 rounded">
+                    /{product.slug || slugify(product.name)}
+                  </span>
+                </div>
+
+                <div className="text-yellow-400 text-sm mb-1">
+                  Goal: {product.goal}
+                </div>
+
+                <div className="text-zinc-400 text-sm mb-2">
+                  {product.timeframe}
+                </div>
+
+                <p className="text-gray-400 text-sm mb-4 line-clamp-2 flex-1">
+                  {product.description}
+                </p>
+
+                {/* Stacked buttons */}
+                <div className="space-y-2 w-full opacity-0 group-hover:opacity-100 transition-opacity mt-auto">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEditModal(product);
+                    }}
+                    className="w-full bg-yellow-400/80 hover:bg-yellow-400 text-black border border-yellow-400/50 text-sm py-2 rounded font-medium transition-colors"
+                  >
+                    Edit
+                  </button>
+                  <Link
+                    href={`/products/${product.slug || slugify(product.name)}`}
+                    target="_blank"
+                    className="block w-full bg-zinc-900 border border-yellow-400/50 text-yellow-400 hover:bg-yellow-400 hover:text-black text-sm py-2 rounded font-medium text-center transition-colors"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    View Product
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
+        {/* Modal - keeping the same */}
         {isModalOpen && (
           <div 
             className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-80 z-50"
@@ -725,6 +672,7 @@ export default function ProductPoolEditor() {
                     }}
                   />
                 </div>
+                
                 {/* Slug field with copy and regenerate */}
                 <div>
                   <label className="block text-gray-200 text-base font-semibold mb-3 flex items-center gap-2">
@@ -758,7 +706,6 @@ export default function ProductPoolEditor() {
                         height: '40px'
                       }}
                     />
-                    {/* Preview link */}
                     <a
                       href={`/products/${formData.slug ?? slugify(formData.name)}`}
                       target="_blank"
@@ -966,7 +913,6 @@ export default function ProductPoolEditor() {
                 >
                   {editingProduct ? '💾 Update' : '➕ Add'} Product
                 </button>
-              
               </div>
             </div>
           </div>

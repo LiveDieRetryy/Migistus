@@ -1,12 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Optional: custom fonts or styles */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap');
-
-:root {
-  --background: 240 10% 3.9%;
+@layer base {
+  :root {
+    /* Your existing root variables stay below this */
+    --background: 240 10% 3.9%;
   --foreground: 0 0% 98%;
   --card: 240 10% 3.9%;
   --card-foreground: 0 0% 98%;
@@ -36,4 +37,5 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-feature-settings: "rlig" 1, "calt" 1;
+}
 }

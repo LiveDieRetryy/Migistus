@@ -6,12 +6,36 @@ import useProductStats from "@/lib/useProductStats";
 import useRefundStats from "@/lib/useRefundStats";
 import useVotingStats from "@/lib/useVotingStats";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 export default function KingsDomainPage() {
   const { userCount } = useUserStats();
   const { liveProductCount } = useProductStats();
   const { pendingRefunds } = useRefundStats();
   const { totalVotes } = useVotingStats();
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Only run on client
+    if (typeof window !== "undefined") {
+      const isAdmin = localStorage.getItem("isAdmin") === "true";
+      if (!isAdmin) {
+        router.replace("/admin-login");
+      } else {
+        setLoading(false);
+      }
+    }
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-yellow-400 text-2xl">
+        Loading admin panel...
+      </div>
+    );
+  }
 
   return (
     <DashboardLayout>

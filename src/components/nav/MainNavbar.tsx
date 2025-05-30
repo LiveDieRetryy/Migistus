@@ -16,7 +16,9 @@ export default function MainNavbar() {
 
   const navItems = [
     { name: "Home", href: "/" },
+    { name: "Categories", href: "/categories" },
     { name: "Drops", href: "/drops" },
+    { name: "Coming Soon", href: "/coming-soon" }, // <-- Add this line
     { name: "Vote", href: "/voting" },
     ...(isAdmin ? [{ name: "Kingdom", href: "/kingdom" }] : [])
   ];

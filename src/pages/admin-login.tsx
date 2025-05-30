@@ -20,6 +20,9 @@ export default function AdminLoginPage() {
       body: JSON.stringify(form),
     });
     if (res.ok) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("isAdmin", "true");
+      }
       router.push("/kingdom");
     } else {
       const data = await res.json();
