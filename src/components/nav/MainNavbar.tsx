@@ -18,7 +18,7 @@ export default function MainNavbar() {
     { name: "Home", href: "/" },
     { name: "Categories", href: "/categories" },
     { name: "Drops", href: "/drops" },
-    { name: "Coming Soon", href: "/coming-soon" }, // <-- Add this line
+    { name: "Coming Soon", href: "/coming-soon" },
     { name: "Vote", href: "/voting" },
     ...(isAdmin ? [{ name: "Kingdom", href: "/kingdom" }] : [])
   ];
@@ -26,13 +26,10 @@ export default function MainNavbar() {
   const isActive = (path: string) => router.pathname === path;
 
   return (
-    <nav className="w-full px-12 py-6 bg-zinc-950 border-b border-yellow-500 shadow-md">
-      <div className="max-w-8xl mx-auto flex items-center justify-between relative">
-        {/* Left Spacer */}
-        <div className="flex-1"></div>
-
-        {/* Center Logo - Much Bigger */}
-        <div className="flex-shrink-0">
+    <nav className="w-full px-2 sm:px-12 py-4 sm:py-6 bg-zinc-950 border-b border-yellow-500 shadow-md">
+      <div className="max-w-8xl mx-auto flex flex-col sm:flex-row items-center justify-between relative">
+        {/* Center Logo */}
+        <div className="order-1 sm:order-2 flex justify-center w-full sm:w-auto mb-2 sm:mb-0">
           <Link
             href="/"
             className="flex items-center hover:opacity-80 transition-opacity duration-200"
@@ -40,30 +37,26 @@ export default function MainNavbar() {
             <Image
               src="/images/migistus_logo.png"
               alt="MIGISTUS"
-              width={250}
-              height={80}
-              className="object-contain"
+              width={180}
+              height={60}
+              className="object-contain mx-auto"
+              priority
             />
           </Link>
         </div>
 
-        {/* Right Menu Items */}
-        <div className="flex-1 flex justify-end">
-          <div className="flex items-center text-sm font-medium text-white">
+        {/* Nav Items */}
+        <div className="order-2 sm:order-1 w-full sm:w-auto flex justify-center sm:justify-start mb-2 sm:mb-0">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-0 sm:flex-row items-center text-sm font-medium text-white">
             {navItems.map((item, index) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`relative hover:text-yellow-400 transition-colors duration-200 whitespace-nowrap ${
+                className={`relative px-3 py-2 sm:px-2 sm:py-0 rounded hover:text-yellow-400 transition-colors duration-200 whitespace-nowrap ${
                   isActive(item.href)
                     ? "text-yellow-400 border-b-2 border-yellow-400"
                     : "text-gray-300"
                 }`}
-                style={{
-                  marginRight: index < navItems.length - 1 ? '32px' : '0',
-                  paddingLeft: '8px',
-                  paddingRight: '8px',
-                }}
               >
                 <span className="relative group">
                   {item.name}
@@ -71,10 +64,15 @@ export default function MainNavbar() {
                 </span>
               </Link>
             ))}
-            {/* Auth links */}
+          </div>
+        </div>
+
+        {/* Auth links */}
+        <div className="order-3 w-full sm:w-auto flex justify-center sm:justify-end">
+          <div className="flex items-center text-sm font-medium text-white">
             <Link
               href="/login"
-              className="ml-6 px-4 py-2 rounded bg-yellow-500 text-black font-bold hover:bg-yellow-400 transition"
+              className="ml-0 sm:ml-6 px-4 py-2 rounded bg-yellow-500 text-black font-bold hover:bg-yellow-400 transition"
             >
               Sign In
             </Link>
