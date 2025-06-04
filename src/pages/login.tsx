@@ -27,6 +27,8 @@ export default function LoginPage() {
     if (adminRes.ok) {
       if (typeof window !== "undefined") {
         localStorage.setItem("isAdmin", "true");
+        localStorage.setItem("isSignedIn", "true");
+        localStorage.removeItem("userId");
       }
       router.push("/kingdom");
       return;
@@ -38,8 +40,13 @@ export default function LoginPage() {
       body: JSON.stringify(form),
     });
     if (res.ok) {
+      const data = await res.json();
       if (typeof window !== "undefined") {
+        localStorage.setItem("isSignedIn", "true");
         localStorage.removeItem("isAdmin");
+        if (data.user && data.user.id) {
+          localStorage.setItem("userId", String(data.user.id));
+        }
       }
       router.push("/");
     } else {

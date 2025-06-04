@@ -50,3 +50,9 @@ export function slugify(name: string): string {
  *   pricingTiers?: { min: number; max: number; price: number }[];
  * }
  */
+
+// Ensure there is NO function like:
+// export function getDisplayName(msgUser: string, currentUser: string) {
+//   return msgUser === currentUser ? "you" : msgUser;
+// }
+// If so, REMOVE or update to always return msgUser.

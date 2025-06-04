@@ -95,6 +95,11 @@ export default function DropsPage() {
       .catch(console.error);
   }, []);
 
+  const canViewDrop = (userTier, drop) => {
+    if (drop.earlyAccess && userTier !== "MIGISTUS") return false;
+    return true;
+  };
+
   return (
     <>
       <Head>

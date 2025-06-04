@@ -12,5 +12,23 @@
     "tier": "MIGISTUS",
     "wishlist": [],
     "referrals": []
+  },
+  {
+    "id": 1749005609375,
+    "username": "Travis",
+    "email": "pureasspaintballa34@gmail.com",
+    "password": "$2a$10$7/wouqHnCAfZoMjRhR0g0OEQTaxNdC7C1DXqekEzY0k0czUnINBRy",
+    "tier": "Initiate",
+    "banned": false,
+    "createdAt": "2025-06-04T02:53:29.375Z"
+  },
+  {
+    "id": 1749008571501,
+    "username": "LiveDieRetry",
+    "email": "livedieretry@gmail.com",
+    "password": "$2a$10$YlgnDMwOZuSiUzc3k/AayuvHlxhUyCpEJOwJNmIV5FeMTZ1nnUnye",
+    "tier": "Initiate",
+    "banned": false,
+    "createdAt": "2025-06-04T03:42:51.501Z"
   }
 ]

@@ -20,7 +20,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "Missing fields" });
   }
   const users = readUsers();
-  const user = users.find((u: any) => u.email === email);
+  // Allow login by username or email
+  const user = users.find((u: any) => u.email === email || u.username === email);
   if (!user) {
     return res.status(401).json({ error: "Invalid credentials" });
   }

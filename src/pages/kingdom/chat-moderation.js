@@ -72,6 +72,16 @@ export default function ChatModerationPage() {
           <p className="text-zinc-400">Monitor and manage community discussions</p>
         </div>
 
+        {/* New: Button to Reported Chats Monitor */}
+        <div className="flex justify-end mb-6">
+          <a
+            href="/kingdom/reported-chats"
+            className="bg-red-600 hover:bg-red-500 text-white font-semibold px-4 py-2 rounded transition"
+          >
+            🚨 View Reported Chats
+          </a>
+        </div>
+        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Filter Settings */}
           <div className="bg-zinc-900 border border-yellow-500 rounded-lg p-6">
@@ -183,3 +193,17 @@ export default function ChatModerationPage() {
     </DashboardLayout>
   );
 }
+
+// If you want to improve or extend the Chat Moderation page, please specify what features or changes you want.
+// The current page already allows:
+// - Editing profanity list
+// - Toggling filter settings
+// - Saving moderation settings to /api/moderation
+// - Viewing recent chat activity
+
+// You can request features such as:
+// - Live chat logs with search/filter
+// - Ban/unban users
+// - Approve/reject flagged messages
+// - Export/import profanity lists
+// - Real-time moderation actions

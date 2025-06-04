@@ -8,6 +8,9 @@ function ensureFile() {
   if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, "[]");
 }
 
+// When processing a vote, multiply by user's tier
+const tierMultipliers = { Initiate: 1, Guild: 2, MIGISTUS: 4 };
+
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   ensureFile();
   if (req.method === "GET") {
@@ -21,6 +24,10 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
       const vote = req.body;
       const votes = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      const user = /* lookup user by id */;
+      const multiplier = tierMultipliers[user.tier] || 1;
+      const effectiveVotes = 1 * multiplier;
+      vote.value *= effectiveVotes; // Adjust the vote value based on tier
       votes.push(vote);
       fs.writeFileSync(filePath, JSON.stringify(votes, null, 2));
       res.status(201).json({ success: true });

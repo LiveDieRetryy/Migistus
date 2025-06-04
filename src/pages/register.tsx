@@ -21,7 +21,15 @@ export default function RegisterPage() {
       body: JSON.stringify(form),
     });
     if (res.ok) {
+      const data = await res.json();
       setSuccess(true);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("isSignedIn", "true");
+        localStorage.removeItem("isAdmin");
+        if (data.user && data.user.id) {
+          localStorage.setItem("userId", String(data.user.id));
+        }
+      }
     } else {
       const data = await res.json();
       setError(data.error || "Registration failed");

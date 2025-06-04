@@ -5,6 +5,24 @@ import { containsProfanity, filterProfanity, profanityList } from './ProfanityFi
 
 const ChatSystem = (props) => {
   // ...existing code...
+  return (
+    <div className="chat-system">
+      {/* ...existing code... */}
+      <div className="chat-messages">
+        {props.messages.map((msg, index) => (
+          <div key={index} className="chat-message">
+            <span className="chat-username">
+              {msg.user}
+            </span>
+            <span className="chat-text">
+              {msg.text}
+            </span>
+          </div>
+        ))}
+      </div>
+      {/* ...existing code... */}
+    </div>
+  );
 };
 
 export default ChatSystem;

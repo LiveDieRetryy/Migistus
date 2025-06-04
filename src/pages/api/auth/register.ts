@@ -28,7 +28,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "Email already registered" });
   }
   const hash = await bcrypt.hash(password, 10);
-  users.push({ id: Date.now(), username, email, password: hash });
+  users.push({
+    id: Date.now(),
+    username,
+    email,
+    password: hash,
+    tier: "Initiate", // default tier
+    banned: false,    // default not banned
+    createdAt: new Date().toISOString()
+    // ...add more default fields if needed
+  });
   writeUsers(users);
-  res.status(201).json({ success: true });
+  // Return the new user object for localStorage
+  const newUser = users[users.length - 1];
+  res.status(201).json({ success: true, user: { id: newUser.id, username: newUser.username, email: newUser.email } });
 }

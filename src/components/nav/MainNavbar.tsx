@@ -7,26 +7,27 @@ import { useEffect, useState } from "react";
 export default function MainNavbar() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [forceDesktop, setForceDesktop] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       setIsAdmin(localStorage.getItem("isAdmin") === "true");
-      setForceDesktop(localStorage.getItem("forceDesktopView") === "true");
+      setIsSignedIn(
+        localStorage.getItem("isSignedIn") === "true" ||
+        localStorage.getItem("isAdmin") === "true"
+      );
     }
+    // Listen for login/logout in other tabs/windows
+    const sync = () => {
+      setIsAdmin(localStorage.getItem("isAdmin") === "true");
+      setIsSignedIn(
+        localStorage.getItem("isSignedIn") === "true" ||
+        localStorage.getItem("isAdmin") === "true"
+      );
+    };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
   }, []);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      if (forceDesktop) {
-        document.body.classList.add("force-desktop");
-        localStorage.setItem("forceDesktopView", "true");
-      } else {
-        document.body.classList.remove("force-desktop");
-        localStorage.setItem("forceDesktopView", "false");
-      }
-    }
-  }, [forceDesktop]);
 
   const navItems = [
     { name: "Home", href: "/" },
@@ -78,37 +79,58 @@ export default function MainNavbar() {
                 </span>
               </Link>
             ))}
+            {isAdmin && (
+              <span className="ml-2 px-2 py-1 bg-yellow-400 text-black rounded">
+                MIGISTUS
+              </span>
+            )}
           </div>
         </div>
 
         {/* Auth links */}
         <div className="order-3 w-full sm:w-auto flex justify-center sm:justify-end">
-          <div className="flex items-center text-sm font-medium text-white">
-            <Link
-              href="/login"
-              className="ml-0 sm:ml-6 px-4 py-2 rounded bg-yellow-500 text-black font-bold hover:bg-yellow-400 transition"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/register"
-              className="ml-2 px-4 py-2 rounded border border-yellow-500 text-yellow-400 font-bold hover:bg-yellow-500 hover:text-black transition"
-            >
-              Register
-            </Link>
+          <div className="flex items-center text-sm font-medium text-white gap-4">
+            {/* Only show Sign In/Register if NOT signed in (any user or admin) */}
+            {!isSignedIn && (
+              <>
+                <Link
+                  href="/login"
+                  className="ml-0 sm:ml-6 px-4 py-2 rounded bg-yellow-500 text-black font-bold hover:bg-yellow-400 transition"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/register"
+                  className="ml-2 px-4 py-2 rounded border border-yellow-500 text-yellow-400 font-bold hover:bg-yellow-500 hover:text-black transition"
+                >
+                  Register
+                </Link>
+              </>
+            )}
+            {/* Show Sign Out if signed in (any user or admin) */}
+            {isSignedIn && (
+              <>
+                <Link
+                  href="/account"
+                  className="text-yellow-400 hover:text-yellow-300 font-semibold transition"
+                >
+                  My Account
+                </Link>
+                <button
+                  className="ml-4 px-4 py-2 rounded bg-zinc-800 border border-yellow-500 text-yellow-400 font-bold hover:bg-yellow-500 hover:text-black transition"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      localStorage.removeItem("isSignedIn");
+                      localStorage.removeItem("isAdmin");
+                    }
+                    window.location.href = "/";
+                  }}
+                >
+                  Sign Out
+                </button>
+              </>
+            )}
           </div>
-        </div>
-
-        {/* Desktop/Mobile Switch Button (visible on mobile only) */}
-        <div className="absolute right-2 top-2 sm:static sm:right-auto sm:top-auto z-50">
-          <button
-            className="sm:hidden bg-yellow-500 text-black font-bold px-3 py-1 rounded shadow hover:bg-yellow-400 transition text-xs"
-            onClick={() => setForceDesktop((v) => !v)}
-            aria-pressed={forceDesktop}
-            title={forceDesktop ? "Switch to Mobile View" : "Switch to Desktop View"}
-          >
-            {forceDesktop ? "Mobile View" : "Desktop View"}
-          </button>
         </div>
       </div>
     </nav>

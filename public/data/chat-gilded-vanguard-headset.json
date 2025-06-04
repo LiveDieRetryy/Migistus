@@ -34,5 +34,239 @@
       "totalSaved": "$567"
     },
     "filtered": false
+  },
+  {
+    "id": 1749005707337,
+    "user": "You",
+    "tier": "Guild",
+    "avatar": "😎",
+    "message": "Hello",
+    "time": "now",
+    "verified": false,
+    "likes": 0,
+    "profile": {
+      "banner": "linear-gradient(135deg, #ffd89b 0%, #19547b 100%)",
+      "title": "Tech Enthusiast",
+      "joinDate": "December 2024",
+      "totalPledges": 15,
+      "totalSaved": "$567"
+    },
+    "filtered": false
+  },
+  {
+    "id": 1749006044397,
+    "user": "ADMINISTRATOR",
+    "tier": "MIGISTUS",
+    "avatar": "👑",
+    "message": "Hello",
+    "time": "now",
+    "verified": true,
+    "likes": 0,
+    "profile": {
+      "banner": "linear-gradient(135deg, #ffd700 0%, #19547b 100%)",
+      "title": "Platform Administrator",
+      "joinDate": "2024",
+      "totalPledges": 0,
+      "totalSaved": "$0"
+    },
+    "filtered": false
+  },
+  {
+    "id": 1749006585381,
+    "user": "ADMINISTRATOR",
+    "tier": "MIGISTUS",
+    "avatar": "👑",
+    "message": "admin",
+    "time": "now",
+    "verified": true,
+    "likes": 0,
+    "profile": {
+      "banner": "linear-gradient(135deg, #ffd700 0%, #19547b 100%)",
+      "title": "Platform Administrator",
+      "joinDate": "2024",
+      "totalPledges": 0,
+      "totalSaved": "$0"
+    },
+    "filtered": false
+  },
+  {
+    "id": 1749008383214,
+    "user": "Guest",
+    "tier": "Initiate",
+    "avatar": "🙂",
+    "message": "hello",
+    "time": "now",
+    "verified": false,
+    "likes": 0,
+    "profile": {
+      "banner": "linear-gradient(135deg, #ffd89b 0%, #19547b 100%)",
+      "title": "Guest",
+      "joinDate": "2024",
+      "totalPledges": 0,
+      "totalSaved": "$0"
+    },
+    "filtered": false
+  },
+  {
+    "id": 1749012246527,
+    "user": "LiveDieRetry",
+    "tier": "Initiate",
+    "avatar": "😎",
+    "message": "hello",
+    "time": "now",
+    "verified": false,
+    "likes": 0,
+    "profile": {
+      "banner": "linear-gradient(135deg, #ffd89b 0%, #19547b 100%)",
+      "title": "Initiate",
+      "joinDate": 2025,
+      "totalPledges": 0,
+      "totalSaved": "$0"
+    },
+    "filtered": false
+  },
+  {
+    "id": 1749012340787,
+    "user": "LiveDieRetry",
+    "tier": "Initiate",
+    "avatar": "😎",
+    "message": "hello",
+    "time": "now",
+    "verified": false,
+    "likes": 0,
+    "profile": {
+      "banner": "linear-gradient(135deg, #ffd89b 0%, #19547b 100%)",
+      "title": "Initiate",
+      "joinDate": 2025,
+      "totalPledges": 0,
+      "totalSaved": "$0"
+    },
+    "filtered": false
+  },
+  {
+    "id": 1749012408273,
+    "user": "LiveDieRetry",
+    "tier": "Initiate",
+    "avatar": "😎",
+    "message": "hello",
+    "time": "now",
+    "verified": false,
+    "likes": 0,
+    "profile": {
+      "banner": "linear-gradient(135deg, #ffd89b 0%, #19547b 100%)",
+      "title": "Initiate",
+      "joinDate": 2025,
+      "totalPledges": 0,
+      "totalSaved": "$0"
+    },
+    "filtered": false
+  },
+  {
+    "id": 1749012496911,
+    "user": "LiveDieRetry",
+    "tier": "Initiate",
+    "avatar": "😎",
+    "message": "you",
+    "time": "now",
+    "verified": false,
+    "likes": 0,
+    "profile": {
+      "banner": "linear-gradient(135deg, #ffd89b 0%, #19547b 100%)",
+      "title": "Initiate",
+      "joinDate": 2025,
+      "totalPledges": 0,
+      "totalSaved": "$0"
+    },
+    "filtered": false
+  },
+  {
+    "id": 1749012564749,
+    "user": "LiveDieRetry",
+    "tier": "Initiate",
+    "avatar": "😎",
+    "message": "you",
+    "time": "now",
+    "verified": false,
+    "likes": 0,
+    "profile": {
+      "banner": "linear-gradient(135deg, #ffd89b 0%, #19547b 100%)",
+      "title": "Initiate",
+      "joinDate": 2025,
+      "totalPledges": 0,
+      "totalSaved": "$0"
+    },
+    "filtered": false
+  },
+  {
+    "id": 1749012663202,
+    "user": "LiveDieRetry",
+    "tier": "Initiate",
+    "avatar": "😎",
+    "message": "yo",
+    "time": "now",
+    "verified": false,
+    "likes": 0,
+    "profile": {
+      "banner": "linear-gradient(135deg, #ffd89b 0%, #19547b 100%)",
+      "title": "Initiate",
+      "joinDate": 2025,
+      "totalPledges": 0,
+      "totalSaved": "$0"
+    },
+    "filtered": false
+  },
+  {
+    "id": 1749012781769,
+    "user": "LiveDieRetry",
+    "tier": "Initiate",
+    "avatar": "😎",
+    "message": "my name is travis",
+    "time": "now",
+    "verified": false,
+    "likes": 0,
+    "profile": {
+      "banner": "linear-gradient(135deg, #ffd89b 0%, #19547b 100%)",
+      "title": "Initiate",
+      "joinDate": 2025,
+      "totalPledges": 0,
+      "totalSaved": "$0"
+    },
+    "filtered": false
+  },
+  {
+    "id": 1749012796735,
+    "user": "LiveDieRetry",
+    "tier": "Initiate",
+    "avatar": "😎",
+    "message": "a saw dude",
+    "time": "now",
+    "verified": false,
+    "likes": 0,
+    "profile": {
+      "banner": "linear-gradient(135deg, #ffd89b 0%, #19547b 100%)",
+      "title": "Initiate",
+      "joinDate": 2025,
+      "totalPledges": 0,
+      "totalSaved": "$0"
+    },
+    "filtered": false
+  },
+  {
+    "id": 1749014173961,
+    "user": "LiveDieRetry",
+    "tier": "Initiate",
+    "avatar": "😎",
+    "message": "yo",
+    "time": "now",
+    "verified": false,
+    "likes": 0,
+    "profile": {
+      "banner": "linear-gradient(135deg, #ffd89b 0%, #19547b 100%)",
+      "title": "Initiate",
+      "joinDate": 2025,
+      "totalPledges": 0,
+      "totalSaved": "$0"
+    },
+    "filtered": false
   }
 ]

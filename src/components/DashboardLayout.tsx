@@ -61,6 +61,36 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           >
             Product Pool
           </Link>
+          <Link
+            href="/kingdom/subscription-tiers"
+            className={`block px-4 py-2 rounded-lg ${
+              isActive("/kingdom/subscription-tiers")
+                ? "bg-yellow-400 text-black"
+                : "text-gray-300 hover:bg-yellow-400/10"
+            }`}
+          >
+            🥇 Tier Reward Editor
+          </Link>
+          <Link
+            href="/kingdom/chat-moderation"
+            className={`block px-4 py-2 rounded-lg ${
+              isActive("/kingdom/chat-moderation")
+                ? "bg-yellow-400 text-black"
+                : "text-gray-300 hover:bg-yellow-400/10"
+            }`}
+          >
+            💬 Chat Moderation
+          </Link>
+          <Link
+            href="/kingdom/users"
+            className={`block px-4 py-2 rounded-lg ${
+              isActive("/kingdom/users")
+                ? "bg-yellow-400 text-black"
+                : "text-gray-300 hover:bg-yellow-400/10"
+            }`}
+          >
+            👥 User Management
+          </Link>
         </div>
       </nav>
       <div className="pl-64">
