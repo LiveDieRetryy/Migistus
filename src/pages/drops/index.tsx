@@ -95,7 +95,8 @@ export default function DropsPage() {
       .catch(console.error);
   }, []);
 
-  const canViewDrop = (userTier, drop) => {
+  // Fix: add type annotations for userTier and drop
+  const canViewDrop = (userTier: string, drop: any) => {
     if (drop.earlyAccess && userTier !== "MIGISTUS") return false;
     return true;
   };
