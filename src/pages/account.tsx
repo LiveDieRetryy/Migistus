@@ -20,18 +20,14 @@ export default function AccountPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Example: load user info from localStorage or fetch from backend
+    // Load user info from session (unique per account)
     if (typeof window !== "undefined") {
-      const userId = localStorage.getItem("userId");
-      if (userId) {
-        fetch(`/api/users`)
-          .then(res => res.json())
-          .then(data => {
-            if (Array.isArray(data.users)) {
-              const found = data.users.find((u: any) => String(u.id) === String(userId));
-              setUser(found || null);
-            }
-          });
+      const session = localStorage.getItem("userSession");
+      if (session) {
+        try {
+          const parsed = JSON.parse(session);
+          if (parsed.user) setUser(parsed.user);
+        } catch {}
       }
     }
   }, []);

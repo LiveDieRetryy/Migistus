@@ -1,167 +1,403 @@
+import { useState, useEffect } from "react";
 import Head from "next/head";
-import Link from "next/link";
 import MainNavbar from "@/components/nav/MainNavbar";
-import { useEffect, useRef } from "react";
+import Link from "next/link";
+import Image from "next/image";
 
-function Feature({ icon, title, text }: { icon: string, title: string, text: string }) {
-  return (
-    <div className="bg-zinc-900 rounded-lg p-6 border border-yellow-500/20">
-      <h3 className="text-yellow-300 font-bold text-lg mb-2 flex items-center">
-        <span className="text-2xl mr-2">{icon}</span> {title}
-      </h3>
-      <p className="text-zinc-400 text-sm">{text}</p>
-    </div>
-  );
-}
+type Product = {
+  id: number;
+  name: string;
+  image: string;
+  description: string;
+  goal: number;
+  votes: number;
+  featured: boolean;
+  pledges: number;
+  slug?: string;
+  category: string;
+};
 
-// Twinkling stars background component
-function TwinklingStars({ count = 60 }: { count?: number }) {
-  const containerRef = useRef<HTMLDivElement>(null);
+export default function HomePage() {
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [totalVotes, setTotalVotes] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    // Remove previous stars
-    container.innerHTML = "";
-    for (let i = 0; i < count; i++) {
-      const star = document.createElement("div");
-      const size = Math.random() * 2 + 1.5;
-      const left = Math.random() * 100;
-      const top = Math.random() * 100;
-      const duration = 2 + Math.random() * 3;
-      const delay = Math.random() * 5;
-      star.style.position = "absolute";
-      star.style.left = `${left}%`;
-      star.style.top = `${top}%`;
-      star.style.width = `${size}px`;
-      star.style.height = `${size}px`;
-      star.style.borderRadius = "50%";
-      star.style.background = "radial-gradient(circle, #FFD700 70%, #fff0 100%)";
-      star.style.opacity = "0.85";
-      star.style.boxShadow = `0 0 8px 2px #FFD70088`;
-      star.style.animation = `twinkle ${duration}s infinite alternate`;
-      star.style.animationDelay = `${delay}s`;
-      container.appendChild(star);
-    }
-  }, [count]);
-
-  return (
-    <>
-      <style>
-        {`
-        @keyframes twinkle {
-          0% { opacity: 0.7; transform: scale(1);}
-          50% { opacity: 1; transform: scale(1.3);}
-          100% { opacity: 0.7; transform: scale(1);}
+    // Fetch featured products
+    fetch("/api/products")
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data.products)) {
+          const featured = data.products
+            .filter((p: Product) => p.featured)
+            .slice(0, 3);
+          setFeaturedProducts(featured);
         }
-        `}
-      </style>
-      <div
-        ref={containerRef}
-        className="pointer-events-none fixed inset-0 z-0"
-        aria-hidden="true"
-        style={{
-          overflow: "hidden",
-        }}
-      />
-    </>
-  );
-}
+      })
+      .catch(console.error);
 
-export default function LandingPage() {
+    // Fetch stats
+    fetch("/api/stats")
+      .then(res => res.json())
+      .then(data => {
+        setTotalVotes(data.votesCast || 0);
+      })
+      .catch(console.error);
+
+    fetch("/api/users")
+      .then(res => res.json())
+      .then(data => {
+        setTotalUsers(data.totalUsers || 0);
+      })
+      .catch(console.error);
+
+    // Trigger loading animation
+    setTimeout(() => setIsLoaded(true), 100);
+  }, []);
+
   return (
     <>
       <Head>
-        <title>MIGISTUS — The Guilded Marketplace</title>
-        <meta name="description" content="Migistus is a movement. A marketplace forged by the people, for the people — where unity drives down prices, and your voice helps shape what comes next." />
+        <title>MIGISTUS - Premium Group Buying Platform</title>
+        <meta name="description" content="Join the exclusive MIGISTUS community. Unlock premium products through collective buying power and tier-based rewards." />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <MainNavbar />
-      <div className="relative bg-black text-white font-sans px-2 sm:px-6 py-6 sm:py-12 space-y-10 sm:space-y-16 min-h-screen overflow-hidden">
-        {/* Animated twinkling gold stars background */}
-        <TwinklingStars count={60} />
+
+      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white overflow-hidden">
+        <MainNavbar />
+
         {/* Hero Section */}
-        <section className="text-center mx-auto max-w-md sm:max-w-3xl bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
-          <h1
-            className="text-3xl sm:text-5xl font-bold text-yellow-400 mb-2"
-            style={{
-              letterSpacing: "0.01em"
-            }}
-          >
-            🛡️ Welcome to MIGISTUS
-          </h1>
-          <p
-            className="text-xl sm:text-2xl md:text-3xl font-semibold text-yellow-400 mb-4"
-            style={{
-              letterSpacing: "0.02em"
-            }}
-          >
-            The Guilded Marketplace
-          </p>
-          <p className="mt-4 text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
-            Migistus is not just a store. It’s a movement. A marketplace forged by the people, for the people — where unity drives down prices, and your voice helps shape what comes next.
-          </p>
-          <div className="mt-8 flex justify-center">
-            <Link href="/drops">
-              <button className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 sm:py-4 px-6 sm:px-10 rounded-2xl shadow-lg text-lg sm:text-xl transition-all">
-                Explore Drops
-              </button>
-            </Link>
+        <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6">
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-400/5 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-400/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-yellow-400/3 to-purple-400/3 rounded-full blur-3xl animate-spin-slow"></div>
+          </div>
+
+          <div className={`relative z-10 text-center max-w-6xl mx-auto transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            {/* Crown Icon */}
+            <div className="mb-8 flex justify-center">
+              <div className="relative">
+                <div className="text-8xl sm:text-9xl animate-float">👑</div>
+                <div className="absolute inset-0 text-8xl sm:text-9xl animate-float delay-500 opacity-30">✨</div>
+              </div>
+            </div>
+
+            {/* Main Heading */}
+            <h1 className="text-4xl sm:text-6xl lg:text-8xl font-bold mb-6 bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500 bg-clip-text text-transparent leading-tight">
+              MIGISTUS
+            </h1>
+            
+            <p className="text-xl sm:text-2xl lg:text-3xl text-gray-300 mb-4 font-light">
+              The <span className="text-yellow-400 font-semibold">Elite</span> Group Buying Experience
+            </p>
+            
+            <p className="text-lg sm:text-xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Join an exclusive community where collective power unlocks premium products at unbeatable prices. 
+              Earn your tier, multiply your influence, and experience luxury redefined.
+            </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
+              <Link
+                href="/drops"
+                className="group relative bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black font-bold px-8 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-yellow-400/25 text-lg"
+              >
+                <span className="relative z-10">Explore Drops</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-yellow-400 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </Link>
+              
+              <Link
+                href="/register"
+                className="group border-2 border-yellow-400/50 hover:border-yellow-400 text-yellow-400 hover:text-black hover:bg-yellow-400 font-semibold px-8 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 text-lg"
+              >
+                Join the Elite
+              </Link>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-2xl mx-auto">
+              <div className="text-center">
+                <div className="text-3xl sm:text-4xl font-bold text-yellow-400 mb-2">{totalUsers.toLocaleString()}+</div>
+                <div className="text-gray-400 text-sm uppercase tracking-wider">Elite Members</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl sm:text-4xl font-bold text-yellow-400 mb-2">{totalVotes.toLocaleString()}+</div>
+                <div className="text-gray-400 text-sm uppercase tracking-wider">Votes Cast</div>
+              </div>
+              <div className="text-center col-span-2 md:col-span-1">
+                <div className="text-3xl sm:text-4xl font-bold text-yellow-400 mb-2">50+</div>
+                <div className="text-gray-400 text-sm uppercase tracking-wider">Premium Drops</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Scroll Indicator */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <div className="w-6 h-10 border-2 border-yellow-400/50 rounded-full flex justify-center">
+              <div className="w-1 h-3 bg-yellow-400 rounded-full mt-2 animate-pulse"></div>
+            </div>
           </div>
         </section>
 
-        {/* Features */}
-        <section className="relative mx-auto max-w-md sm:max-w-5xl bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
-          <div className="absolute left-1/2 -translate-x-1/2 w-20 sm:w-32 h-1 bg-gradient-to-r from-yellow-400/30 via-yellow-400/60 to-yellow-400/30 rounded-full mb-10 top-0" />
-          <h2 className="text-lg sm:text-2xl text-yellow-400 font-semibold mb-6 text-center mt-10">🔥 What Makes Migistus Different?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            <Feature icon="💠" title="Group Buying Reimagined" text="Instead of paying full price alone, you pledge into product drops with others. As more people join, prices fall. When the threshold is met, the drop locks in." />
-            <Feature icon="💠" title="Vote-Driven Curation" text="You don’t just shop — you vote. Help decide what launches next. Guild and MIGISTUS tiers get extra voting power." />
-            <Feature icon="💠" title="Limited Drops, Big Rewards" text="Each drop is time-limited. Once it expires, it's gone — unless voted back. It creates urgency and strategy in every drop." />
-            <Feature icon="💠" title="Earn Perks Through Ranks" text="Advance from Initiate to Guild to MIGISTUS. Perks include cashback, faster chat cooldowns, and boosted votes." />
-            <Feature icon="💠" title="Social Commerce, Reforged" text="Live product chat, community flair, and drop stats — shop together, rise together." />
+        {/* How It Works Section */}
+        <section className="relative py-24 px-4 sm:px-6 bg-gradient-to-b from-transparent to-zinc-900/50">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl sm:text-5xl font-bold text-yellow-400 mb-6">How MIGISTUS Works</h2>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                Experience the power of collective buying through our sophisticated tier system
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  icon: "🗳️",
+                  title: "Vote & Pledge",
+                  description: "Discover premium products and cast your vote. Your tier multiplies your voting power, giving elite members greater influence.",
+                  color: "from-blue-400 to-blue-600"
+                },
+                {
+                  icon: "⚔️",
+                  title: "Unlock Tiers",
+                  description: "Progress from Initiate to Guild to MIGISTUS Elite. Each tier unlocks exclusive perks, better prices, and enhanced privileges.",
+                  color: "from-purple-400 to-purple-600"
+                },
+                {
+                  icon: "💎",
+                  title: "Enjoy Rewards",
+                  description: "Access premium products at group-negotiated prices. Higher tiers receive better discounts and exclusive early access.",
+                  color: "from-yellow-400 to-yellow-600"
+                }
+              ].map((step, index) => (
+                <div key={index} className="relative group">
+                  <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-400/20 rounded-2xl p-8 hover:border-yellow-400/40 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl">
+                    <div className={`w-16 h-16 bg-gradient-to-r ${step.color} rounded-2xl flex items-center justify-center text-2xl mb-6 mx-auto`}>
+                      {step.icon}
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4 text-center">{step.title}</h3>
+                    <p className="text-gray-300 leading-relaxed text-center">{step.description}</p>
+                  </div>
+                  
+                  {/* Connection Line */}
+                  {index < 2 && (
+                    <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-yellow-400/50 to-transparent transform -translate-y-1/2"></div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* How It Works */}
-        <section className="mx-auto max-w-md sm:max-w-3xl text-center bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
-          <h2 className="text-yellow-400 text-lg sm:text-2xl font-semibold mb-4">🧠 How It Works</h2>
-          <ol className="text-zinc-300 space-y-2 text-left list-decimal list-inside text-base sm:text-lg">
-            <li>Vote for what you want to see in the store</li>
-            <li>Pledge to drops that excite you</li>
-            <li>Watch the price fall as others join</li>
-            <li>Get rewarded when the MOQ is reached</li>
-            <li>Earn perks by subscribing and ranking up</li>
-          </ol>
+        {/* Tier Showcase */}
+        <section className="relative py-24 px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl sm:text-5xl font-bold text-yellow-400 mb-6">Membership Tiers</h2>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                Ascend through the ranks and unlock exclusive privileges
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  name: "Initiate",
+                  icon: "🛡️",
+                  color: "from-gray-400 to-gray-600",
+                  price: "Free",
+                  features: ["Access to drops", "1x voting power", "Community chat", "Basic support"],
+                  popular: false
+                },
+                {
+                  name: "Guild",
+                  icon: "⚔️",
+                  color: "from-purple-400 to-purple-600",
+                  price: "$9.99/mo",
+                  features: ["All Initiate perks", "2x voting power", "Priority support", "5% additional discount", "Early access"],
+                  popular: true
+                },
+                {
+                  name: "MIGISTUS Elite",
+                  icon: "👑",
+                  color: "from-yellow-400 to-yellow-600",
+                  price: "$19.99/mo",
+                  features: ["All Guild perks", "4x voting power", "VIP support", "10% additional discount", "Exclusive drops", "Personal concierge"],
+                  popular: false
+                }
+              ].map((tier, index) => (
+                <div key={index} className={`relative ${tier.popular ? 'scale-105 z-10' : ''}`}>
+                  {tier.popular && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-black px-4 py-1 rounded-full text-sm font-bold">
+                      Most Popular
+                    </div>
+                  )}
+                  
+                  <div className={`bg-zinc-900/70 backdrop-blur-sm border-2 ${tier.popular ? 'border-yellow-400' : 'border-yellow-400/20'} rounded-2xl p-8 h-full hover:border-yellow-400/60 transition-all duration-300`}>
+                    <div className="text-center mb-8">
+                      <div className={`w-20 h-20 bg-gradient-to-r ${tier.color} rounded-2xl flex items-center justify-center text-3xl mb-4 mx-auto`}>
+                        {tier.icon}
+                      </div>
+                      <h3 className="text-2xl font-bold text-white mb-2">{tier.name}</h3>
+                      <div className="text-3xl font-bold text-yellow-400">{tier.price}</div>
+                    </div>
+                    
+                    <ul className="space-y-3 mb-8">
+                      {tier.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-center text-gray-300">
+                          <span className="text-yellow-400 mr-3">✓</span>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    
+                    <Link
+                      href="/register"
+                      className={`block w-full text-center py-3 rounded-xl font-semibold transition-all duration-300 ${
+                        tier.popular 
+                          ? 'bg-yellow-400 text-black hover:bg-yellow-300' 
+                          : 'border border-yellow-400/50 text-yellow-400 hover:bg-yellow-400 hover:text-black'
+                      }`}
+                    >
+                      {tier.price === "Free" ? "Start Free" : "Upgrade Now"}
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
-        {/* Why Migistus */}
-        <section className="text-center mx-auto max-w-md sm:max-w-3xl bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
-          <h2 className="text-yellow-400 text-lg sm:text-2xl font-semibold mb-2">⚔️ Why MIGISTUS?</h2>
-          <blockquote className="text-lg sm:text-xl italic text-zinc-200 mb-4">“Alone, you're just a buyer. Together, you're a guild.”</blockquote>
-          <p className="text-zinc-400 text-base sm:text-lg">
-            Migistus challenges the standard retail model. It’s a platform where demand shapes supply, community unlocks savings, and every purchase is a shared conquest.
-          </p>
-        </section>
+        {/* Featured Drops */}
+        {featuredProducts.length > 0 && (
+          <section className="relative py-24 px-4 sm:px-6 bg-gradient-to-b from-zinc-900/50 to-transparent">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-16">
+                <h2 className="text-4xl sm:text-5xl font-bold text-yellow-400 mb-6">Featured Drops</h2>
+                <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                  Exclusive products curated for the MIGISTUS community
+                </p>
+              </div>
 
-        {/* Call to Action Buttons */}
-        <section className="flex flex-col sm:flex-row gap-4 justify-center pt-8 mx-auto max-w-md sm:max-w-3xl bg-zinc-900/70 rounded-2xl border border-yellow-400/10 shadow-lg p-4 sm:p-8 backdrop-blur-md">
-          <Link href="/drops">
-            <button className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 px-8 rounded-xl shadow transition-all text-lg">
-              Explore Drops
-            </button>
-          </Link>
-          <Link href="/voting">
-            <button className="bg-zinc-900 border border-yellow-500 text-yellow-400 font-bold py-3 px-8 rounded-xl hover:bg-yellow-500 hover:text-black transition-all text-lg">
-              View Vote Board
-            </button>
-          </Link>
-          <Link href="/categories">
-            <button className="bg-zinc-900 border border-yellow-500 text-yellow-400 font-bold py-3 px-8 rounded-xl hover:bg-yellow-500 hover:text-black transition-all text-lg">
-              Browse Categories
-            </button>
-          </Link>
+              <div className="grid md:grid-cols-3 gap-8">
+                {featuredProducts.map((product) => (
+                  <Link
+                    key={product.id}
+                    href={`/products/${product.slug || product.id}`}
+                    className="group block"
+                  >
+                    <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-400/20 rounded-2xl overflow-hidden hover:border-yellow-400/40 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl">
+                      <div className="relative h-64 overflow-hidden">
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                        <div className="absolute top-4 right-4 bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-bold">
+                          ⭐ Staff Pick
+                        </div>
+                      </div>
+                      
+                      <div className="p-6">
+                        <h3 className="text-xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors">
+                          {product.name}
+                        </h3>
+                        <p className="text-gray-400 mb-4 line-clamp-2">{product.description}</p>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-gray-300">
+                            <span className="text-yellow-400 font-semibold">{product.votes}</span> votes
+                          </div>
+                          <div className="text-sm text-gray-300">
+                            Goal: <span className="text-yellow-400 font-semibold">{product.goal}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-4 bg-gray-700 rounded-full h-2 overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-yellow-400 to-yellow-300 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min((product.pledges / product.goal) * 100, 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              <div className="text-center mt-12">
+                <Link
+                  href="/drops"
+                  className="inline-block bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black font-bold px-8 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+                >
+                  View All Drops
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Call to Action */}
+        <section className="relative py-24 px-4 sm:px-6">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="bg-gradient-to-r from-zinc-900/80 to-zinc-800/80 backdrop-blur-sm border border-yellow-400/30 rounded-3xl p-12">
+              <h2 className="text-4xl sm:text-5xl font-bold text-yellow-400 mb-6">
+                Ready to Join the Elite?
+              </h2>
+              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+                Experience luxury group buying like never before. Start your journey from Initiate to MIGISTUS Elite.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="/register"
+                  className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black font-bold px-8 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 text-lg"
+                >
+                  Start Your Journey
+                </Link>
+                <Link
+                  href="/about"
+                  className="border-2 border-yellow-400/50 hover:border-yellow-400 text-yellow-400 hover:text-black hover:bg-yellow-400 font-semibold px-8 py-4 rounded-2xl transition-all duration-300 text-lg"
+                >
+                  Learn More
+                </Link>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        
+        .animate-spin-slow {
+          animation: spin-slow 20s linear infinite;
+        }
+        
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
     </>
   );
 }

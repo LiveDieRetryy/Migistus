@@ -1,0 +1,310 @@
+import { useEffect, useState } from "react";
+import Head from "next/head";
+import MainNavbar from "@/components/nav/MainNavbar";
+import { UserStorage3 as UserStorage } from "@/utils/userStorage";
+import { useAuth } from "@/context/AuthContext";
+import Link from "next/link";
+
+export default function WalletPage() {
+  const { user } = useAuth();
+  const [balance, setBalance] = useState<number>(0);
+  const [guildCoins, setGuildCoins] = useState<number>(0);
+  const [amount, setAmount] = useState<number>(0);
+  const [coinAmount, setCoinAmount] = useState<number>(0);
+  const [recipient, setRecipient] = useState<string>("");
+  const [sendAmount, setSendAmount] = useState<number>(0);
+  const [sendStatus, setSendStatus] = useState<string>("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (user && mounted) {
+      setBalance(UserStorage.getUserWalletBalance(user.id));
+      setGuildCoins(UserStorage.getUserGuildCoins(user.id));
+    }
+  }, [user, mounted]);
+
+  const handleDeposit = () => {
+    if (user && amount > 0) {
+      UserStorage.incrementUserWallet(user.id, amount);
+      setBalance(UserStorage.getUserWalletBalance(user.id));
+      setAmount(0);
+    }
+  };
+
+  const handleWithdraw = () => {
+    if (user && amount > 0) {
+      UserStorage.decrementUserWallet(user.id, amount);
+      setBalance(UserStorage.getUserWalletBalance(user.id));
+      setAmount(0);
+    }
+  };
+
+  // Send Guild Coins to another user by username
+  const handleSendCoins = () => {
+    setSendStatus("");
+    if (!user) return;
+    if (!recipient || sendAmount <= 0) {
+      setSendStatus("Enter a valid recipient and amount.");
+      return;
+    }
+    if (sendAmount > guildCoins) {
+      setSendStatus("Insufficient Guild Coins.");
+      return;
+    }
+    // Find recipient by username (case-insensitive)
+    let foundId: number | null = null;
+    try {
+      const registry = JSON.parse(localStorage.getItem("migistus_user_registry") || "{}");
+      for (const key in registry) {
+        if (
+          registry[key]?.username &&
+          registry[key].username.toLowerCase() === recipient.toLowerCase()
+        ) {
+          foundId = registry[key].id;
+          break;
+        }
+      }
+    } catch {}
+    if (!foundId || foundId === user.id) {
+      setSendStatus("Recipient not found or invalid.");
+      return;
+    }
+    // Transfer coins
+    UserStorage.decrementUserGuildCoins(user.id, sendAmount);
+    UserStorage.incrementUserGuildCoins(foundId, sendAmount);
+    setGuildCoins(UserStorage.getUserGuildCoins(user.id));
+    setSendAmount(0);
+    setRecipient("");
+    setSendStatus("Guild Coins sent!");
+    // Trigger profile update events
+    window.dispatchEvent(new CustomEvent('profileUpdated', { detail: { userId: user.id } }));
+    window.dispatchEvent(new CustomEvent('profileUpdated', { detail: { userId: foundId } }));
+  };
+
+  if (!mounted) {
+    return (
+      <>
+        <Head>
+          <title>Wallet - MIGISTUS</title>
+        </Head>
+        <MainNavbar />
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          <div className="text-yellow-400 text-xl">Loading...</div>
+        </div>
+      </>
+    );
+  }
+
+  if (!user) {
+    return (
+      <>
+        <Head>
+          <title>Wallet - MIGISTUS</title>
+        </Head>
+        <MainNavbar />
+        <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white flex items-center justify-center px-4">
+          <div className="bg-zinc-900/80 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-12 text-center shadow-2xl">
+            <div className="text-6xl mb-6">🔐</div>
+            <h2 className="text-2xl font-bold text-yellow-400 mb-4">Access Required</h2>
+            <p className="text-gray-400 mb-6">Please sign in to view your wallet</p>
+            <Link href="/login" className="bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-3 rounded-lg transition-colors">
+              Sign In
+            </Link>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Head>
+        <title>Wallet - MIGISTUS</title>
+        <meta name="description" content="Manage your MIGISTUS wallet balance and Guild Coins" />
+      </Head>
+      <MainNavbar />
+      
+      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white">
+        <div className="px-4 sm:px-6 lg:px-8 py-12">
+          <div className="max-w-4xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center text-2xl shadow-lg">
+                  💰
+                </div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-300 bg-clip-text text-transparent">
+                  My Wallet
+                </h1>
+              </div>
+              <p className="text-gray-400 text-lg">Manage your balance and Guild Coins</p>
+            </div>
+
+            {/* Balance Cards */}
+            <div className="grid md:grid-cols-2 gap-8 mb-12">
+              {/* USD Balance Card */}
+              <div className="bg-zinc-900/50 backdrop-blur-sm border border-green-500/20 rounded-2xl p-8 shadow-xl hover:shadow-green-500/10 transition-all duration-300">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-green-600 rounded-xl flex items-center justify-center text-2xl">
+                    💵
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">USD Balance</h2>
+                    <p className="text-gray-400 text-sm">Your available funds</p>
+                  </div>
+                </div>
+                
+                <div className="text-center mb-8">
+                  <div className="text-5xl font-bold text-green-400 mb-2">
+                    ${balance.toFixed(2)}
+                  </div>
+                  <div className="text-gray-400">Available Balance</div>
+                </div>
+
+                <div className="space-y-4">
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={amount}
+                    onChange={e => setAmount(Number(e.target.value))}
+                    className="w-full px-4 py-3 bg-zinc-800 border border-green-500/30 rounded-xl text-white placeholder-gray-400 focus:border-green-400 focus:outline-none transition-colors"
+                    placeholder="Enter amount (USD)"
+                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={handleDeposit}
+                      disabled={!amount || amount <= 0}
+                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold py-3 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed shadow-lg"
+                    >
+                      💳 Deposit
+                    </button>
+                    <button
+                      onClick={handleWithdraw}
+                      disabled={!amount || amount <= 0 || amount > balance}
+                      className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold py-3 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed shadow-lg"
+                    >
+                      🏧 Withdraw
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Guild Coins Card */}
+              <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-8 shadow-xl hover:shadow-yellow-500/10 transition-all duration-300">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center text-2xl">
+                    🪙
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Guild Coins</h2>
+                    <p className="text-gray-400 text-sm">Earned through rewards</p>
+                  </div>
+                </div>
+                
+                <div className="text-center mb-6">
+                  <div className="text-5xl font-bold text-yellow-400 mb-2">
+                    {guildCoins}
+                  </div>
+                  <div className="text-gray-400 text-sm">
+                    Worth ${guildCoins.toFixed(2)} • 1 Coin = $1.00
+                  </div>
+                </div>
+
+                {/* Send Coins Section */}
+                <div className="space-y-4">
+                  <div className="border-t border-zinc-700 pt-6">
+                    <h3 className="text-lg font-semibold text-yellow-400 mb-4 flex items-center gap-2">
+                      <span>📤</span>
+                      Send Guild Coins
+                    </h3>
+                    
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        value={recipient}
+                        onChange={e => setRecipient(e.target.value)}
+                        className="w-full px-4 py-3 bg-zinc-800 border border-yellow-500/30 rounded-xl text-white placeholder-gray-400 focus:border-yellow-400 focus:outline-none transition-colors"
+                        placeholder="Recipient username"
+                        autoComplete="off"
+                      />
+                      <input
+                        type="number"
+                        min={1}
+                        max={guildCoins}
+                        value={sendAmount}
+                        onChange={e => setSendAmount(Number(e.target.value))}
+                        className="w-full px-4 py-3 bg-zinc-800 border border-yellow-500/30 rounded-xl text-white placeholder-gray-400 focus:border-yellow-400 focus:outline-none transition-colors"
+                        placeholder="Amount to send"
+                      />
+                      <button
+                        onClick={handleSendCoins}
+                        disabled={!recipient || sendAmount <= 0 || sendAmount > guildCoins}
+                        className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 disabled:from-gray-600 disabled:to-gray-700 text-black font-bold py-3 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed shadow-lg"
+                      >
+                        🚀 Send Coins
+                      </button>
+                      
+                      {sendStatus && (
+                        <div className={`text-center text-sm font-medium p-3 rounded-lg ${
+                          sendStatus === "Guild Coins sent!" 
+                            ? "bg-green-900/50 text-green-300 border border-green-500/30" 
+                            : "bg-red-900/50 text-red-300 border border-red-500/30"
+                        }`}>
+                          {sendStatus}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Transaction History Placeholder */}
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-700/50 rounded-2xl p-8 shadow-xl">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-600 rounded-xl flex items-center justify-center text-2xl">
+                  📊
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Transaction History</h2>
+                  <p className="text-gray-400 text-sm">Your recent wallet activity</p>
+                </div>
+              </div>
+              
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4 opacity-50">📈</div>
+                <h3 className="text-xl font-semibold text-gray-400 mb-2">Coming Soon</h3>
+                <p className="text-gray-500">Transaction history will be available in a future update</p>
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="bg-zinc-900/30 border border-zinc-700/30 rounded-xl p-6 text-center">
+                <div className="text-2xl font-bold text-blue-400 mb-1">${(balance + guildCoins).toFixed(2)}</div>
+                <div className="text-sm text-gray-400">Total Value</div>
+              </div>
+              <div className="bg-zinc-900/30 border border-zinc-700/30 rounded-xl p-6 text-center">
+                <div className="text-2xl font-bold text-green-400 mb-1">{balance > 0 ? "✅" : "💤"}</div>
+                <div className="text-sm text-gray-400">USD Status</div>
+              </div>
+              <div className="bg-zinc-900/30 border border-zinc-700/30 rounded-xl p-6 text-center">
+                <div className="text-2xl font-bold text-yellow-400 mb-1">{guildCoins > 0 ? "🪙" : "🔒"}</div>
+                <div className="text-sm text-gray-400">Coins Status</div>
+              </div>
+              <div className="bg-zinc-900/30 border border-zinc-700/30 rounded-xl p-6 text-center">
+                <div className="text-2xl font-bold text-purple-400 mb-1">🎯</div>
+                <div className="text-sm text-gray-400">Member</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
