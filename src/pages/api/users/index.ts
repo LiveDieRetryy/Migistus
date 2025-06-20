@@ -1,84 +1,159 @@
-import { readFileSync, existsSync, writeFileSync } from "fs";
+import fs from "fs";
 import path from "path";
-import { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
+
+const usersFilePath = path.resolve("public/data/users.json");
+
+function ensureDataDirectory() {
+  const dataDir = path.dirname(usersFilePath);
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+}
+
+function readUsers() {
+  ensureDataDirectory();
+  if (!fs.existsSync(usersFilePath)) {
+    const initialData = {
+      users: [],
+      totalUsers: 0,
+      lastUpdated: new Date().toISOString()
+    };
+    fs.writeFileSync(usersFilePath, JSON.stringify(initialData, null, 2));
+    return initialData;
+  }
+  
+  try {
+    const data = JSON.parse(fs.readFileSync(usersFilePath, "utf-8"));
+    if (!data.users || !Array.isArray(data.users)) {
+      return {
+        users: [],
+        totalUsers: 0,
+        lastUpdated: new Date().toISOString()
+      };
+    }
+    return data;
+  } catch (error) {
+    console.error('Error reading users file:', error);
+    return {
+      users: [],
+      totalUsers: 0,
+      lastUpdated: new Date().toISOString()
+    };
+  }
+}
+
+function writeUsers(data: any) {
+  ensureDataDirectory();
+  try {
+    const dataToWrite = {
+      ...data,
+      totalUsers: Array.isArray(data.users) ? data.users.length : 0,
+      lastUpdated: new Date().toISOString()
+    };
+    fs.writeFileSync(usersFilePath, JSON.stringify(dataToWrite, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Error writing users file:', error);
+    return false;
+  }
+}
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const filePath = path.join(process.cwd(), "public", "data", "users.json");
-    if (!existsSync(filePath)) writeFileSync(filePath, "[]");
-    const jsonData = readFileSync(filePath, "utf-8");
-    let data = JSON.parse(jsonData);
+  console.log(`Users API: ${req.method} request received`);
 
-    // Return full user list for GET
-    if (req.method === "GET") {
-      res.status(200).json({
-        totalUsers: Array.isArray(data) ? data.length : 0,
-        users: Array.isArray(data) ? data : []
+  if (req.method === "GET") {
+    try {
+      const data = readUsers();
+      console.log(`Users API GET: Returning ${data.users.length} users`);
+      return res.status(200).json(data);
+    } catch (error) {
+      console.error('Users API GET error:', error);
+      return res.status(500).json({ 
+        error: "Failed to read users", 
+        users: [], 
+        totalUsers: 0 
       });
-      return;
     }
-
-    // Accept full user sync from frontend
-    if (req.method === "POST") {
-      // Accept either {users: [...]} or a full array or a single user
-      let users: any[] = [];
-      if (Array.isArray(req.body)) {
-        users = req.body;
-      } else if (Array.isArray(req.body.users)) {
-        users = req.body.users;
-      } else if (typeof req.body === "object" && req.body.id) {
-        users = [req.body];
-      }
-      if (users.length > 0) {
-        // Merge: add new users if not already present (by id or email)
-        let merged = Array.isArray(data) ? [...data] : [];
-        users.forEach((newUser) => {
-          const exists = merged.some(
-            (u: any) =>
-              String(u.id) === String(newUser.id) ||
-              (u.email && newUser.email && u.email.toLowerCase() === newUser.email.toLowerCase())
-          );
-          if (!exists) {
-            merged.push({
-              ...newUser,
-              wallet: typeof newUser.wallet === "number" ? newUser.wallet : 0,
-              guildCoins: typeof newUser.guildCoins === "number" ? newUser.guildCoins : 0,
-            });
-          }
-        });
-        writeFileSync(filePath, JSON.stringify(merged, null, 2));
-        res.status(200).json({ success: true, totalUsers: merged.length });
-        return;
-      }
-      res.status(400).json({ error: "No users provided" });
-      return;
-    }
-
-    // Update a single user by id
-    if (req.method === "PUT") {
-      const { id } = req.query;
-      const update = req.body;
-      if (!id) return res.status(400).json({ error: "Missing user id" });
-      if (!Array.isArray(data)) data = [];
-      const idx = data.findIndex((u: any) => String(u.id) === String(id));
-      if (idx !== -1) {
-        data[idx] = {
-          ...data[idx],
-          ...update,
-          wallet: typeof update.wallet === "number" ? update.wallet : data[idx].wallet ?? 0,
-          guildCoins: typeof update.guildCoins === "number" ? update.guildCoins : data[idx].guildCoins ?? 0,
-        };
-        writeFileSync(filePath, JSON.stringify(data, null, 2));
-        res.status(200).json({ success: true, user: data[idx] });
-      } else {
-        res.status(404).json({ error: "User not found" });
-      }
-      return;
-    }
-
-    res.status(405).json({ error: "Method not allowed" });
-  } catch (error) {
-    console.error("Failed to read users:", error);
-    res.status(500).json({ totalUsers: 0, users: [] });
   }
+
+  if (req.method === "POST") {
+    try {
+      console.log('Users API POST: Request body:', req.body);
+      
+      if (!req.body) {
+        return res.status(400).json({ error: "No data provided" });
+      }
+
+      const newUsers = Array.isArray(req.body) ? req.body : [req.body];
+      
+      if (newUsers.length === 0) {
+        return res.status(400).json({ error: "No users provided" });
+      }
+
+      console.log(`Users API POST: Processing ${newUsers.length} users`);
+
+      const data = readUsers();
+      
+      let addedCount = 0;
+      const existingIds = new Set(data.users.map((u: any) => u.id));
+      const existingEmails = new Set(data.users.map((u: any) => u.email?.toLowerCase()));
+
+      for (const user of newUsers) {
+        if (!user.id || !user.username || !user.email) {
+          console.warn('Skipping invalid user:', user);
+          continue;
+        }
+
+        if (existingIds.has(user.id) || existingEmails.has(user.email.toLowerCase())) {
+          console.log(`User already exists: ${user.username} (${user.email})`);
+          continue;
+        }
+
+        const userToAdd = {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          tier: user.tier || 'Initiate',
+          banned: user.banned || false,
+          joinDate: user.joinDate || new Date().toISOString().split('T')[0],
+          lastLogin: user.lastLogin || new Date().toISOString().split('T')[0],
+          wallet: user.wallet || 0,
+          guildCoins: user.guildCoins || 0
+        };
+
+        data.users.push(userToAdd);
+        existingIds.add(user.id);
+        existingEmails.add(user.email.toLowerCase());
+        addedCount++;
+        
+        console.log(`Added user: ${userToAdd.username}`);
+      }
+
+      const writeSuccess = writeUsers(data);
+      
+      if (!writeSuccess) {
+        return res.status(500).json({ error: "Failed to save users" });
+      }
+
+      console.log(`Users API POST: Successfully added ${addedCount} users`);
+      
+      return res.status(201).json({ 
+        success: true, 
+        addedUsers: addedCount,
+        totalUsers: data.users.length,
+        message: `Successfully added ${addedCount} user(s)`
+      });
+      
+    } catch (error) {
+      console.error('Users API POST error:', error);
+      return res.status(500).json({ 
+        error: "Failed to save users",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  res.setHeader("Allow", ["GET", "POST"]);
+  res.status(405).end(`Method ${req.method} Not Allowed`);
 }

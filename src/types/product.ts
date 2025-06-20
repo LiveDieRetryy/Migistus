@@ -6,17 +6,16 @@ export type PricingTier = {
 };
 
 export type Product = {
-  id: number;
-  name: string;
-  image: string;
-  description: string;
-  goal: number;
-  link: string;
-  timeframe: string;
-  category: string;
-  votes?: number;
-  featured?: boolean;
-  pledges: number;
-  pricingTiers?: PricingTier[];
-  slug?: string;
+    id: number;
+    name: string;
+    image: string;
+    description: string;
+    goal: number;
+    link: string;
+    timeframe: string;
+    category: string;
+    votes?: number;
+    featured?: boolean;
+    pledges: number;
+    pricingTiers?: PricingTier[];
 };

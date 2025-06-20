@@ -1,4 +1,30 @@
 {
+  "polls": [
+    {
+      "id": "1",
+      "title": "Next Product Category Priority",
+      "description": "Which product category should we focus on next?",
+      "status": "active",
+      "createdAt": "2025-06-19T10:00:00Z",
+      "voteCount": 25,
+      "category": "product"
+    },
+    {
+      "id": "2",
+      "title": "Website Theme Update",
+      "description": "Should we update the website theme for better accessibility?",
+      "status": "pending",
+      "createdAt": "2025-06-19T11:00:00Z",
+      "voteCount": 0,
+      "category": "general"
+    }
+  ],
+  "stats": {
+    "activePolls": 1,
+    "totalVotes": 25,
+    "pendingApproval": 1,
+    "endedPolls": 0
+  },
   "votingEnabled": true,
   "doubleVoteWeek": false,
   "tripleVoteWeek": false,

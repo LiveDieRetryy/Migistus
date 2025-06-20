@@ -3,6 +3,16 @@ import { Input } from "@/components/ui/input";
 import Image from "next/image"; // <-- Make sure this import is present
 import Link from "next/link";
 
+// Helper function to generate slug from product name
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/--+/g, '-')
+    .trim();
+}
+
 const DEPARTMENTS = [
 	"All",
 	"Electronics",
@@ -497,9 +507,8 @@ export default function ProductPoolEditor() {
 											style={{ height: "32px" }}
 										>
 											Edit
-										</button>
-										<Link
-											href={`/products/${product.id}`}
+										</button>										<Link
+											href={`/products/${slugify(product.name)}`}
 											target="_blank"
 											className="block w-full bg-zinc-900 border border-yellow-400/50 text-yellow-400 hover:bg-yellow-400 hover:text-black text-sm py-2 rounded font-medium text-center transition-colors"
 											onClick={e => e.stopPropagation()}

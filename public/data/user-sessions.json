@@ -1,0 +1,82 @@
+[
+  {
+    "userId": 68758937509,
+    "sessionId": "ss71ig6153mmc3nsmwj",
+    "loginTime": "2025-06-19T17:42:36.235Z",
+    "lastActivity": "2025-06-19T18:04:20.534Z",
+    "currentPage": "/kingdom/product-pool",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "",
+    "isActive": true
+  },
+  {
+    "userId": 68758937509,
+    "sessionId": "ss71ig6153mmc3nsmwj",
+    "loginTime": "2025-06-19T17:42:36.236Z",
+    "lastActivity": "2025-06-19T17:42:36.236Z",
+    "currentPage": "/account",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "",
+    "isActive": true
+  },
+  {
+    "userId": 68758937509,
+    "sessionId": "ss71ig6153mmc3nsmwj",
+    "loginTime": "2025-06-19T17:42:36.237Z",
+    "lastActivity": "2025-06-19T17:42:36.237Z",
+    "currentPage": "/kingdom/users",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "",
+    "isActive": true
+  },
+  {
+    "userId": 68758937509,
+    "sessionId": "ss71ig6153mmc3nsmwj",
+    "loginTime": "2025-06-19T17:43:20.739Z",
+    "lastActivity": "2025-06-19T17:43:20.739Z",
+    "currentPage": "/products/1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "",
+    "isActive": true
+  },
+  {
+    "userId": 68758937509,
+    "sessionId": "ss71ig6153mmc3nsmwj",
+    "loginTime": "2025-06-19T17:58:49.978Z",
+    "lastActivity": "2025-06-19T17:58:49.978Z",
+    "currentPage": "/kingdom/users",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "",
+    "isActive": true
+  },
+  {
+    "userId": 68758937509,
+    "sessionId": "ss71ig6153mmc3nsmwj",
+    "loginTime": "2025-06-19T17:58:49.979Z",
+    "lastActivity": "2025-06-19T17:58:49.979Z",
+    "currentPage": "/account",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "",
+    "isActive": true
+  },
+  {
+    "userId": 68758937509,
+    "sessionId": "ss71ig6153mmc3nsmwj",
+    "loginTime": "2025-06-19T17:58:50.956Z",
+    "lastActivity": "2025-06-19T17:58:50.956Z",
+    "currentPage": "/kingdom/users",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "",
+    "isActive": true
+  },
+  {
+    "userId": 68758937509,
+    "sessionId": "ss71ig6153mmc3nsmwj",
+    "loginTime": "2025-06-19T17:58:58.356Z",
+    "lastActivity": "2025-06-19T17:58:58.356Z",
+    "currentPage": "/account",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "",
+    "isActive": true
+  }
+]

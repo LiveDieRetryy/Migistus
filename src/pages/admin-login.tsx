@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { activityTracker } from "@/utils/activityTracker";
 
 export default function AdminLoginPage() {
   const [form, setForm] = useState({ username: "", password: "" });
@@ -14,6 +15,15 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Track admin login attempt
+    activityTracker.trackAdminAction("admin_login_attempt", {
+      username: form.username,
+      timestamp: new Date().toISOString(),
+      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+      ip: "client-side", // Server would track actual IP
+    });
+
     const res = await fetch("/api/auth/admin-login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -23,10 +33,23 @@ export default function AdminLoginPage() {
       if (typeof window !== "undefined") {
         localStorage.setItem("isAdmin", "true");
       }
+
+      // Track successful admin login
+      activityTracker.trackAdminAction("admin_login_success", {
+        username: form.username,
+        redirectTo: "/kingdom",
+      });
+
       router.push("/kingdom");
     } else {
       const data = await res.json();
       setError(data.error || "Login failed");
+
+      // Track failed admin login
+      activityTracker.trackAdminAction("admin_login_failed", {
+        username: form.username,
+        error: data.error || "Login failed",
+      });
     }
   };
 
@@ -40,7 +63,9 @@ export default function AdminLoginPage() {
           onSubmit={handleSubmit}
           className="bg-zinc-900 border border-yellow-400/20 rounded-xl p-8 w-full max-w-md shadow-lg"
         >
-          <h1 className="text-3xl font-bold text-yellow-400 mb-6 text-center">Admin Sign In</h1>
+          <h1 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
+            Admin Sign In
+          </h1>
           {error && <div className="text-red-400 mb-4">{error}</div>}
           <div className="mb-4">
             <label className="block mb-1">Username</label>

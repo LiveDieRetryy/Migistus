@@ -43,13 +43,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (sessionData) {
       try {
         const session = JSON.parse(sessionData);
-        // Verify session is still valid (less than 30 days old)
-        const sessionAge = Date.now() - new Date(session.createdAt).getTime();
-        const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-        
-        if (sessionAge < thirtyDays) {
-          setUser(session.user);
-          console.log('Restored user session:', session.user);
+        const user = session.user;
+        const sessionId = session.sessionId;
+        if (user && sessionId && user.id) {
+          setUser(user);
+          console.log('Restored user session:', user);
           
           // Initialize sync service when user is restored
           if ((window as any).MigistusUserSync) {
@@ -93,10 +91,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Existing user login
         console.log('Found existing user, logging them in:', existingUser);
         
+        const sessionId = generateSessionId();
         const sessionData = {
-          user: existingUser,
+          user: {...existingUser, sessionId: sessionId},
           createdAt: new Date().toISOString(),
-          sessionId: generateSessionId()
+          sessionId: sessionId
         };
 
         localStorage.setItem('userSession', JSON.stringify(sessionData));
@@ -104,6 +103,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         setUser(existingUser);
         console.log('Existing user logged in successfully');
+        
+        // Initialize activity tracking
+        const { activityTracker } = await import('@/utils/activityTracker');
+        activityTracker.initialize(existingUser.id, sessionId);
         
         // Initialize sync service and trigger immediate sync
         if ((window as any).MigistusUserSync) {
@@ -199,13 +202,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const sessionData = {
         user: userData,
         createdAt: new Date().toISOString(),
-        sessionId: userData.sessionId
+        sessionId: userData.sessionId // <-- FIX: use explicit property assignment
       };
 
       localStorage.setItem('userSession', JSON.stringify(sessionData));
       localStorage.setItem('currentUserId', uniqueId.toString());
       
       setUser(userData);
+      
+      // Initialize activity tracking for new user
+      const { activityTracker } = await import('@/utils/activityTracker');
+      activityTracker.initialize(uniqueId, userData.sessionId); // <-- FIX: use userData.sessionId
       
       console.log(`New user created:`, userData);
       
@@ -227,7 +234,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           body: JSON.stringify([{
             id: uniqueId,
             username: finalUsername,
-            email,
             tier: "New Member",
             banned: false,
             wallet,
@@ -325,8 +331,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     if (user) {
+      // Track logout before clearing data
+      import('@/utils/activityTracker').then(({ activityTracker }) => {
+        activityTracker.trackLogout();
+      });
+      
       // Stop user sync service on logout
-      UserSyncService.stopAutoSync();
+      if ((window as any).MigistusUserSync) {
+        (window as any).MigistusUserSync.stopAutoSync();
+      }
       
       // Only clear session data, preserve user data and profiles
       if (typeof window !== 'undefined') {

@@ -1,155 +1,187 @@
+import { useState, useEffect } from "react";
 import Head from "next/head";
-import Link from "next/link";
-import Image from "next/image";
+import { Clock, Calendar, TrendingUp } from "lucide-react";
 import MainNavbar from "@/components/nav/MainNavbar";
-import { useRef, useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { getStageInfo, getDaysInStage, ProductStage } from "@/utils/productLifecycle";
+import { getProductUrl } from "@/utils/productUtils";
+
+interface Product {
+  id: number;
+  name: string;
+  image?: string;
+  description?: string;
+  category?: string;
+  votes?: number;
+  stage?: ProductStage;
+  stageEnteredAt?: string;
+}
 
 export default function ComingSoonPage() {
-  const comingSoonCategories = [
-    { name: "Electronics", image: "/images/electronics.png", date: "in 4 days" },
-    { name: "Beauty & Health", image: "/images/beauty.png", date: "in 7 days" },
-    { name: "Toys, Kids & Baby", image: "/images/toys.png", date: "in 10 days" },
-    { name: "Home, Garden & Tools", image: "/images/home.png", date: "in 12 days" },
-    { name: "Computers", image: "/images/computers.png", date: "in 14 days" },
-    { name: "Smart Home", image: "/images/smart-home.png", date: "in 16 days" },
-    { name: "Pet Supplies", image: "/images/pet.png", date: "in 18 days" },
-    { name: "Food & Grocery", image: "/images/food.png", date: "in 20 days" },
-    { name: "Handmade", image: "/images/handmade.png", date: "in 22 days" },
-    { name: "Sports & Outdoors", image: "/images/sports.png", date: "in 24 days" },
-    { name: "Automotive", image: "/images/auto.png", date: "in 26 days" },
-    { name: "Industrial & Scientific", image: "/images/industrial.png", date: "in 28 days" },
-    { name: "Movies, Music & Games", image: "/images/movies.png", date: "in 30 days" }
-  ];
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const comingSoonRef = useRef<HTMLDivElement>(null);
-  const [comingSoonOffset, setComingSoonOffset] = useState(0);
-  const comingSoonItemWidth = 200;
-
-  // Infinite auto-scroll for coming soon (forward)
   useEffect(() => {
-    let raf: number;
-    let last = Date.now();
-    function animate() {
-      const now = Date.now();
-      const delta = now - last;
-      last = now;
-      setComingSoonOffset((prev) => {
-        let next = prev + (delta * 0.03);
-        if (next >= comingSoonCategories.length * comingSoonItemWidth) {
-          next = 0;
-        }
-        return next;
-      });
-      raf = requestAnimationFrame(animate);
-    }
-    raf = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf);
-  }, [comingSoonCategories.length]);
-
-  // Prevent page scroll when hovering over the carousel area
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      if (
-        comingSoonRef.current &&
-        comingSoonRef.current.matches(":hover")
-      ) {
-        e.preventDefault();
-      }
-    };
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
+    fetchProducts();
   }, []);
 
-  const handleComingSoonWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    if (comingSoonRef.current) {
-      e.preventDefault();
-      let newOffset = comingSoonOffset + (e.deltaY || e.deltaX);
-      const totalWidth = comingSoonCategories.length * comingSoonItemWidth;
-      if (newOffset < 0) newOffset = totalWidth + newOffset;
-      if (newOffset >= totalWidth) newOffset = newOffset - totalWidth;
-      setComingSoonOffset(newOffset);
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("/api/products");
+      if (!response.ok) {
+        throw new Error("Failed to fetch products");
+      }
+      const data = await response.json();
+      
+      // Filter only coming-soon products
+      const comingSoonProducts = (data.products || []).filter(
+        (product: Product) => product.stage === "coming-soon"
+      );
+      
+      setProducts(comingSoonProducts);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <>
       <Head>
-        <title>Coming Soon Drops - MIGISTUS</title>
+        <title>Coming Soon - Migistus</title>
+        <meta name="description" content="Products coming soon to Migistus community drops" />
       </Head>
+
       <MainNavbar />
-      <div className="min-h-screen bg-zinc-900 text-white font-sans">
-        <section className="relative px-2 sm:px-6 py-8 sm:py-12 text-center">
-          <div className="mb-6 text-center">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-400 drop-shadow-lg tracking-wide">
-              Coming Soon
-            </h2>
-            <p className="text-gray-400 text-sm sm:text-base mt-2">
-              Upcoming drops by category — join the waitlist!
+
+      <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black">
+        {/* Header */}
+        <div className="relative overflow-hidden py-20">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 via-transparent to-yellow-500/10"></div>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="inline-flex items-center gap-3 bg-zinc-800/50 border border-zinc-700 rounded-full px-6 py-2 mb-6">
+              <Clock className="w-5 h-5 text-yellow-400" />
+              <span className="text-yellow-400 font-medium">Coming Soon</span>
+            </div>
+            
+            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+              Products Launching Soon
+            </h1>
+            
+            <p className="text-xl text-zinc-400 max-w-3xl mx-auto leading-relaxed">
+              These products have successfully passed community voting and are preparing for launch. 
+              Get ready for exclusive community drops!
             </p>
           </div>
-          <div className="relative overflow-hidden" style={{ height: 180 }}>
-            <div
-              className="flex items-center"
-              style={{
-                position: "absolute",
-                left: 0,
-                top: 0,
-                width: "100%",
-                height: "100%",
-                pointerEvents: "none"
-              }}
-            >
-              <div
-                className="flex"
-                ref={comingSoonRef}
-                tabIndex={0}
-                onWheel={handleComingSoonWheel}
-                style={{
-                  transform: `translateX(-${comingSoonOffset}px)`,
-                  transition: "none",
-                  minWidth: "100%",
-                  willChange: "transform",
-                  pointerEvents: "auto"
-                }}
-              >
-                {[...comingSoonCategories, ...comingSoonCategories].map((cat, idx) => (
-                  <div
-                    key={cat.name + idx}
-                    className="flex-shrink-0 w-40 sm:w-48 mx-1 sm:mx-2 snap-center block text-center hover:scale-105 transition-transform"
-                    style={{ minWidth: 140, pointerEvents: "auto" }}
-                  >
-                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto rounded-2xl mb-2 border border-yellow-400/10 bg-zinc-800/80 shadow-inner hover:border-yellow-400/40 transition-all">
-                      <Image 
-                        src={cat.image} 
-                        alt={cat.name} 
+        </div>
+
+        {/* Products Grid */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+          {error && (
+            <div className="bg-red-900/20 border border-red-500 rounded-xl p-4 mb-8">
+              <div className="text-red-400 font-semibold">Error loading products:</div>
+              <div className="text-red-300 text-sm">{error}</div>
+            </div>
+          )}
+          
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto"></div>
+              <div className="text-zinc-400 mt-4">Loading coming soon products...</div>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-12">
+              <Clock className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-zinc-400 mb-2">No products coming soon</h3>
+              <p className="text-zinc-500">Check back later for new product launches!</p>
+            </div>
+          ) : (            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product) => {
+                const stageInfo = getStageInfo(product.stage);
+                const daysInStage = getDaysInStage(product.stageEnteredAt);
+                
+                return (
+                  <Link key={product.id} href={getProductUrl(product)} className="block">
+                    <div className="bg-zinc-800/30 border border-zinc-700 rounded-2xl p-6 hover:bg-zinc-700/30 hover:border-yellow-500/50 transition-all duration-300 cursor-pointer">
+                    {/* Product Image */}
+                    <div className="relative w-full h-48 mb-4 rounded-xl overflow-hidden bg-zinc-700/50">
+                      <Image
+                        src={product.image || "/images/placeholder.png"}
+                        alt={product.name}
                         fill
-                        className="object-cover rounded-2xl"
-                        sizes="(max-width: 640px) 96px, 128px"
+                        className="object-cover"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
-                      <div className="absolute bottom-2 right-2 bg-yellow-400 text-black text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full shadow">
-                        {cat.date}
+                      
+                      {/* Category and Stage badges */}
+                      <div className="absolute top-3 left-3 flex flex-col gap-2">
+                        {product.category && (
+                          <div className="bg-black/70 backdrop-blur-sm text-yellow-400 text-xs px-2 py-1 rounded-full">
+                            {product.category}
+                          </div>
+                        )}
+                        <div className="bg-yellow-500/80 text-black text-xs px-2 py-1 rounded-full font-medium">
+                          Coming Soon
+                        </div>
+                      </div>
+
+                      {/* Days in stage indicator */}
+                      <div className="absolute top-3 right-3">
+                        <div className="bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {daysInStage}d
+                        </div>
                       </div>
                     </div>
-                    <span className="text-yellow-300 font-medium text-base sm:text-lg">{cat.name}</span>
-                    <div className="mt-3">
-                      <button className="bg-yellow-600 hover:bg-yellow-500 text-black font-semibold py-2 px-4 sm:px-6 rounded transition text-sm sm:text-base">
-                        Join Waitlist
+
+                    {/* Product Info */}
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-white mb-2">{product.name}</h3>
+                        {product.description && (
+                          <p className="text-zinc-400 text-sm line-clamp-2">{product.description}</p>
+                        )}
+                      </div>
+
+                      {/* Launch Status */}
+                      <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-yellow-300">Launch Status</span>
+                          <span className="text-yellow-200 font-medium">Preparing</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-yellow-300">Days in Preparation</span>
+                          <span className="text-yellow-200 font-medium">{daysInStage} days</span>
+                        </div>
+                      </div>
+
+                      {/* Vote Statistics */}
+                      <div className="bg-zinc-700/30 rounded-lg p-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-zinc-400">Community Votes</span>
+                          <span className="font-bold text-white">{product.votes || 0}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-zinc-400">Interest Level</span>
+                          <span className="font-bold text-green-400">High</span>
+                        </div>
+                      </div>                      {/* Notification Button */}
+                      <button className="w-full py-3 px-4 bg-yellow-500 hover:bg-yellow-600 text-black rounded-xl font-bold transition-all duration-200 flex items-center justify-center space-x-2">
+                        <TrendingUp className="w-5 h-5" />
+                        <span>Notify When Available</span>
                       </button>
                     </div>
                   </div>
-                ))}
-              </div>
+                  </Link>
+                );
+              })}
             </div>
-          </div>
-          {/* View All Incoming Drops Button */}
-          <div className="mt-6 flex justify-center">
-            <Link href="/drops">
-              <button className="bg-yellow-600 hover:bg-yellow-500 text-black font-semibold py-2 px-4 sm:px-6 rounded transition text-base sm:text-lg shadow-md">
-                View All Drops
-              </button>
-            </Link>
-          </div>
-        </section>
+          )}
+        </div>
       </div>
     </>
   );

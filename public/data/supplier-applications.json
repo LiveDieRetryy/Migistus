@@ -1,0 +1,32 @@
+[
+  {
+    "id": "1750392130871",
+    "companyName": "Migistus",
+    "contactPerson": "Travis Cole Helmick",
+    "email": "travishelmick5@gmail.com",
+    "phone": "13195514323",
+    "address": "498 Elbow Creek rd Mount Vernon Ia",
+    "productCategories": "electronics",
+    "businessDescription": "im looking to unload a wide arrange of products",
+    "website": "",
+    "yearsInBusiness": "more-than-10",
+    "expectedVolume": "enterprise",
+    "status": "approved",
+    "submittedAt": "2025-06-20T04:02:10.871Z"
+  },
+  {
+    "id": "1750392130872",
+    "companyName": "GreenTech Innovations",
+    "contactPerson": "Emily Chen",
+    "email": "emily@greentech.com",
+    "phone": "15551234567",
+    "address": "789 Innovation Blvd, Austin, TX 78701",
+    "productCategories": "Electronics, Renewable Energy",
+    "businessDescription": "We specialize in eco-friendly technology solutions and sustainable products",
+    "website": "https://greentech.com",
+    "yearsInBusiness": "5-10",
+    "expectedVolume": "large",
+    "status": "pending",
+    "submittedAt": "2025-06-20T05:15:30.872Z"
+  }
+]

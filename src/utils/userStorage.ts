@@ -40,10 +40,14 @@ export class UserStorage3 {
     const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : [];
   }
-
   static addUserActivity(userId: number, activity: any): void {
     const activities = this.getUserActivity(userId);
-    activities.unshift({ ...activity, timestamp: Date.now() });
+    // Preserve the original timestamp if provided, otherwise use current time
+    const activityWithTimestamp = {
+      ...activity,
+      timestamp: activity.timestamp || new Date().toISOString()
+    };
+    activities.unshift(activityWithTimestamp);
     const key = `${this.getUserPrefix(userId)}activity`;
     localStorage.setItem(key, JSON.stringify(activities.slice(0, 100))); // Keep last 100 activities
   }
@@ -55,11 +59,50 @@ export class UserStorage3 {
     return data ? JSON.parse(data) : [];
   }
 
+  // Enhanced pledge management
   static addUserPledge(userId: number, pledge: any): void {
     const pledges = this.getUserPledges(userId);
-    pledges.push({ ...pledge, id: Date.now(), timestamp: Date.now() });
+    const newPledge = { 
+      ...pledge, 
+      id: Date.now(), 
+      timestamp: Date.now(),
+      status: pledge.status || 'active'
+    };
+    pledges.push(newPledge);
     const key = `${this.getUserPrefix(userId)}pledges`;
     localStorage.setItem(key, JSON.stringify(pledges));
+
+    // Update activity
+    this.addUserActivity(userId, {
+      type: 'pledge',
+      action: `Pledged $${pledge.amount} for ${pledge.productName || 'product'}`,
+      productId: pledge.productId,
+      amount: pledge.amount
+    });
+  }
+
+  static updatePledgeStatus(userId: number, pledgeId: number, status: 'active' | 'completed' | 'cancelled'): void {
+    const pledges = this.getUserPledges(userId);
+    const pledgeIndex = pledges.findIndex((p: any) => p.id === pledgeId);
+    if (pledgeIndex !== -1) {
+      pledges[pledgeIndex].status = status;
+      pledges[pledgeIndex].updatedAt = Date.now();
+      const key = `${this.getUserPrefix(userId)}pledges`;
+      localStorage.setItem(key, JSON.stringify(pledges));
+
+      // Update activity
+      this.addUserActivity(userId, {
+        type: 'pledge',
+        action: `Pledge ${status}: ${pledges[pledgeIndex].productName || 'product'}`,
+        productId: pledges[pledgeIndex].productId,
+        status
+      });
+    }
+  }
+
+  static setUserPledge(userId: number, pledge: any): void {
+    const key = `${this.getUserPrefix(userId)}pledges`;
+    localStorage.setItem(key, JSON.stringify(pledge));
   }
 
   // Votes
@@ -68,12 +111,19 @@ export class UserStorage3 {
     const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : [];
   }
-
   static addUserVote(userId: number, vote: any): void {
     const votes = this.getUserVotes(userId);
     votes.push({ ...vote, id: Date.now(), timestamp: Date.now() });
     const key = `${this.getUserPrefix(userId)}votes`;
     localStorage.setItem(key, JSON.stringify(votes));
+
+    // Update activity
+    this.addUserActivity(userId, {
+      type: 'vote',
+      action: `Voted for ${vote.productName || 'product'}`,
+      productId: vote.productId,
+      tier: vote.tier
+    });
   }
 
   // Drops joined
@@ -150,14 +200,213 @@ export class UserStorage3 {
     this.setUserGuildCoins(userId, Math.max(0, current - amount));
   }
 
-  // Calculate user stats
+  // Social features
+  static getUserFollowers(userId: number): number {
+    try {
+      const followData = JSON.parse(localStorage.getItem('migistus_follows') || '[]');
+      return followData.filter((follow: any) => follow.followingId === userId).length;
+    } catch {
+      return Math.floor(Math.random() * 50) + 10;
+    }
+  }
+
+  static getUserFollowing(userId: number): number {
+    try {
+      const followData = JSON.parse(localStorage.getItem('migistus_follows') || '[]');
+      return followData.filter((follow: any) => follow.followerId === userId).length;
+    } catch {
+      return Math.floor(Math.random() * 30) + 5;
+    }
+  }
+
+  static followUser(followerId: number, followingId: number): boolean {
+    if (followerId === followingId) return false;
+    
+    try {
+      const followData = JSON.parse(localStorage.getItem('migistus_follows') || '[]');
+      const existingFollow = followData.find(
+        (follow: any) => follow.followerId === followerId && follow.followingId === followingId
+      );
+      
+      if (!existingFollow) {
+        followData.push({
+          followerId,
+          followingId,
+          timestamp: new Date().toISOString()
+        });
+        localStorage.setItem('migistus_follows', JSON.stringify(followData));
+        
+        // Get usernames for better activity descriptions
+        const followerProfile = this.getUserProfile(followerId);
+        const followingProfile = this.getUserProfile(followingId);
+        
+        const followerName = followerProfile?.username || `User ${followerId}`;
+        const followingName = followingProfile?.username || `User ${followingId}`;
+        
+        // Track activity for follower
+        this.addUserActivity(followerId, {
+          type: 'social',
+          action: `Started following ${followingName}`,
+          targetUserId: followingId,
+          description: `You are now following ${followingName}`
+        });
+        
+        // Track activity for the person being followed
+        this.addUserActivity(followingId, {
+          type: 'social', 
+          action: `${followerName} started following you`,
+          targetUserId: followerId,
+          description: `${followerName} is now following you`
+        });
+        
+        // Trigger live update event
+        window.dispatchEvent(new CustomEvent('followerUpdate', {
+          detail: { followerId, followingId, action: 'follow' }
+        }));
+        
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  static unfollowUser(followerId: number, followingId: number): boolean {
+    try {
+      const followData = JSON.parse(localStorage.getItem('migistus_follows') || '[]');
+      const followIndex = followData.findIndex(
+        (follow: any) => follow.followerId === followerId && follow.followingId === followingId
+      );
+      
+      if (followIndex !== -1) {
+        followData.splice(followIndex, 1);
+        localStorage.setItem('migistus_follows', JSON.stringify(followData));
+        
+        // Get usernames for better activity descriptions
+        const followerProfile = this.getUserProfile(followerId);
+        const followingProfile = this.getUserProfile(followingId);
+        
+        const followerName = followerProfile?.username || `User ${followerId}`;
+        const followingName = followingProfile?.username || `User ${followingId}`;
+        
+        // Track activity for unfollower
+        this.addUserActivity(followerId, {
+          type: 'social',
+          action: `Unfollowed ${followingName}`,
+          targetUserId: followingId,
+          description: `You unfollowed ${followingName}`
+        });
+        
+        // Track activity for the person being unfollowed
+        this.addUserActivity(followingId, {
+          type: 'social',
+          action: `${followerName} unfollowed you`,
+          targetUserId: followerId,
+          description: `${followerName} unfollowed you`
+        });
+        
+        // Trigger live update event
+        window.dispatchEvent(new CustomEvent('followerUpdate', {
+          detail: { followerId, followingId, action: 'unfollow' }
+        }));
+        
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  static isFollowing(followerId: number, followingId: number): boolean {
+    try {
+      const followData = JSON.parse(localStorage.getItem('migistus_follows') || '[]');
+      return followData.some(
+        (follow: any) => follow.followerId === followerId && follow.followingId === followingId
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  static getFollowersList(userId: number): any[] {
+    try {
+      const followData = JSON.parse(localStorage.getItem('migistus_follows') || '[]');
+      return followData
+        .filter((follow: any) => follow.followingId === userId)
+        .map((follow: any) => ({
+          userId: follow.followerId,
+          timestamp: follow.timestamp
+        }));
+    } catch {
+      return [];
+    }
+  }  static getFollowingList(userId: number): any[] {
+    try {
+      const followData = JSON.parse(localStorage.getItem('migistus_follows') || '[]');
+      return followData
+        .filter((follow: any) => follow.followerId === userId)
+        .map((follow: any) => ({
+          userId: follow.followingId,
+          timestamp: follow.timestamp
+        }));
+    } catch {
+      return [];
+    }
+  }
+
+  static getUserReputation(userId: number): number {
+    const key = `${this.getUserPrefix(userId)}reputation`;
+    const data = localStorage.getItem(key);
+    if (data) return parseInt(data);
+    
+    // Calculate based on activity
+    const pledges = this.getUserPledges(userId);
+    const votes = this.getUserVotes(userId);
+    const completedPledges = pledges.filter((p: any) => p.status === 'completed').length;
+    
+    return Math.min(200, (completedPledges * 10) + (votes.length * 2) + 25);
+  }
+
+  static getUserProfileViews(userId: number): number {
+    const key = `${this.getUserPrefix(userId)}profileViews`;
+    const data = localStorage.getItem(key);
+    return data ? parseInt(data) : Math.floor(Math.random() * 100) + 10;
+  }
+
+  static incrementProfileViews(userId: number): void {
+    const current = this.getUserProfileViews(userId);
+    const key = `${this.getUserPrefix(userId)}profileViews`;
+    localStorage.setItem(key, String(current + 1));
+  }
+
+  static getUserInteractions(userId: number): number {
+    const key = `${this.getUserPrefix(userId)}interactions`;
+    const data = localStorage.getItem(key);
+    return data ? parseInt(data) : Math.floor(Math.random() * 50) + 5;
+  }
+
+  // Enhanced stats calculation
   static calculateUserStats(userId: number) {
+    const pledges = this.getUserPledges(userId);
+    const votes = this.getUserVotes(userId);
+    const drops = this.getUserDrops(userId);
+    
     return {
-      totalPledges: this.getUserPledges(userId).length,
-      totalVotes: this.getUserVotes(userId).length,
-      dropsJoined: this.getUserDrops(userId).length,
-      followers: 0, // Will implement later
-      following: 0, // Will implement later
+      totalPledges: pledges.length,
+      totalVotes: votes.length,
+      dropsJoined: drops.length,
+      followers: this.getUserFollowers(userId),
+      following: this.getUserFollowing(userId),
+      reputation: this.getUserReputation(userId),
+      profileViews: this.getUserProfileViews(userId),
+      interactions: this.getUserInteractions(userId),
+      completedPledges: pledges.filter((p: any) => p.status === 'completed').length,
+      activePledges: pledges.filter((p: any) => p.status === 'active').length,
+      totalPledgeAmount: pledges.reduce((sum: number, p: any) => sum + (p.amount || 0), 0),
+      successRate: pledges.length > 0 ? 
+        (pledges.filter((p: any) => p.status === 'completed').length / pledges.length) * 100 : 0
     };
   }
 
@@ -201,5 +450,44 @@ export class UserStorage3 {
     });
     
     return profiles;
+  }
+
+  // Social interaction tracking for likes and comments
+  static addUserLike(userId: number, target: any): void {
+    this.addUserActivity(userId, {
+      type: 'like',
+      action: `Liked ${target.type || 'content'}`,
+      targetId: target.id,
+      description: target.description || ''
+    });
+  }
+
+  static addUserComment(userId: number, comment: any): void {
+    this.addUserActivity(userId, {
+      type: 'comment',
+      action: `Commented on ${comment.targetType || 'content'}`,
+      targetId: comment.targetId,
+      message: comment.message || '',
+      description: comment.description || ''
+    });
+  }
+
+  // Daily vote tracking utilities
+  static getTodaysVotes(userId: number) {
+    const votes = this.getUserVotes(userId);
+    const today = new Date().toDateString();
+    return votes.filter((vote: any) => {
+      const voteDate = vote.timestamp ? new Date(vote.timestamp).toDateString() : new Date(vote.timestamp).toDateString();
+      return voteDate === today;
+    });
+  }
+
+  static getTodaysVoteCount(userId: number): number {
+    return this.getTodaysVotes(userId).length;
+  }
+
+  static hasVotedTodayForProduct(userId: number, productId: any): boolean {
+    const todaysVotes = this.getTodaysVotes(userId);
+    return todaysVotes.some((vote: any) => vote.productId === productId);
   }
 }

@@ -4,6 +4,16 @@ import MainNavbar from "@/components/nav/MainNavbar";
 import Link from "next/link";
 import Image from "next/image";
 
+// Helper function to generate slug from product name
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/--+/g, '-')
+    .trim();
+}
+
 type Product = {
   id: number;
   name: string;
@@ -283,10 +293,9 @@ export default function HomePage() {
               </div>
 
               <div className="grid md:grid-cols-3 gap-8">
-                {featuredProducts.map((product) => (
-                  <Link
+                {featuredProducts.map((product) => (                  <Link
                     key={product.id}
-                    href={`/products/${product.slug || product.id}`}
+                    href={`/products/${product.slug || slugify(product.name)}`}
                     className="group block"
                   >
                     <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-400/20 rounded-2xl overflow-hidden hover:border-yellow-400/40 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl">

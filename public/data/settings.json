@@ -1,0 +1,43 @@
+{
+  "68758937509": {
+    "firstName": "Travis",
+    "lastName": "Helmick",
+    "dateOfBirth": "",
+    "phoneNumber": "",
+    "currentPassword": "",
+    "newPassword": "",
+    "confirmPassword": "",
+    "twoFactorEnabled": false,
+    "emailNotifications": true,
+    "smsNotifications": false,
+    "marketingEmails": false,
+    "productUpdates": true,
+    "orderUpdates": true,
+    "profileVisibility": "public",
+    "language": "en",
+    "currency": "USD",
+    "timezone": "America/New_York",
+    "theme": "dark",
+    "autoSave": true,
+    "addresses": [],
+    "paymentMethods": [],
+    "loginHistory": [
+      {
+        "date": "2025-06-20T04:20:10.708Z",
+        "location": "New York, NY",
+        "device": "Chrome on Windows",
+        "ip": "192.168.1.1"
+      },
+      {
+        "date": "2025-06-19T04:20:10.708Z",
+        "location": "New York, NY",
+        "device": "Safari on iPhone",
+        "ip": "192.168.1.2"
+      }
+    ],
+    "notifications": true,
+    "emailUpdates": true,
+    "privacy": "public",
+    "updatedAt": "2025-06-20T04:20:11.910Z"
+  }
+}

@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import MainNavbar from "@/components/nav/MainNavbar";
 import { UserStorage3 as UserStorage } from "@/utils/userStorage";
+import FollowButton from '@/components/FollowButton';
+import FollowersModal from '@/components/FollowersModal';
 
 type User = {
   id: number;
@@ -46,12 +48,24 @@ type UserProfile = {
   };
 };
 
-export default function CommunityMembersPage() {
+export default function CommunityMembersListPage() {
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [sortBy, setSortBy] = useState<'newest' | 'active' | 'name'>('newest');
   const [mounted, setMounted] = useState(false);
+  const [followersModal, setFollowersModal] = useState<{
+    isOpen: boolean;
+    type: 'followers' | 'following';
+    userId: number;
+    username: string;
+  }>({
+    isOpen: false,
+    type: 'followers',
+    userId: 0,
+    username: ''
+  });
 
   const createSlug = (username: string) => {
     return username.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
@@ -90,6 +104,49 @@ export default function CommunityMembersPage() {
 
     if (typeof window === 'undefined') return allUsers;
 
+    // Helper function to identify bot/test accounts
+    const isTestAccount = (profile: any): boolean => {
+      if (!profile) return true;
+      
+      const username = (profile.username || '').toLowerCase();
+      const email = (profile.email || '').toLowerCase();
+      
+      // Filter out accounts with test-related names
+      const testPatterns = [
+        'test', 'bot', 'demo', 'sample', 'mock', 'fake', 'admin',
+        'placeholder', 'example', 'dummy', 'temp'
+      ];
+      
+      // Check username patterns
+      if (testPatterns.some(pattern => username.includes(pattern))) {
+        return true;
+      }
+      
+      // Check for generic usernames like "user_123"
+      if (/^user_\d+$/.test(username)) {
+        return true;
+      }
+      
+      // Check email patterns
+      if (testPatterns.some(pattern => email.includes(pattern))) {
+        return true;
+      }
+      
+      // Filter out test email domains
+      const testDomains = ['example.com', 'test.com', 'demo.com', 'localhost'];
+      if (testDomains.some(domain => email.includes(domain))) {
+        return true;
+      }
+      
+      // Filter out specific test user IDs (if any known test IDs exist)
+      const testUserIds = [1001, 1002, 1003, 1004, 101, 102, 103, 999];
+      if (testUserIds.includes(profile.id)) {
+        return true;
+      }
+      
+      return false;
+    };
+
     console.log('🔍 Community: Scanning for all users...');
 
     try {
@@ -112,8 +169,8 @@ export default function CommunityMembersPage() {
               stats: { totalPledges: 0, totalVotes: 0, dropsJoined: 0, followers: 0, following: 0 }
             };
           }
-          
-          if (profile.username) {
+            // Only add if not a test account and has valid username
+          if (profile.username && !isTestAccount(profile)) {
             const user = createUserFromProfile(profile);
             allUsers.push(user);
             userIds.add(userData.id);
@@ -141,8 +198,8 @@ export default function CommunityMembersPage() {
                 stats: { totalPledges: 0, totalVotes: 0, dropsJoined: 0, followers: 0, following: 0 }
               };
             }
-            
-            if (profile.username) {
+              // Only add if not a test account and has valid username
+            if (profile.username && !isTestAccount(profile)) {
               const user = createUserFromProfile(profile);
               allUsers.push(user);
               userIds.add(session.user.id);
@@ -163,8 +220,8 @@ export default function CommunityMembersPage() {
       newProfileKeys.forEach(key => {
         try {
           const profile = JSON.parse(localStorage.getItem(key) || '{}');
-          
-          if (profile.id && profile.username && !userIds.has(profile.id)) {
+            // Only add if not a test account and has valid username
+          if (profile.id && profile.username && !userIds.has(profile.id) && !isTestAccount(profile)) {
             const user = createUserFromProfile(profile);
             allUsers.push(user);
             userIds.add(profile.id);
@@ -182,8 +239,8 @@ export default function CommunityMembersPage() {
       oldProfileKeys.forEach(key => {
         try {
           const profile = JSON.parse(localStorage.getItem(key) || '{}');
-          
-          if (profile.id && profile.username && !userIds.has(profile.id)) {
+            // Only add if not a test account and has valid username
+          if (profile.id && profile.username && !userIds.has(profile.id) && !isTestAccount(profile)) {
             const user = createUserFromProfile(profile);
             allUsers.push(user);
             userIds.add(profile.id);
@@ -194,7 +251,9 @@ export default function CommunityMembersPage() {
         }
       });
 
-      console.log(`📊 Community: Total unique users found: ${allUsers.length}`);
+      // Filter out test accounts
+      const filteredUsers = allUsers.filter(user => !isTestAccount(user));
+      console.log(`📊 Community: Total unique users found: ${filteredUsers.length}`);
 
     } catch (error) {
       console.error('❌ Community: Error getting users:', error);
@@ -249,9 +308,21 @@ export default function CommunityMembersPage() {
       bio: profile.bio || ''
     };
   };
-
   useEffect(() => {
     if (!mounted) return;
+
+    // Get current user from session
+    const session = localStorage.getItem('userSession');
+    if (session) {
+      try {
+        const userData = JSON.parse(session);
+        if (userData.user) {
+          setCurrentUser(userData.user);
+        }
+      } catch (error) {
+        console.error('Error loading current user:', error);
+      }
+    }
 
     const loadAllProfiles = () => {
       try {
@@ -427,22 +498,19 @@ export default function CommunityMembersPage() {
                       <div className="p-6">
                         {/* Avatar and Tier */}
                         <div className="flex items-center gap-4 mb-4">
-                          <div className="relative w-16 h-16 rounded-full border-2 border-zinc-600 group-hover:border-yellow-400/50 bg-zinc-800 overflow-hidden transition-colors">
-                            {profile.avatar ? (
-                              <Image
-                                src={profile.avatar}
-                                alt={`${profile.username}'s Avatar`}
-                                fill
-                                className="object-cover"
-                              />
-                            ) : (
-                              <Image
-                                src="/Icons/New Member.png"
-                                alt="Default Avatar"
-                                fill
-                                className="object-contain p-2"
-                              />
-                            )}
+                          <div className="w-16 h-16 rounded-full border-2 border-yellow-400/30 overflow-hidden bg-zinc-700">
+                          <Image
+                            src={profile.avatar || "/Icons/New Member.png"}
+                            alt={profile.username}
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = "/Icons/New Member.png";
+                            }}
+                            priority
+                          />
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-lg text-white group-hover:text-yellow-400 transition-colors truncate">
@@ -497,6 +565,59 @@ export default function CommunityMembersPage() {
                             year: "numeric",
                           })}
                         </div>
+
+                        {/* Enhanced Action Buttons */}
+                        <div className="flex gap-2 mt-4">
+                          <Link
+                            href={`/account/profile/${createSlug(profile.username)}`}
+                            className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-center"
+                          >
+                            👤 View Profile
+                          </Link>
+                          {currentUser?.id !== profile.id && (
+                            <div className="flex-1">
+                              <FollowButton
+                                targetUserId={profile.id}
+                                targetUsername={profile.username}
+                                initialFollowersCount={UserStorage.getUserFollowers(profile.id)}
+                                size="md"
+                                variant="default"
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Enhanced Stats */}
+                        <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setFollowersModal({
+                                isOpen: true,
+                                type: 'followers',
+                                userId: profile.id,
+                                username: profile.username
+                              });
+                            }}
+                            className="text-blue-400 hover:text-blue-300 transition-colors hover:underline"
+                          >
+                            👥 {UserStorage.getUserFollowers(profile.id)} followers
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setFollowersModal({
+                                isOpen: true,
+                                type: 'following',
+                                userId: profile.id,
+                                username: profile.username
+                              });
+                            }}
+                            className="text-purple-400 hover:text-purple-300 transition-colors hover:underline"
+                          >
+                            🔗 {UserStorage.getUserFollowing(profile.id)} following
+                          </button>
+                        </div>
                       </div>
                     </Link>
                   );
@@ -545,6 +666,15 @@ export default function CommunityMembersPage() {
           </div>
         </div>
       </div>
+
+      {/* Followers/Following Modal */}
+      <FollowersModal
+        userId={followersModal.userId}
+        username={followersModal.username}
+        type={followersModal.type}
+        isOpen={followersModal.isOpen}
+        onClose={() => setFollowersModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </>
   );
 }

@@ -35,6 +35,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      // Try to find user in localStorage
+      const session = localStorage.getItem('userSession');
+      if (session) {
+        const userData = JSON.parse(session);
+        if (userData.user && userData.user.email === email) {
+          setUser(userData.user);
+          setIsAuthenticated(true);
+          return true;
+        }
+      }
+      // Fallback: create a new user session if not found
       const userId = Date.now();
       const userData = {
         id: userId,

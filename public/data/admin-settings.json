@@ -1,0 +1,29 @@
+{
+  "siteName": "MIGISTUS",
+  "siteDescription": "Community-driven group buying platform",
+  "maintenanceMode": false,
+  "registrationEnabled": true,
+  "emailVerificationRequired": false,
+  "autoApproveVotes": true,
+  "autoApproveProducts": false,
+  "defaultUserTier": "New Initiate",
+  "maxVotesPerDay": {
+    "New Initiate": 3,
+    "New Member": 5,
+    "Subscriber": 10,
+    "Premium": 20,
+    "Admin": 100
+  },
+  "voteMultipliers": {
+    "New Initiate": 1,
+    "New Member": 1.2,
+    "Subscriber": 1.5,
+    "Premium": 2,
+    "Admin": 5
+  },
+  "featuredProductsLimit": 6,
+  "staffPicksLimit": 12,
+  "liveDropsEnabled": true,
+  "chatEnabled": true,
+  "moderationEnabled": true
+}

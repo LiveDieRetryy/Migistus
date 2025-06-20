@@ -1,0 +1,103 @@
+{
+  "preferences": [
+    {
+      "userId": 68758937509,
+      "username": "LiveDieRetry",
+      "email": "Livedieretry@gmail.com",
+      "action": "opted_in",
+      "timestamp": "2025-06-20T04:19:39.922Z",
+      "previousValue": true,
+      "newValue": true
+    },
+    {
+      "userId": 68758937509,
+      "username": "LiveDieRetry",
+      "email": "Livedieretry@gmail.com",
+      "action": "opted_in",
+      "timestamp": "2025-06-20T04:19:44.218Z",
+      "previousValue": true,
+      "newValue": true
+    },
+    {
+      "userId": 68758937509,
+      "username": "LiveDieRetry",
+      "email": "Livedieretry@gmail.com",
+      "action": "opted_in",
+      "timestamp": "2025-06-20T04:19:47.018Z",
+      "previousValue": true,
+      "newValue": true
+    },
+    {
+      "userId": 68758937509,
+      "username": "LiveDieRetry",
+      "email": "Livedieretry@gmail.com",
+      "action": "opted_in",
+      "timestamp": "2025-06-20T04:19:48.069Z",
+      "previousValue": true,
+      "newValue": true
+    },
+    {
+      "userId": 68758937509,
+      "username": "LiveDieRetry",
+      "email": "Livedieretry@gmail.com",
+      "action": "opted_in",
+      "timestamp": "2025-06-20T04:19:56.525Z",
+      "previousValue": true,
+      "newValue": true
+    },
+    {
+      "userId": 68758937509,
+      "username": "LiveDieRetry",
+      "email": "Livedieretry@gmail.com",
+      "action": "opted_out",
+      "timestamp": "2025-06-20T04:19:56.972Z",
+      "previousValue": false,
+      "newValue": false
+    },
+    {
+      "userId": 68758937509,
+      "username": "LiveDieRetry",
+      "email": "Livedieretry@gmail.com",
+      "action": "opted_out",
+      "timestamp": "2025-06-20T04:20:01.322Z",
+      "previousValue": false,
+      "newValue": false
+    },
+    {
+      "userId": 68758937509,
+      "username": "LiveDieRetry",
+      "email": "Livedieretry@gmail.com",
+      "action": "opted_out",
+      "timestamp": "2025-06-20T04:20:01.648Z",
+      "previousValue": false,
+      "newValue": false
+    },
+    {
+      "userId": 68758937509,
+      "username": "LiveDieRetry",
+      "email": "Livedieretry@gmail.com",
+      "action": "opted_out",
+      "timestamp": "2025-06-20T04:20:07.787Z",
+      "previousValue": false,
+      "newValue": false
+    },
+    {
+      "userId": 68758937509,
+      "username": "LiveDieRetry",
+      "email": "Livedieretry@gmail.com",
+      "action": "opted_out",
+      "timestamp": "2025-06-20T04:20:10.638Z",
+      "previousValue": false,
+      "newValue": false
+    },
+    {
+      "userId": 68758937509,
+      "username": "LiveDieRetry",
+      "email": "Livedieretry@gmail.com",
+      "action": "opted_out",
+      "timestamp": "2025-06-20T04:20:11.915Z",
+      "previousValue": false,
+      "newValue": false
+    }
+  ]
+}

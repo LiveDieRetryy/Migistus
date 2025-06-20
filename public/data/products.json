@@ -1,18 +1,95 @@
-[
-  {
+[  {
     "id": 1,
     "name": "Gilded Vanguard Headset",
     "image": "https://placehold.co/400x400.png?text=Headset",
-    "description": "Premium gaming headset with surround sound",
+    "images": [
+      "https://placehold.co/400x400.png?text=Headset+Main",
+      "https://placehold.co/400x400.png?text=Headset+Side",
+      "https://placehold.co/400x400.png?text=Headset+Back",
+      "https://placehold.co/400x400.png?text=Headset+Box"
+    ],
+    "description": "Premium gaming headset with surround sound and crystal-clear communication",
+    "fullDescription": "Experience immersive gaming like never before with the Gilded Vanguard Headset. Featuring advanced 7.1 surround sound technology, noise-canceling microphone, and premium comfort padding for extended gaming sessions. Built with durable materials and backed by our community-driven quality assurance.",
     "goal": 100,
     "link": "https://example.com/headset",
     "timeframe": "30 days",
     "category": "Electronics",
+    "price": 149.99,
+    "originalPrice": 199.99,
     "votes": 73,
     "featured": true,
-    "pledges": 15,
-    "pricingTiers": [],
-    "slug": "gilded-vanguard-headset"
+    "pledges": 42,
+    "pledgeGoal": 100,
+    "pricingTiers": [
+      {
+        "quantity": 10,
+        "price": 139.99,
+        "discount": 7,
+        "label": "Early Bird"
+      },
+      {
+        "quantity": 25,
+        "price": 129.99,
+        "discount": 13,
+        "label": "Community Choice"
+      },
+      {
+        "quantity": 50,
+        "price": 119.99,
+        "discount": 20,
+        "label": "Bulk Discount"
+      }
+    ],
+    "slug": "gilded-vanguard-headset",
+    "stage": "community-drops",
+    "stageEnteredAt": "2024-01-15T10:00:00.000Z",
+    "promotedAt": "2024-01-08T15:30:00.000Z",
+    "features": [
+      "7.1 Surround Sound Technology",
+      "Noise-Canceling Microphone",
+      "Premium Memory Foam Padding",
+      "Adjustable Headband",
+      "RGB Lighting with Customization",
+      "Multi-Platform Compatibility",
+      "Detachable Cable Design",
+      "24-Month Warranty"
+    ],
+    "specifications": {
+      "Frequency Response": "20Hz - 20kHz",
+      "Impedance": "32 Ohms",
+      "Driver Size": "50mm",
+      "Microphone Type": "Unidirectional",
+      "Cable Length": "1.8m",
+      "Weight": "350g",
+      "Connectivity": "USB, 3.5mm Jack",
+      "Compatibility": "PC, PS5, Xbox, Nintendo Switch"
+    },
+    "supplier": {
+      "name": "AudioTech Innovations",
+      "rating": 4.8,
+      "verified": true,
+      "location": "California, USA"
+    },
+    "tags": ["gaming", "audio", "headset", "surround-sound", "rgb"],
+    "compatibility": ["Windows 10/11", "macOS", "PlayStation 5", "Xbox Series X/S", "Nintendo Switch"],
+    "warranty": "24-month manufacturer warranty with free replacement",
+    "shipping": {
+      "free": true,
+      "estimatedDays": 5,
+      "regions": ["North America", "Europe", "Asia-Pacific"]
+    },
+    "socialMetrics": {
+      "likes": 234,
+      "shares": 67,
+      "comments": 89
+    },
+    "video": "https://example.com/headset-demo.mp4",
+    "gallery": [
+      "https://placehold.co/300x300.png?text=Gallery+1",
+      "https://placehold.co/300x300.png?text=Gallery+2",
+      "https://placehold.co/300x300.png?text=Gallery+3",
+      "https://placehold.co/300x300.png?text=Gallery+4"
+    ]
   },
   {
     "id": 2,
@@ -27,7 +104,9 @@
     "featured": false,
     "pledges": 0,
     "pricingTiers": [],
-    "slug": "wireless-mouse-pro"
+    "slug": "wireless-mouse-pro",
+    "stage": "voting",
+    "stageEnteredAt": "2024-01-20T08:00:00.000Z"
   },
   {
     "id": 3,
@@ -42,6 +121,9 @@
     "featured": true,
     "pledges": 0,
     "pricingTiers": [],
-    "slug": "mechanical-keyboard"
+    "slug": "mechanical-keyboard",
+    "stage": "coming-soon",
+    "stageEnteredAt": "2024-01-18T12:00:00.000Z",
+    "promotedAt": "2024-01-17T14:20:00.000Z"
   }
 ]

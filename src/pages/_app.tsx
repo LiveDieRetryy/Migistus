@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import type { AppProps } from "next/app";
 import { AuthProvider } from "@/context/AuthContext";
 import { Web3Utils } from "@/utils/web3Utils";
+import MainLayout from "@/components/layout/MainLayout";
 import "@/styles/globals.css";
 
 // Error boundary component
@@ -89,7 +90,6 @@ export default function App({ Component, pageProps }: AppProps) {
       }
     }, 3000);
   }, []);
-
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
     return (
@@ -99,10 +99,16 @@ export default function App({ Component, pageProps }: AppProps) {
     );
   }
 
+  // Check if the page has layout options
+  const getLayout = (Component as any).getLayout || ((page: any) => page);
+  const showFooter = (Component as any).showFooter !== false; // Default to true unless explicitly disabled
+
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <Component {...pageProps} />
+        <MainLayout showFooter={showFooter}>
+          {getLayout(<Component {...pageProps} />)}
+        </MainLayout>
       </AuthProvider>
     </ErrorBoundary>
   );

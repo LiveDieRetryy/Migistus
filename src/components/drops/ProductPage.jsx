@@ -3,6 +3,7 @@ import { Clock, Users, TrendingDown, Star, Share2, Heart, MessageCircle, Crown, 
 import { containsProfanity, filterProfanity } from "@/components/chat/ProfanityFilter";
 import MainNavbar from "@/components/nav/MainNavbar";
 import { useRouter } from "next/router";
+import { UserStorage3 as UserStorage } from "@/utils/userStorage";
 
 // Fix: Remove the broken function definition and replace with a valid helper function
 function isInappropriateContent(text) {
@@ -309,7 +310,6 @@ const ProductPage = ({ productId }) => {
     const tier = tiers.find(t => pledges >= t.min && pledges <= t.max);
     return tier ? tier.price : tiers[0].price;
   };
-
   // Handle pledge (update backend)
   const handlePledge = async () => {
     if (!product || hasPledged) return;
@@ -321,6 +321,18 @@ const ProductPage = ({ productId }) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ user: currentUser.user }),
         });
+
+        // Track pledge in user storage for activity timeline
+        // First, try to get userId from localStorage if available
+        const userId = localStorage.getItem("userId");
+        if (userId) {
+          UserStorage.addUserPledge(parseInt(userId), {
+            productId: productId,
+            productName: product.name,
+            amount: currentPrice,
+            timestamp: new Date().toISOString()
+          });
+        }
       }
       const res = await fetch("/api/products", {
         method: "PUT",
@@ -341,7 +353,6 @@ const ProductPage = ({ productId }) => {
       setShowPledgeModal(false);
     }
   };
-
   // Post chat message to backend
   const handleSendMessage = async () => {
     if (chatMessage.trim() && (hasPledged || isAdmin)) {
@@ -366,6 +377,17 @@ const ProductPage = ({ productId }) => {
       setCommunityMessages(prev => [newMessage, ...prev]);
       setChatMessage('');
       setIsTyping(false);
+
+      // Track comment activity in user storage
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        UserStorage.addUserComment(parseInt(userId), {
+          targetType: 'product',
+          targetId: productId,
+          message: trimmedMessage,
+          description: `Commented on ${product?.name || 'product'}`
+        });
+      }
 
       try {
         await fetch(`/api/chat/${productId}`, {
@@ -398,7 +420,6 @@ const ProductPage = ({ productId }) => {
       setCommunityMessages(prev => [reactionMessage, ...prev]);
     }
   };
-
   // Handle liking messages
   const handleLikeMessage = (messageId) => {
     setCommunityMessages(prev => 
@@ -408,6 +429,16 @@ const ProductPage = ({ productId }) => {
           : msg
       )
     );
+
+    // Track like activity in user storage
+    const userId = localStorage.getItem("userId");
+    if (userId) {
+      UserStorage.addUserLike(parseInt(userId), {
+        type: 'message',
+        id: messageId,
+        description: 'Liked a chat message'
+      });
+    }
   };
 
   // Handle typing indicator

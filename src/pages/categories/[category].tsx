@@ -4,6 +4,16 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
+// Helper function to generate slug from product name
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/--+/g, '-')
+    .trim();
+}
+
 type Product = {
   id: number;
   name: string;
@@ -86,10 +96,9 @@ export default function CategoryPage() {
             <div className="text-gray-400">No drops found in this category.</div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {products.map((product) => (
-                <Link
+              {products.map((product) => (                <Link
                   key={product.id}
-                  href={`/products/${product.slug || product.id}`}
+                  href={`/products/${product.slug || slugify(product.name)}`}
                   className="block"
                 >
                   <div className="bg-zinc-900 border border-yellow-500/20 rounded-lg p-4 sm:p-6 hover:border-yellow-500 transition-all">

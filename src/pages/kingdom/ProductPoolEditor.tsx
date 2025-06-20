@@ -270,10 +270,14 @@ export default function ProductPoolEditor() {
       )
     );
   };
-
   const deleteProduct = async (productId: number) => {
     try {
-      const res = await fetch(`/api/products/${productId}`, {
+      // Find the product to get its slug
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+      
+      const productSlug = product.slug || slugify(product.name);
+      const res = await fetch(`/api/products/${productSlug}`, {
         method: "DELETE"
       });
 

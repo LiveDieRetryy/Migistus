@@ -1,0 +1,309 @@
+[
+  {
+    "userId": 1,
+    "username": "Administrator",
+    "email": "admin@migistus.com",
+    "sessionId": "exdt1mragwhmc3lq0e1",
+    "timestamp": "2025-06-19T16:37:02.595Z",
+    "action": "navigation",
+    "data": {
+      "page": "/account",
+      "timestamp": "2025-06-19T16:37:02.592Z",
+      "referrer": "http://localhost:3000/account/settings"
+    },
+    "ipAddress": "66.43.232.221",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "location": "unknown",
+    "serverIP": "::1",
+    "serverTimestamp": "2025-06-19T16:41:36.972Z",
+    "headers": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "referer": "http://localhost:3000/account",
+      "origin": "http://localhost:3000"
+    },
+    "id": 1750351296972
+  },
+  {
+    "userId": 1,
+    "username": "Administrator",
+    "email": "admin@migistus.com",
+    "sessionId": "exdt1mragwhmc3lq0e1",
+    "timestamp": "2025-06-19T16:37:04.253Z",
+    "action": "session_start",
+    "data": {
+      "timestamp": "2025-06-19T16:37:04.253Z",
+      "sessionId": "session_1750351024253_jr8bk7kb2",
+      "page": "/account",
+      "referrer": "http://localhost:3000/account/settings"
+    },
+    "ipAddress": "66.43.232.221",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "location": "unknown",
+    "serverIP": "::1",
+    "serverTimestamp": "2025-06-19T16:41:36.970Z",
+    "headers": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "referer": "http://localhost:3000/account",
+      "origin": "http://localhost:3000"
+    },
+    "id": 1750351296970
+  },
+  {
+    "userId": 1,
+    "username": "unknown",
+    "email": "unknown",
+    "sessionId": "session_1750351181508_98yue2m15",
+    "timestamp": "2025-06-19T16:39:41.508Z",
+    "action": "session_event",
+    "data": {
+      "event": "logout",
+      "sessionDuration": 0,
+      "timestamp": "2025-06-19T16:39:41.505Z",
+      "page": "/",
+      "referrer": "http://localhost:3000/account/settings"
+    },
+    "ipAddress": "66.43.232.221",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "location": "unknown",
+    "serverIP": "::1",
+    "serverTimestamp": "2025-06-19T16:39:41.584Z",
+    "headers": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "referer": "http://localhost:3000/",
+      "origin": "http://localhost:3000"
+    },
+    "id": 1750351181584
+  },
+  {
+    "userId": 1,
+    "username": "Administrator",
+    "email": "admin@migistus.com",
+    "sessionId": "exdt1mragwhmc3lq0e1",
+    "timestamp": "2025-06-19T16:37:02.656Z",
+    "action": "navigation",
+    "data": {
+      "page": "/",
+      "timestamp": "2025-06-19T16:37:02.656Z",
+      "referrer": "http://localhost:3000/account/settings"
+    },
+    "ipAddress": "66.43.232.221",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "location": "unknown",
+    "serverIP": "::1",
+    "serverTimestamp": "2025-06-19T16:39:39.553Z",
+    "headers": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "referer": "http://localhost:3000/",
+      "origin": "http://localhost:3000"
+    },
+    "id": 1750351179553
+  },
+  {
+    "userId": 1,
+    "username": "Administrator",
+    "email": "admin@migistus.com",
+    "sessionId": "exdt1mragwhmc3lq0e1",
+    "timestamp": "2025-06-19T16:37:04.258Z",
+    "action": "session_start",
+    "data": {
+      "timestamp": "2025-06-19T16:37:04.258Z",
+      "sessionId": "session_1750351024258_uwqul17pr",
+      "page": "/",
+      "referrer": "http://localhost:3000/account/settings"
+    },
+    "ipAddress": "66.43.232.221",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "location": "unknown",
+    "serverIP": "::1",
+    "serverTimestamp": "2025-06-19T16:39:39.551Z",
+    "headers": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "referer": "http://localhost:3000/",
+      "origin": "http://localhost:3000"
+    },
+    "id": 1750351179551
+  },
+  {
+    "userId": 1,
+    "username": "Administrator",
+    "email": "admin@migistus.com",
+    "sessionId": "exdt1mragwhmc3lq0e1",
+    "timestamp": "2025-06-19T16:37:03.629Z",
+    "action": "session_start",
+    "data": {
+      "timestamp": "2025-06-19T16:37:03.629Z",
+      "sessionId": "session_1750351023629_cxuwneezu",
+      "page": "/kingdom/users",
+      "referrer": "http://localhost:3000/"
+    },
+    "ipAddress": "66.43.232.221",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "location": "unknown",
+    "serverIP": "::1",
+    "serverTimestamp": "2025-06-19T16:37:03.857Z",
+    "headers": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "referer": "http://localhost:3000/kingdom/users",
+      "origin": "http://localhost:3000"
+    },
+    "id": 1750351023857
+  },
+  {
+    "userId": 1,
+    "username": "Administrator",
+    "email": "admin@migistus.com",
+    "sessionId": "exdt1mragwhmc3lq0e1",
+    "timestamp": "2025-06-19T16:37:02.630Z",
+    "action": "navigation",
+    "data": {
+      "page": "/kingdom/users",
+      "timestamp": "2025-06-19T16:37:02.626Z",
+      "referrer": "http://localhost:3000/"
+    },
+    "ipAddress": "66.43.232.221",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "location": "unknown",
+    "serverIP": "::1",
+    "serverTimestamp": "2025-06-19T16:37:03.127Z",
+    "headers": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "referer": "http://localhost:3000/kingdom/users",
+      "origin": "http://localhost:3000"
+    },
+    "id": 1750351023127
+  },
+  {
+    "userId": 1,
+    "action": "data_sync",
+    "timestamp": "2025-06-19T16:34:42.333Z",
+    "data": {
+      "syncType": "user_data",
+      "syncedComponents": [
+        "profile",
+        "settings",
+        "stats",
+        "syncTime"
+      ],
+      "syncTime": "2025-06-19T16:34:42.333Z"
+    },
+    "id": 1750350882333
+  },
+  {
+    "userId": 1,
+    "username": "Administrator",
+    "email": "admin@migistus.com",
+    "sessionId": "exdt1mragwhmc3lq0e1",
+    "timestamp": "2025-06-19T16:34:42.250Z",
+    "action": "session_event",
+    "data": {
+      "event": "login",
+      "sessionDuration": 81,
+      "timestamp": "2025-06-19T16:34:42.250Z",
+      "page": "/",
+      "referrer": "http://localhost:3000/account/settings"
+    },
+    "ipAddress": "66.43.232.221",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "location": "unknown",
+    "serverIP": "::1",
+    "serverTimestamp": "2025-06-19T16:34:42.323Z",
+    "headers": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "referer": "http://localhost:3000/",
+      "origin": "http://localhost:3000"
+    },
+    "id": 1750350882323
+  },
+  {
+    "userId": 1,
+    "username": "Administrator",
+    "email": "admin@migistus.com",
+    "sessionId": "exdt1mragwhmc3lq0e1",
+    "timestamp": "2025-06-19T16:34:42.173Z",
+    "action": "session_start",
+    "data": {
+      "timestamp": "2025-06-19T16:34:42.169Z",
+      "sessionId": "session_1750350882169_y7yaxiezb",
+      "page": "/",
+      "referrer": "http://localhost:3000/account/settings"
+    },
+    "ipAddress": "66.43.232.221",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "location": "unknown",
+    "serverIP": "::1",
+    "serverTimestamp": "2025-06-19T16:34:42.248Z",
+    "headers": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "referer": "http://localhost:3000/",
+      "origin": "http://localhost:3000"
+    },
+    "id": 1750350882248
+  },
+  {
+    "userId": 1,
+    "action": "data_sync",
+    "timestamp": "2025-06-19T16:33:51.215Z",
+    "data": {
+      "syncType": "user_data",
+      "syncedComponents": [
+        "profile",
+        "settings",
+        "stats",
+        "syncTime"
+      ],
+      "syncTime": "2025-06-19T16:33:51.215Z"
+    },
+    "id": 1750350831215
+  },
+  {
+    "userId": 1,
+    "username": "Administrator",
+    "email": "admin@migistus.com",
+    "sessionId": "l5r1sxipkm9mc3lowrz",
+    "timestamp": "2025-06-19T16:33:51.103Z",
+    "action": "session_event",
+    "data": {
+      "event": "login",
+      "sessionDuration": 272,
+      "timestamp": "2025-06-19T16:33:51.103Z",
+      "page": "/",
+      "referrer": "http://localhost:3000/"
+    },
+    "ipAddress": "66.43.232.221",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "location": "unknown",
+    "serverIP": "::1",
+    "serverTimestamp": "2025-06-19T16:33:51.206Z",
+    "headers": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "referer": "http://localhost:3000/",
+      "origin": "http://localhost:3000"
+    },
+    "id": 1750350831206
+  },
+  {
+    "userId": 1,
+    "username": "Administrator",
+    "email": "admin@migistus.com",
+    "sessionId": "l5r1sxipkm9mc3lowrz",
+    "timestamp": "2025-06-19T16:33:50.835Z",
+    "action": "session_start",
+    "data": {
+      "timestamp": "2025-06-19T16:33:50.831Z",
+      "sessionId": "session_1750350830831_piael18ne",
+      "page": "/",
+      "referrer": "http://localhost:3000/"
+    },
+    "ipAddress": "66.43.232.221",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "location": "unknown",
+    "serverIP": "::1",
+    "serverTimestamp": "2025-06-19T16:33:51.101Z",
+    "headers": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "referer": "http://localhost:3000/",
+      "origin": "http://localhost:3000"
+    },
+    "id": 1750350831101
+  }
+]

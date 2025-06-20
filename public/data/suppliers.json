@@ -1,0 +1,21 @@
+[
+  {
+    "id": "1750392546366",
+    "name": "Migistus",
+    "email": "travishelmick5@gmail.com",
+    "password": "z0n&uE9$gAuv",
+    "supplierCode": "SUP-MIGI1524",
+    "companyName": "Migistus",
+    "status": "active",
+    "joinedDate": "2025-06-20T04:09:06.366Z",
+    "contactPerson": "Travis Cole Helmick",
+    "phone": "13195514323",
+    "address": "498 Elbow Creek rd Mount Vernon Ia",
+    "productCategories": [
+      "electronics"
+    ],
+    "totalProducts": 0,
+    "totalSales": 0,
+    "rating": 5
+  }
+]
