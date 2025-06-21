@@ -535,7 +535,7 @@ const userCooldown = tierCooldowns[currentUser.tier] || 30;
               <div className="flex items-center space-x-4">
                 <button
                   className="flex items-center space-x-2 text-gray-400 hover:text-yellow-400 transition-colors"
-                  onClick={() => router.push("/drops")}
+                  onClick={() => router.push("/")}
                 >
                   <ArrowLeft className="w-5 h-5" />
                   <span className="hidden sm:inline">Back to Drops</span>

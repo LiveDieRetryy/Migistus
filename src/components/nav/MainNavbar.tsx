@@ -1,5 +1,5 @@
 // components/nav/MainNavbar.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -15,6 +15,8 @@ export default function MainNavbar() {
   const [isLiveDropsOpen, setIsLiveDropsOpen] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [showNavbar, setShowNavbar] = useState(true);
+  const lastScrollY = useRef(0);
   
   // Login modal states
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -58,12 +60,16 @@ export default function MainNavbar() {
   ];
 
   const navigation = [
-    { name: "Categories", href: "/categories", icon: "🗂️" },
     { name: "Voting", href: "/voting", icon: "🗳️" },
     { name: "Coming Soon", href: "/coming-soon", icon: "⏰" },
     { name: "Community", href: "/community", icon: "👥" },
+    { name: "Categories", href: "/categories", icon: "🗂️" },
     { name: "About", href: "/about", icon: "ℹ️" },
   ];
+
+  // Add or update styles for uniform nav items
+  const NAV_ITEM_SIZE = 96; // px, adjust as needed for your design
+  const ICON_SIZE = 40; // px, adjust as needed for your icons
 
   // Helper functions
   const createSlug = (username: string) => {
@@ -278,6 +284,21 @@ export default function MainNavbar() {
     logout();
   };
 
+  // Scroll event effect
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
+        setShowNavbar(false); // scrolling down, hide
+      } else {
+        setShowNavbar(true); // scrolling up, show
+      }
+      lastScrollY.current = currentScrollY;
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Don't render anything until mounted to prevent hydration mismatches
   if (!mounted) {
     return (
@@ -294,14 +315,11 @@ export default function MainNavbar() {
               />
             </Link>
             <div className="hidden md:flex items-center space-x-6">
-              {navigation.map((item) => (
-                <div key={item.name} className="flex items-center gap-2 px-3 py-2 text-gray-300">
-                  {typeof item.icon === 'string' ? (
-                    <span className="text-lg">{item.icon}</span>
-                  ) : (
-                    item.icon
-                  )}
-                  {item.name}
+              {/* Skeleton nav items for loading state */}
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex flex-col items-center justify-center animate-pulse" style={{ width: NAV_ITEM_SIZE, height: NAV_ITEM_SIZE }}>
+                  <div className="w-10 h-10 bg-zinc-800 rounded-full mb-2" />
+                  <div className="w-16 h-3 bg-zinc-800 rounded" />
                 </div>
               ))}
             </div>
@@ -318,167 +336,166 @@ export default function MainNavbar() {
   }
 
   return (
-    <>
-      <nav className="bg-zinc-950/95 backdrop-blur-md border-b border-yellow-400/20 shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            {/* Logo */}
-            <Link href="/" className="flex items-center group">
-              <Image
-                src="/images/migistus_logo.png"
-                alt="MIGISTUS"
-                width={80}
-                height={80}
-                className="transition-transform duration-300 group-hover:scale-110"
-              />
-            </Link>            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-1">              {/* Live Drops Dropdown */}
-              <div className="relative" data-dropdown="live-drops">
-                <button
-                  onClick={() => setIsLiveDropsOpen(!isLiveDropsOpen)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isLiveDropsOpen || liveDropsItems.some(item => isActivePage(item.href))
-                      ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/30"
-                      : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
-                  }`}
-                >
-                  <Image
-                    src="/Icons/livedrops.png"
-                    alt="Live Drops"
-                    width={20}
-                    height={20}
-                    className="object-contain"
-                  />
-                  Live Drops
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isLiveDropsOpen ? 'rotate-180' : ''}`} />
-                </button>
-                
-                {/* Dropdown Menu */}
-                {isLiveDropsOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl z-50 overflow-hidden">
-                    {liveDropsItems.map((item) => (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        onClick={() => setIsLiveDropsOpen(false)}
-                        className="flex items-start gap-3 px-4 py-3 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 transition-all duration-200 border-b border-zinc-800 last:border-b-0"
-                      >
-                        <div className="flex-shrink-0 mt-0.5">
-                          {typeof item.icon === 'string' ? (
-                            <span className="text-base">{item.icon}</span>
-                          ) : (
-                            item.icon
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-medium">{item.name}</div>
-                          <div className="text-xs text-gray-400">{item.description}</div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Other Navigation Items */}
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isActivePage(item.href)
-                      ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/30"
-                      : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
-                  }`}
-                >
-                  {typeof item.icon === 'string' ? (
-                    <span className="text-base">{item.icon}</span>
-                  ) : (
-                    item.icon
-                  )}
-                  {item.name}
-                </Link>
-              ))}
+    <nav className={`bg-zinc-950/95 backdrop-blur-md border-b border-yellow-400/20 shadow-lg sticky top-0 z-50 transition-opacity duration-500 ${showNavbar ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
+          {/* Logo */}
+          <Link href="/" className="flex items-center group">
+            <Image
+              src="/images/migistus_logo.png"
+              alt="MIGISTUS"
+              width={80}
+              height={80}
+              className="transition-transform duration-300 group-hover:scale-110"
+            />
+          </Link>            {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-1">              {/* Live Drops Dropdown */}
+            <div className="relative" data-dropdown="live-drops">
+              <button
+                onClick={() => setIsLiveDropsOpen(!isLiveDropsOpen)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isLiveDropsOpen || liveDropsItems.some(item => isActivePage(item.href))
+                    ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/30"
+                    : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
+                }`}
+              >
+                <Image
+                  src="/Icons/livedrops.png"
+                  alt="Live Drops"
+                  width={20}
+                  height={20}
+                  className="object-contain"
+                />
+                Live Drops
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isLiveDropsOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {/* Dropdown Menu */}
+              {isLiveDropsOpen && (
+                <div className="absolute top-full left-0 mt-2 w-64 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                  {liveDropsItems.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setIsLiveDropsOpen(false)}
+                      className="flex items-start gap-3 px-4 py-3 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 transition-all duration-200 border-b border-zinc-800 last:border-b-0"
+                    >
+                      <div className="flex-shrink-0 mt-0.5">
+                        {typeof item.icon === 'string' ? (
+                          <span className="text-base">{item.icon}</span>
+                        ) : (
+                          item.icon
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium">{item.name}</div>
+                        <div className="text-xs text-gray-400">{item.description}</div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-3">
-              {isAuthenticated ? (
-                /* User Dropdown */
-                <div className="relative">                  <button
-                    onClick={() => {
-                      const newState = !isDropdownOpen;
-                      setIsDropdownOpen(newState);
-                      // Track account menu interactions
-                      activityTracker.trackAccountMenuAction(newState ? 'open' : 'close', {
-                        username: user?.username,
-                        userId: user?.id
-                      });
-                    }}
-                    className="flex items-center gap-3 px-4 py-2 rounded-lg bg-zinc-800/50 border border-zinc-700 hover:bg-zinc-700/50 transition-all duration-200"
+            {/* Other Navigation Items */}
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  isActivePage(item.href)
+                    ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/30"
+                    : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
+                }`}
+              >
+                {typeof item.icon === 'string' ? (
+                  <span className="text-base">{item.icon}</span>
+                ) : (
+                  item.icon
+                )}
+                {item.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center space-x-3">
+            {isAuthenticated ? (
+              /* User Dropdown */
+              <div className="relative">                  <button
+                  onClick={() => {
+                    const newState = !isDropdownOpen;
+                    setIsDropdownOpen(newState);
+                    // Track account menu interactions
+                    activityTracker.trackAccountMenuAction(newState ? 'open' : 'close', {
+                      username: user?.username,
+                      userId: user?.id
+                    });
+                  }}
+                  className="flex items-center gap-3 px-4 py-2 rounded-lg bg-zinc-800/50 border border-zinc-700 hover:bg-zinc-700/50 transition-all duration-200"
+                >
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-full border-2 border-yellow-400/30 hover:border-yellow-400/50 transition-colors overflow-hidden bg-zinc-700">
+                      <Image
+                        src="/Icons/New Member.png"
+                        alt="Profile"
+                        width={32}
+                        height={32}
+                        className="w-full h-full object-cover"
+                        priority
+                      />
+                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 border border-zinc-900 rounded-full"></div>
+                  </div>
+                  <div className="text-left">
+                    <div className="text-sm font-medium text-white">{user?.username || 'Member'}</div>
+                    <div className="text-xs text-gray-400">View Profile</div>
+                  </div>
+                  <svg
+                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                      isDropdownOpen ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    <div className="relative">
-                      <div className="w-8 h-8 rounded-full border-2 border-yellow-400/30 hover:border-yellow-400/50 transition-colors overflow-hidden bg-zinc-700">
-                        <Image
-                          src="/Icons/New Member.png"
-                          alt="Profile"
-                          width={32}
-                          height={32}
-                          className="w-full h-full object-cover"
-                          priority
-                        />
-                      </div>
-                      <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 border border-zinc-900 rounded-full"></div>
-                    </div>
-                    <div className="text-left">
-                      <div className="text-sm font-medium text-white">{user?.username || 'Member'}</div>
-                      <div className="text-xs text-gray-400">View Profile</div>
-                    </div>
-                    <svg
-                      className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
-                        isDropdownOpen ? 'rotate-180' : ''
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  
-                  {isDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl z-50 overflow-hidden">
-                      {/* User info header */}
-                      <div className="px-4 py-4 border-b border-zinc-700 bg-zinc-800/50">
-                        <div className="flex items-center gap-3">
-                          <div className="relative">
-                            <div className="w-10 h-10 rounded-full border-2 border-yellow-400/30 overflow-hidden bg-zinc-700">
-                              <Image
-                                src="/Icons/New Member.png"
-                                alt="Profile"
-                                width={40}
-                                height={40}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <label className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer rounded-full flex items-center justify-center">
-                              <span className="text-white text-xs">📸</span>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleAvatarUpload}
-                                className="hidden"
-                              />
-                            </label>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                    {/* User info header */}
+                    <div className="px-4 py-4 border-b border-zinc-700 bg-zinc-800/50">
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          <div className="w-10 h-10 rounded-full border-2 border-yellow-400/30 overflow-hidden bg-zinc-700">
+                            <Image
+                              src="/Icons/New Member.png"
+                              alt="Profile"
+                              width={40}
+                              height={40}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-white truncate">{user?.username || 'Member'}</div>
-                            <div className="text-sm text-gray-400 truncate">{user?.email}</div>
-                          </div>
+                          <label className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs">📸</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleAvatarUpload}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-white truncate">{user?.username || 'Member'}</div>
+                          <div className="text-sm text-gray-400 truncate">{user?.email}</div>
                         </div>
                       </div>
-                        {/* Menu items */}
-                      <div className="py-2">                        {accountMenuItems.map((item, index) => {
+                    </div>
+                      {/* Menu items */}
+                    <div className="py-2">                        {accountMenuItems.map((item, index) => {
                           // Handle divider
                           if (item.name.startsWith('─')) {
                             return (
@@ -553,171 +570,170 @@ export default function MainNavbar() {
                   </button>
                 </div>
               )}
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {isMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
           </div>
-        </div>
 
-        {/* Mobile Menu */}
-        <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-          isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-        }`}>
-          <div className="bg-zinc-900/95 backdrop-blur-lg border-t border-yellow-400/20">            <div className="px-4 py-4 space-y-2">
-              {/* Live Drops Section */}
-              <div className="mb-3">
-                <div className="flex items-center gap-2 px-4 py-2 text-yellow-400 font-semibold">
-                  <Image
-                    src="/Icons/livedrops.png"
-                    alt="Live Drops"
-                    width={20}
-                    height={20}
-                    className="object-contain"
-                  />
-                  Live Drops
-                </div>
-                <div className="ml-4 space-y-1">
-                  {liveDropsItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      onClick={() => setIsMenuOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${
-                        isActivePage(item.href)
-                          ? "bg-yellow-400/10 text-yellow-400"
-                          : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
-                      }`}
-                    >
-                      {typeof item.icon === 'string' ? (
-                        <span className="text-base">{item.icon}</span>
-                      ) : (
-                        item.icon
-                      )}
-                      <div>
-                        <div className="font-medium text-sm">{item.name}</div>
-                        <div className="text-xs text-gray-500">{item.description}</div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Other Navigation Items */}
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                    isActivePage(item.href)
-                      ? "bg-yellow-400/10 text-yellow-400"
-                      : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
-                  }`}
-                >
-                  {typeof item.icon === 'string' ? (
-                    <span className="text-lg">{item.icon}</span>
-                  ) : (
-                    item.icon
-                  )}
-                  <span className="font-medium">{item.name}</span>
-                </Link>
-              ))}
-              
-              <div className="border-t border-zinc-700/50 my-4"></div>
-              
-              {isAuthenticated ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3 px-4 py-3 bg-zinc-800/50 rounded-lg">
-                    <div className="w-8 h-8 rounded-full border-2 border-yellow-400/30 overflow-hidden bg-zinc-700">
-                      <Image
-                        src="/Icons/New Member.png"
-                        alt="Profile"
-                        width={32}
-                        height={32}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div>
-                      <div className="font-medium text-white">{user?.username || 'Member'}</div>
-                      <div className="text-sm text-gray-400">{user?.email}</div>
-                    </div>
-                  </div>
-                    {accountMenuItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        // Track mobile account menu navigation
-                        activityTracker.trackAccountMenuAction('navigate_mobile', {
-                          destination: item.href,
-                          menuItem: item.name,
-                          icon: item.icon
-                        });
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 rounded-lg transition-colors"
-                    >
-                      <span className="text-lg">{item.icon}</span>
-                      <span className="font-medium">{item.name}</span>
-                    </Link>
-                  ))}
-                    <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      // Track mobile logout action
-                      activityTracker.trackAccountMenuAction('logout_mobile', {
-                        method: 'mobile_menu',
-                        timestamp: new Date().toISOString()
-                      });
-                      activityTracker.trackLogout();
-                      handleLogout();
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors"
-                  >
-                    <span className="text-lg">🚪</span>
-                    <span className="font-medium">Sign Out</span>
-                  </button>
-                </div>
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden p-2 rounded-lg text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {isMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               ) : (
-                <div className="space-y-2">
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      openLoginModal(false);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 rounded-lg transition-colors"
-                  >
-                    <span className="text-lg">🔑</span>
-                    <span className="font-medium">Sign In</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      openLoginModal(true);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 bg-yellow-400 text-black hover:bg-yellow-300 rounded-lg transition-colors font-semibold"
-                  >
-                    <span className="text-lg">⭐</span>
-                    <span>Join Elite</span>
-                  </button>
-                </div>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               )}
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+        isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+      }`}>
+        <div className="bg-zinc-900/95 backdrop-blur-lg border-t border-yellow-400/20">            <div className="px-4 py-4 space-y-2">
+            {/* Live Drops Section */}
+            <div className="mb-3">
+              <div className="flex items-center gap-2 px-4 py-2 text-yellow-400 font-semibold">
+                <Image
+                  src="/Icons/livedrops.png"
+                  alt="Live Drops"
+                  width={20}
+                  height={20}
+                  className="object-contain"
+                />
+                Live Drops
+              </div>
+              <div className="ml-4 space-y-1">
+                {liveDropsItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${
+                      isActivePage(item.href)
+                        ? "bg-yellow-400/10 text-yellow-400"
+                        : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
+                    }`}
+                  >
+                    {typeof item.icon === 'string' ? (
+                      <span className="text-base">{item.icon}</span>
+                    ) : (
+                      item.icon
+                    )}
+                    <div>
+                      <div className="font-medium text-sm">{item.name}</div>
+                      <div className="text-xs text-gray-500">{item.description}</div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
+
+            {/* Other Navigation Items */}
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={() => setIsMenuOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                  isActivePage(item.href)
+                    ? "bg-yellow-400/10 text-yellow-400"
+                    : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
+                }`}
+              >
+                {typeof item.icon === 'string' ? (
+                  <span className="text-lg">{item.icon}</span>
+                ) : (
+                  item.icon
+                )}
+                <span className="font-medium">{item.name}</span>
+              </Link>
+            ))}
+            
+            <div className="border-t border-zinc-700/50 my-4"></div>
+            
+            {isAuthenticated ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 px-4 py-3 bg-zinc-800/50 rounded-lg">
+                  <div className="w-8 h-8 rounded-full border-2 border-yellow-400/30 overflow-hidden bg-zinc-700">
+                    <Image
+                      src="/Icons/New Member.png"
+                      alt="Profile"
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <div className="font-medium text-white">{user?.username || 'Member'}</div>
+                    <div className="text-sm text-gray-400">{user?.email}</div>
+                  </div>
+                </div>
+                  {accountMenuItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      // Track mobile account menu navigation
+                      activityTracker.trackAccountMenuAction('navigate_mobile', {
+                        destination: item.href,
+                        menuItem: item.name,
+                        icon: item.icon
+                      });
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 rounded-lg transition-colors"
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    <span className="font-medium">{item.name}</span>
+                  </Link>
+                ))}
+                  <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    // Track mobile logout action
+                    activityTracker.trackAccountMenuAction('logout_mobile', {
+                      method: 'mobile_menu',
+                      timestamp: new Date().toISOString()
+                    });
+                    activityTracker.trackLogout();
+                    handleLogout();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors"
+                >
+                  <span className="text-lg">🚪</span>
+                  <span className="font-medium">Sign Out</span>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    openLoginModal(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 rounded-lg transition-colors"
+                >
+                  <span className="text-lg">🔑</span>
+                  <span className="font-medium">Sign In</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    openLoginModal(true);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-yellow-400 text-black hover:bg-yellow-300 rounded-lg transition-colors font-semibold"
+                >
+                  <span className="text-lg">⭐</span>
+                  <span>Join Elite</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
-      </nav>
+      </div>
 
       {/* Login Modal */}
       {showLoginModal && (
@@ -820,6 +836,6 @@ export default function MainNavbar() {
           </div>
         </div>
       )}
-    </>
+    </nav>
   );
 }
