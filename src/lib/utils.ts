@@ -56,3 +56,13 @@ export function slugify(name: string): string {
 //   return msgUser === currentUser ? "you" : msgUser;
 // }
 // If so, REMOVE or update to always return msgUser.
+
+/**
+ * Get supplier avatar URL with fallback to placeholder
+ */
+export function getSupplierAvatar(logoUrl?: string): string {
+  if (logoUrl && logoUrl.trim() !== '') {
+    return logoUrl;
+  }
+  return '/Icons/SupplierPlaceHolder.png';
+}

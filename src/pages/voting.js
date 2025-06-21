@@ -192,6 +192,7 @@ export default function VotingPage() {
 
   // Filter and sort products
   const filteredProducts = products
+    .filter(product => product.stage === 'voting')
     .filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            product.description?.toLowerCase().includes(searchTerm.toLowerCase());

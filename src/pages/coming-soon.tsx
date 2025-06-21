@@ -16,6 +16,7 @@ interface Product {
   votes?: number;
   stage?: ProductStage;
   stageEnteredAt?: string;
+  status?: string;
 }
 
 export default function ComingSoonPage() {
@@ -35,9 +36,9 @@ export default function ComingSoonPage() {
       }
       const data = await response.json();
       
-      // Filter only coming-soon products
+      // Filter only coming-soon products that are not pending-review or rejected
       const comingSoonProducts = (data.products || []).filter(
-        (product: Product) => product.stage === "coming-soon"
+        (product: Product) => product.stage === "coming-soon" && product.status !== "pending-review" && product.status !== "rejected"
       );
       
       setProducts(comingSoonProducts);

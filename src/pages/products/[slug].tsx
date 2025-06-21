@@ -3,11 +3,12 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
+import { getSupplierAvatar } from "../../lib/utils";
 import { 
   ArrowLeft, 
   Vote, 
   Heart, 
-  Share2, 
+  Share2,
   Star, 
   ShoppingCart,
   Eye,
@@ -499,11 +500,14 @@ export default function ProductPage() {
               )}              {/* Supplier Info */}
               {product.supplier && (
                 <div className="bg-zinc-800/30 rounded-lg p-6">
-                  <h3 className="text-lg font-bold text-white mb-4">Supplier Information</h3>
-                  <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-white mb-4">Supplier Information</h3>                  <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-zinc-700 rounded-full flex items-center justify-center">
-                        <Users className="w-6 h-6 text-yellow-400" />
+                      <div className="w-12 h-12 rounded-full overflow-hidden">
+                        <img
+                          src="/Icons/SupplierPlaceHolder.png"
+                          alt={`${product.supplier.name} logo`}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <div>
                         <div className="flex items-center space-x-2">

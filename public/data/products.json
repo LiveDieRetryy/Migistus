@@ -1,4 +1,5 @@
-[  {
+[
+  {
     "id": 1,
     "name": "Gilded Vanguard Headset",
     "image": "https://placehold.co/400x400.png?text=Headset",
@@ -70,13 +71,29 @@
       "verified": true,
       "location": "California, USA"
     },
-    "tags": ["gaming", "audio", "headset", "surround-sound", "rgb"],
-    "compatibility": ["Windows 10/11", "macOS", "PlayStation 5", "Xbox Series X/S", "Nintendo Switch"],
+    "tags": [
+      "gaming",
+      "audio",
+      "headset",
+      "surround-sound",
+      "rgb"
+    ],
+    "compatibility": [
+      "Windows 10/11",
+      "macOS",
+      "PlayStation 5",
+      "Xbox Series X/S",
+      "Nintendo Switch"
+    ],
     "warranty": "24-month manufacturer warranty with free replacement",
     "shipping": {
       "free": true,
       "estimatedDays": 5,
-      "regions": ["North America", "Europe", "Asia-Pacific"]
+      "regions": [
+        "North America",
+        "Europe",
+        "Asia-Pacific"
+      ]
     },
     "socialMetrics": {
       "likes": 234,
@@ -125,5 +142,123 @@
     "stage": "coming-soon",
     "stageEnteredAt": "2024-01-18T12:00:00.000Z",
     "promotedAt": "2024-01-17T14:20:00.000Z"
+  },
+  {
+    "name": "Big booty Jooty",
+    "images": [
+      "blob:http://localhost:3000/c8d4770f-4ab7-4b5b-b902-cf22b4560118"
+    ],
+    "description": "Ai Genrated photo",
+    "fullDescription": "This ai generated photo is sexy",
+    "category": "Beauty & Health",
+    "price": 400,
+    "originalPrice": 450,
+    "votes": 25,
+    "stage": "coming-soon",
+    "features": [
+      "White girl",
+      "White hair",
+      "Black Bikini"
+    ],
+    "specifications": {},
+    "supplier": {
+      "name": "Migistus",
+      "rating": 4.8,
+      "verified": true,
+      "location": "Global"
+    },
+    "pledges": 18,
+    "pledgeGoal": 100,
+    "pricingTiers": [],
+    "reviews": [],
+    "video": "",
+    "gallery": [],
+    "tags": [],
+    "compatibility": [],
+    "warranty": "1 Year Limited Warranty",
+    "shipping": {
+      "free": true,
+      "estimatedDays": 7,
+      "regions": [
+        "US",
+        "Canada",
+        "EU"
+      ]
+    },
+    "socialMetrics": {
+      "likes": 0,
+      "shares": 0,
+      "comments": 0
+    },
+    "status": "pending-review",
+    "submittedBy": "supplier",
+    "supplierId": "1750392546366",
+    "id": 4,
+    "slug": "big-booty-jooty",
+    "goal": 100,
+    "timeframe": "30 days",
+    "link": "https://migistus.com/products/big-booty-jooty",
+    "featured": false,
+    "updatedAt": "2025-06-20T19:04:50.114Z"
+  },
+  {
+    "name": "test",
+    "images": [
+      "blob:http://localhost:3000/b88a516a-063c-4645-8792-1a6921b9119b"
+    ],
+    "description": "test",
+    "fullDescription": "test",
+    "category": "Electronics",
+    "price": 49.99,
+    "originalPrice": 59.99,
+    "votes": 12,
+    "stage": "coming-soon",
+    "features": [
+      "test",
+      "test",
+      "test",
+      "test"
+    ],
+    "specifications": {
+      "test": "test"
+    },
+    "supplier": {
+      "name": "Migistus",
+      "rating": 4.8,
+      "verified": true,
+      "location": "Global"
+    },
+    "pledges": 8,
+    "pledgeGoal": 100,
+    "pricingTiers": [],
+    "reviews": [],
+    "video": "",
+    "gallery": [],
+    "tags": [],
+    "compatibility": [],
+    "warranty": "1 Year Limited Warranty",
+    "shipping": {
+      "free": true,
+      "estimatedDays": 7,
+      "regions": [
+        "US",
+        "Canada",
+        "EU"
+      ]
+    },
+    "socialMetrics": {
+      "likes": 0,
+      "shares": 0,
+      "comments": 0
+    },
+    "status": "pending-review",
+    "submittedBy": "supplier",
+    "supplierId": "1750392546366",
+    "id": 5,
+    "slug": "test",
+    "goal": 100,
+    "timeframe": "30 days",
+    "link": "https://migistus.com/products/test",
+    "featured": false
   }
 ]

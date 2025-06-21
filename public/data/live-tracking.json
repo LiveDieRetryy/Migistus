@@ -1,0 +1,247 @@
+{
+  "events": [
+    {
+      "id": "1704067200000-abc123",
+      "type": "view",
+      "userId": "user1",
+      "supplierId": "1750392546366",
+      "productId": "4",
+      "timestamp": 1704067200000,
+      "metadata": {
+        "source": "product_page"
+      }
+    },
+    {
+      "id": "1704070800000-def456",
+      "type": "vote",
+      "userId": "user2",
+      "supplierId": "1750392546366",
+      "productId": "4",
+      "timestamp": 1704070800000,
+      "metadata": {
+        "vote_type": "upvote"
+      }
+    },
+    {
+      "id": "1704074400000-ghi789",
+      "type": "pledge",
+      "userId": "user3",
+      "supplierId": "1750392546366",
+      "productId": "4",
+      "timestamp": 1704074400000,
+      "metadata": {
+        "amount": 400
+      }
+    },
+    {
+      "id": "1704078000000-jkl012",
+      "type": "follow",
+      "userId": "user4",
+      "supplierId": "1750392546366",
+      "timestamp": 1704078000000,
+      "metadata": {
+        "source": "supplier_profile"
+      }
+    },
+    {
+      "id": "1704081600000-mno345",
+      "type": "view",
+      "userId": "user5",
+      "supplierId": "1750392546366",
+      "productId": "5",
+      "timestamp": 1704081600000,
+      "metadata": {
+        "source": "product_page"
+      }
+    },
+    {
+      "id": "1704085200000-pqr678",
+      "type": "vote",
+      "userId": "user6",
+      "supplierId": "1750392546366",
+      "productId": "5",
+      "timestamp": 1704085200000,
+      "metadata": {
+        "vote_type": "upvote"
+      }
+    },
+    {
+      "id": "1704088800000-stu901",
+      "type": "pledge",
+      "userId": "user7",
+      "supplierId": "1750392546366",
+      "productId": "5",
+      "timestamp": 1704088800000,
+      "metadata": {
+        "amount": 49.99
+      }
+    },
+    {
+      "id": "1704092400000-vwx234",
+      "type": "share",
+      "userId": "user8",
+      "supplierId": "1750392546366",
+      "productId": "4",
+      "timestamp": 1704092400000,
+      "metadata": {
+        "platform": "twitter"
+      }
+    },
+    {
+      "id": "1704096000000-yza567",
+      "type": "like",
+      "userId": "user9",
+      "supplierId": "1750392546366",
+      "productId": "4",
+      "timestamp": 1704096000000,
+      "metadata": {
+        "source": "product_page"
+      }
+    },
+    {
+      "id": "1704099600000-bcd890",
+      "type": "follow",
+      "userId": "user10",
+      "supplierId": "1750392546366",
+      "timestamp": 1704099600000,
+      "metadata": {
+        "source": "suppliers_page"
+      }
+    },
+    {
+      "id": "1704103200000-efg123",
+      "type": "view",
+      "userId": "user11",
+      "supplierId": "1750392546366",
+      "productId": "4",
+      "timestamp": 1704103200000,
+      "metadata": {
+        "source": "search_results"
+      }
+    },
+    {
+      "id": "1704106800000-hij456",
+      "type": "vote",
+      "userId": "user12",
+      "supplierId": "1750392546366",
+      "productId": "4",
+      "timestamp": 1704106800000,
+      "metadata": {
+        "vote_type": "upvote"
+      }
+    },
+    {
+      "id": "1704110400000-klm789",
+      "type": "pledge",
+      "userId": "user13",
+      "supplierId": "1750392546366",
+      "productId": "4",
+      "timestamp": 1704110400000,
+      "metadata": {
+        "amount": 400
+      }
+    },
+    {
+      "id": "1704114000000-nop012",
+      "type": "view",
+      "userId": "user14",
+      "supplierId": "1750392546366",
+      "productId": "5",
+      "timestamp": 1704114000000,
+      "metadata": {
+        "source": "recommended"
+      }
+    },
+    {
+      "id": "1704117600000-qrs345",
+      "type": "follow",
+      "userId": "user15",
+      "supplierId": "1750392546366",
+      "timestamp": 1704117600000,
+      "metadata": {
+        "source": "social_media"
+      }
+    },
+    {
+      "id": "1750462565353-z14z8snlv",
+      "type": "view",
+      "timestamp": 1750462565353,
+      "metadata": {
+        "page": "suppliers"
+      }
+    },
+    {
+      "id": "1750462565362-k4wn9bhmt",
+      "type": "view",
+      "timestamp": 1750462565362,
+      "metadata": {
+        "page": "suppliers"
+      }
+    },
+    {
+      "id": "1750467321716-8u5t4qljv",
+      "type": "view",
+      "timestamp": 1750467321716,
+      "metadata": {
+        "page": "suppliers-tracking"
+      }
+    },
+    {
+      "id": "1750467321718-o8ekmpk6v",
+      "type": "view",
+      "timestamp": 1750467321718,
+      "metadata": {
+        "page": "suppliers-tracking"
+      }
+    },
+    {
+      "id": "1750470509772-9kgmzuiaq",
+      "type": "view",
+      "timestamp": 1750470509772,
+      "metadata": {
+        "page": "suppliers-tracking"
+      }
+    },
+    {
+      "id": "1750470509773-60gf7acek",
+      "type": "view",
+      "timestamp": 1750470509773,
+      "metadata": {
+        "page": "suppliers-tracking"
+      }
+    },
+    {
+      "id": "1750470519335-5spg4n6he",
+      "type": "view",
+      "timestamp": 1750470519335,
+      "metadata": {
+        "page": "suppliers-tracking"
+      }
+    },
+    {
+      "id": "1750470519340-gcp0t0bm9",
+      "type": "view",
+      "timestamp": 1750470519340,
+      "metadata": {
+        "page": "suppliers-tracking"
+      }
+    },
+    {
+      "id": "1750471510285-zd5ij7xcg",
+      "type": "view",
+      "timestamp": 1750471510285,
+      "metadata": {
+        "page": "suppliers-tracking"
+      }
+    },
+    {
+      "id": "1750471510290-m93v7qcp8",
+      "type": "view",
+      "timestamp": 1750471510290,
+      "metadata": {
+        "page": "suppliers-tracking"
+      }
+    }
+  ],
+  "lastUpdated": 1750471510290
+}

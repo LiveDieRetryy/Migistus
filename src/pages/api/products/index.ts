@@ -74,9 +74,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "GET" && Array.isArray(data) && data.length === 0) {
       data = getDefaultProducts();
       writeData(data);
-    }
-
-    if (req.method === "GET") {
+    }    if (req.method === "GET") {
+      console.log('API: Returning products:', data.length);
+      console.log('API: Pending review products:', data.filter((p: any) => p.status === 'pending-review').length);
       res.status(200).json({ products: data, totalProducts: data.length });
 
     } else if (req.method === "POST") {
