@@ -241,7 +241,23 @@
       "metadata": {
         "page": "suppliers-tracking"
       }
+    },
+    {
+      "id": "1750577398401-lz6cmhlr2",
+      "type": "view",
+      "timestamp": 1750577398402,
+      "metadata": {
+        "page": "suppliers"
+      }
+    },
+    {
+      "id": "1750577398404-5iqmu7q3t",
+      "type": "view",
+      "timestamp": 1750577398404,
+      "metadata": {
+        "page": "suppliers"
+      }
     }
   ],
-  "lastUpdated": 1750471510290
+  "lastUpdated": 1750577398404
 }

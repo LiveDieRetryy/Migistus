@@ -9,6 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@babel/parser": "^7.27.5",
+    "@babel/traverse": "^7.27.4",
+    "@ckeditor/ckeditor5-build-inline": "^41.4.2",
+    "@headlessui/react": "^2.2.4",
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-switch": "^1.0.3",
     "@react-spring/web": "^9.7.3",
@@ -16,9 +20,11 @@
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "grapesjs": "^0.22.8",
     "lucide-react": "^0.511.0",
     "multer": "^2.0.1",
     "next": "^15.3.2",
+    "puppeteer": "^24.10.2",
     "quill": "^2.0.3",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
@@ -28,6 +34,7 @@
     "zod": "^3.22.0"
   },
   "devDependencies": {
+    "@types/babel__traverse": "^7.20.7",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",

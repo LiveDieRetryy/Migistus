@@ -28,13 +28,15 @@ export default function Footer() {
         <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-1">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center">
-                <Crown className="w-5 h-5 text-black" />
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-                MIGISTUS
-              </span>
+            <div className="flex flex-col items-center mb-1">
+              <Image
+                src="/images/migistus_logo.png"
+                alt="MIGISTUS Logo"
+                width={150}
+                height={150}
+                className="object-contain mb-0"
+                style={{ maxHeight: '110px', height: '110px', width: 'auto' }}
+              />
             </div>
             <p className="text-zinc-400 mb-6 leading-relaxed">
               The Guilded Marketplace where community meets commerce. Join the revolution in group buying and discover exclusive products through collective voting.
@@ -51,7 +53,13 @@ export default function Footer() {
                 <span className="text-sm">Guild</span>
               </div>
               <div className="flex items-center space-x-1 text-purple-400">
-                <Crown className="w-4 h-4" />
+                <Image
+                  src="/images/migistus_logo.png"
+                  alt="MIGISTUS Logo"
+                  width={16}
+                  height={16}
+                  className="object-contain"
+                />
                 <span className="text-sm">MIGISTUS</span>
               </div>
             </div>

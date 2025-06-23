@@ -34,7 +34,7 @@ export default function MainNavbar() {
     {
       name: "Community Drops",
       href: "/community-drops",
-      icon: "🏛️",
+      icon: <Image src="/Icons/communitydrops.png" alt="Community Drops" width={32} height={32} className="object-contain" />,
       description: "Active community drops"
     },
     {
@@ -44,8 +44,8 @@ export default function MainNavbar() {
         <Image
           src="/Icons/subsribers.png"
           alt="Staff Picks"
-          width={20}
-          height={20}
+          width={32}
+          height={32}
           className="object-contain"
         />
       ),
@@ -54,17 +54,20 @@ export default function MainNavbar() {
     {
       name: "Recently Completed",
       href: "/drops/completed", 
-      icon: "✅",
+      icon: <span style={{fontSize: '2rem'}}>✅</span>,
       description: "Past successful drops"
     }
   ];
 
+  // Insert Live Drops as a placeholder for ordering
   const navigation = [
-    { name: "Voting", href: "/voting", icon: "🗳️" },
-    { name: "Coming Soon", href: "/coming-soon", icon: "⏰" },
-    { name: "Community", href: "/community", icon: "👥" },
-    { name: "Categories", href: "/categories", icon: "🗂️" },
-    { name: "About", href: "/about", icon: "ℹ️" },
+    { name: "Voting", href: "/voting", icon: <Image src="/Icons/voting.png" alt="Voting" width={32} height={32} /> },
+    { name: "Coming Soon", href: "/coming-soon", icon: <Image src="/Icons/comingsoon.png" alt="Coming Soon" width={32} height={32} /> },
+    // Live Drops placeholder (will be rendered as dropdown)
+    { name: "Live Drops", isDropdown: true },
+    { name: "Community", href: "/community", icon: <Image src="/Icons/Chat.png" alt="Community" width={32} height={32} /> },
+    { name: "Categories", href: "/categories", icon: <Image src="/Icons/Categories.png" alt="Categories" width={32} height={32} /> },
+    { name: "About", href: "/about", icon: <Image src="/Icons/about.png" alt="About" width={32} height={32} /> },
   ];
 
   // Add or update styles for uniform nav items
@@ -336,93 +339,108 @@ export default function MainNavbar() {
   }
 
   return (
-    <nav className={`bg-zinc-950/95 backdrop-blur-md border-b border-yellow-400/20 shadow-lg sticky top-0 z-50 transition-opacity duration-500 ${showNavbar ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+    <nav className={`bg-zinc-950/95 border-b border-yellow-400/40 shadow-lg sticky top-0 z-50 transition-opacity duration-500 ${showNavbar ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-24">
           {/* Logo */}
-          <Link href="/" className="flex items-center group">
-            <Image
-              src="/images/migistus_logo.png"
-              alt="MIGISTUS"
-              width={80}
-              height={80}
-              className="transition-transform duration-300 group-hover:scale-110"
-            />
-          </Link>            {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">              {/* Live Drops Dropdown */}
-            <div className="relative" data-dropdown="live-drops">
-              <button
-                onClick={() => setIsLiveDropsOpen(!isLiveDropsOpen)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isLiveDropsOpen || liveDropsItems.some(item => isActivePage(item.href))
-                    ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/30"
-                    : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
-                }`}
-              >
-                <Image
-                  src="/Icons/livedrops.png"
-                  alt="Live Drops"
-                  width={20}
-                  height={20}
-                  className="object-contain"
-                />
-                Live Drops
-                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isLiveDropsOpen ? 'rotate-180' : ''}`} />
-              </button>
-              
-              {/* Dropdown Menu */}
-              {isLiveDropsOpen && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl z-50 overflow-hidden">
-                  {liveDropsItems.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      onClick={() => setIsLiveDropsOpen(false)}
-                      className="flex items-start gap-3 px-4 py-3 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 transition-all duration-200 border-b border-zinc-800 last:border-b-0"
+          <div className="flex-1 flex justify-center">
+            <Link href="/" className="block">
+              <Image
+                src="/images/migistus_logo.png"
+                alt="MIGISTUS"
+                width={220}
+                height={220}
+                className="mx-auto transition-transform duration-300 hover:scale-105"
+                style={{ maxHeight: '130px', width: 'auto', height: '130px' }}
+              />
+            </Link>
+          </div>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navigation.map((item, idx) => {
+              if (item.isDropdown) {
+                // Live Drops Dropdown
+                return (
+                  <div key="LiveDropsDropdown" className="relative flex items-center justify-center" data-dropdown="live-drops">
+                    <button
+                      onClick={() => setIsLiveDropsOpen(!isLiveDropsOpen)}
+                      className={`flex items-center justify-center w-24 h-24 rounded-lg transition-all duration-200 ${
+                        isLiveDropsOpen || liveDropsItems.some(item => isActivePage(item.href))
+                          ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/30"
+                          : "text-yellow-300 hover:text-yellow-400 hover:bg-yellow-400/5"
+                      }`}
+                      style={{ minWidth: 96, minHeight: 96 }}
                     >
-                      <div className="flex-shrink-0 mt-0.5">
-                        {typeof item.icon === 'string' ? (
-                          <span className="text-base">{item.icon}</span>
-                        ) : (
-                          item.icon
-                        )}
+                      <Image
+                        src="/Icons/livedrops.png"
+                        alt="Live Drops"
+                        width={64}
+                        height={64}
+                        className="object-contain"
+                      />
+                      <ChevronDown className={`w-4 h-4 ml-1 transition-transform duration-200 ${isLiveDropsOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {/* Dropdown Menu */}
+                    {isLiveDropsOpen && (
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-zinc-900 border border-yellow-400/30 rounded-xl shadow-xl z-50 overflow-hidden">
+                        {liveDropsItems.map((item) => (
+                          <Link
+                            key={item.name}
+                            href={item.href}
+                            onClick={() => setIsLiveDropsOpen(false)}
+                            className="flex items-start gap-3 px-4 py-3 text-yellow-300 hover:text-yellow-400 hover:bg-yellow-400/5 transition-all duration-200 border-b border-zinc-800 last:border-b-0"
+                          >
+                            <div className="flex-shrink-0 mt-0.5">
+                              {typeof item.icon === 'string' ? (
+                                <span className="text-base">{item.icon}</span>
+                              ) : (
+                                item.icon
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium">{item.name}</div>
+                              <div className="text-xs text-gray-400">{item.description}</div>
+                            </div>
+                          </Link>
+                        ))}
                       </div>
-                      <div className="flex-1">
-                        <div className="font-medium">{item.name}</div>
-                        <div className="text-xs text-gray-400">{item.description}</div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Other Navigation Items */}
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isActivePage(item.href)
-                    ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/30"
-                    : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
-                }`}
-              >
-                {typeof item.icon === 'string' ? (
-                  <span className="text-base">{item.icon}</span>
-                ) : (
-                  item.icon
-                )}
-                {item.name}
-              </Link>
-            ))}
+                    )}
+                  </div>
+                );
+              }
+              if (typeof item.href === 'string' && item.icon) {
+                const href = item.href as string;
+                return (
+                  <Link
+                    key={item.name}
+                    href={href}
+                    className={`flex items-center justify-center w-24 h-24 rounded-lg transition-all duration-200 ${
+                      isActivePage(href)
+                        ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/30"
+                        : "text-yellow-300 hover:text-yellow-400 hover:bg-yellow-400/5"
+                    }`}
+                    style={{ minWidth: 96, minHeight: 96 }}
+                  >
+                    <Image
+                      src={item.name === 'Community' ? '/Icons/Chat.png' : `/Icons/${item.name.replace(/\s/g, '').toLowerCase()}.png`}
+                      alt={item.name}
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                    />
+                  </Link>
+                );
+              }
+              return null;
+            })}
           </div>
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-3">
             {isAuthenticated ? (
               /* User Dropdown */
-              <div className="relative">                  <button
+              <div className="relative">
+                <button
                   onClick={() => {
                     const newState = !isDropdownOpen;
                     setIsDropdownOpen(newState);
@@ -437,139 +455,65 @@ export default function MainNavbar() {
                   <div className="relative">
                     <div className="w-8 h-8 rounded-full border-2 border-yellow-400/30 hover:border-yellow-400/50 transition-colors overflow-hidden bg-zinc-700">
                       <Image
-                        src="/Icons/New Member.png"
+                        src={getAvatarSrc()}
                         alt="Profile"
                         width={32}
                         height={32}
                         className="w-full h-full object-cover"
-                        priority
                       />
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 border border-zinc-900 rounded-full"></div>
                   </div>
-                  <div className="text-left">
-                    <div className="text-sm font-medium text-white">{user?.username || 'Member'}</div>
-                    <div className="text-xs text-gray-400">View Profile</div>
-                  </div>
-                  <svg
-                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
-                      isDropdownOpen ? 'rotate-180' : ''
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <span className="font-semibold text-yellow-200 ml-2">{user?.username || 'Account'}</span>
+                  <ChevronDown className={`w-4 h-4 ml-1 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
-                
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl z-50 overflow-hidden">
-                    {/* User info header */}
-                    <div className="px-4 py-4 border-b border-zinc-700 bg-zinc-800/50">
-                      <div className="flex items-center gap-3">
-                        <div className="relative">
-                          <div className="w-10 h-10 rounded-full border-2 border-yellow-400/30 overflow-hidden bg-zinc-700">
-                            <Image
-                              src="/Icons/New Member.png"
-                              alt="Profile"
-                              width={40}
-                              height={40}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <label className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs">📸</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleAvatarUpload}
-                              className="hidden"
-                            />
-                          </label>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-white truncate">{user?.username || 'Member'}</div>
-                          <div className="text-sm text-gray-400 truncate">{user?.email}</div>
-                        </div>
-                      </div>
-                    </div>
-                      {/* Menu items */}
-                    <div className="py-2">                        {accountMenuItems.map((item, index) => {
-                          // Handle divider
-                          if (item.name.startsWith('─')) {
-                            return (
-                              <div key={index} className="border-t border-yellow-500/30 my-2 mx-4">
-                                <div className="text-xs text-yellow-400 text-center py-2 font-medium">
-                                  ROYAL CONTROLS
-                                </div>
-                              </div>
-                            );
-                          }
-                          
-                          return (
-                            <Link
-                              key={item.name}
-                              href={item.href}
-                              onClick={() => {
-                                setIsDropdownOpen(false);
-                                // Track account menu navigation
-                                activityTracker.trackAccountMenuAction('navigate', {
-                                  destination: item.href,
-                                  menuItem: item.name,
-                                  icon: item.icon
-                                });
-                              }}
-                              className={`flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-white transition-colors ${
-                                item.name.includes('👑') ? 'hover:bg-yellow-800/20 bg-yellow-900/10' : 'hover:bg-zinc-800'
-                              }`}
-                            >
-                              <span className="text-lg">{item.icon}</span>
-                              <span className={`font-medium ${
-                                item.name.includes('👑') ? 'text-yellow-400' : ''
-                              }`}>{item.name}</span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                      
-                      <div className="border-t border-zinc-700">                        <button
-                          onClick={() => {
-                            setIsDropdownOpen(false);
-                            // Track logout action
-                            activityTracker.trackAccountMenuAction('logout', {
-                              method: 'account_menu',
-                              timestamp: new Date().toISOString()
-                            });
-                            activityTracker.trackLogout();
-                            handleLogout();
-                          }}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors"
-                        >
-                          <span className="text-lg">🚪</span>
-                          <span className="font-medium">Sign Out</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                /* Login/Register Buttons */
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => openLoginModal(false)}
-                    className="px-4 py-2 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 rounded-lg transition-all duration-200 font-medium"
-                  >
-                    Sign In
-                  </button>
-                  <button
-                    onClick={() => openLoginModal(true)}
-                    className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black font-semibold px-6 py-2 rounded-lg transition-all duration-200"
-                  >
-                    Join Elite
-                  </button>
-                </div>
-              )}
+                  <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-yellow-400/30 rounded-xl shadow-xl z-50 overflow-hidden">
+                    {accountMenuItems.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-yellow-300 hover:text-yellow-400 hover:bg-yellow-400/5 transition-all duration-200 border-b border-zinc-800 last:border-b-0"
+                      >
+                        <span className="text-lg">{item.icon}</span>
+                        <span className="font-medium">{item.name}</span>
+                      </Link>
+                    ))}
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        activityTracker.trackAccountMenuAction('logout_desktop', {
+                          method: 'desktop_menu',
+                          timestamp: new Date().toISOString()
+                        });
+                        activityTracker.trackLogout();
+                        handleLogout();
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-colors border-t border-zinc-800"
+                    >
+                      <span className="text-lg">🚪</span>
+                      <span className="font-medium">Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Login/Register Buttons */
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => openLoginModal(false)}
+                  className="px-4 py-2 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 rounded-lg transition-all duration-200 font-medium"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => openLoginModal(true)}
+                  className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black font-semibold px-6 py-2 rounded-lg transition-all duration-200"
+                >
+                  Join Elite
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -632,25 +576,28 @@ export default function MainNavbar() {
             </div>
 
             {/* Other Navigation Items */}
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={() => setIsMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                  isActivePage(item.href)
-                    ? "bg-yellow-400/10 text-yellow-400"
-                    : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
-                }`}
-              >
-                {typeof item.icon === 'string' ? (
-                  <span className="text-lg">{item.icon}</span>
-                ) : (
-                  item.icon
-                )}
-                <span className="font-medium">{item.name}</span>
-              </Link>
-            ))}
+            {navigation.map((item) => {
+              if (typeof item.href === 'string' && item.icon) {
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                      isActivePage(item.href)
+                        ? "bg-yellow-400/10 text-yellow-400"
+                        : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {item.icon}
+                      <span className="font-medium">{item.name}</span>
+                    </div>
+                  </Link>
+                );
+              }
+              return null;
+            })}
             
             <div className="border-t border-zinc-700/50 my-4"></div>
             

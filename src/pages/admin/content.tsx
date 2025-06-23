@@ -13,6 +13,16 @@ export default function AdminContentPage() {
     setLoading(false);
   }, [isAuthenticated, user]);
 
+  // Auto-allow for WebDesigner preview
+  if (typeof window !== 'undefined' && window.location.search.includes('preview=1')) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-yellow-300 flex flex-col items-center justify-center">
+        <Head><title>Admin Content Preview</title></Head>
+        <h1 className="text-3xl font-bold mb-4">Admin Content (Preview Mode)</h1>
+      </div>
+    );
+  }
+
   if (!isAuthenticated || user?.email !== 'admin@migistus.com') {
     return (
       <div className="min-h-screen bg-gray-900 text-white">
