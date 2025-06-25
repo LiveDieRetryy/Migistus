@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Head from "next/head";
 import grapesjs from 'grapesjs';
 import 'grapesjs/dist/css/grapes.min.css';
+import InlineEditor from '@ckeditor/ckeditor5-build-inline';
 import { Dialog } from '@headlessui/react';
 
 // Craft.js imports for enhanced functionality
@@ -101,11 +103,6 @@ export default function WebDesigner() {
         if (data.html) {
           grapesEditor.current.setComponents(data.html);
           grapesEditor.current.setStyle(data.css || '');
-          
-          // Apply contenteditable to text elements after content is loaded
-          setTimeout(() => {
-            convertTextBlocksToRichText(grapesEditor.current);
-          }, 500);
         } else {
           // Fallback to default content
           setDefaultPageContent(page);
@@ -145,11 +142,6 @@ export default function WebDesigner() {
     `;
     
     grapesEditor.current.setComponents(defaultContent);
-    
-    // Apply contenteditable to text elements after default content is loaded
-    setTimeout(() => {
-      convertTextBlocksToRichText(grapesEditor.current);
-    }, 500);
   };
 
   // Save GrapesJS content to backend
@@ -182,18 +174,15 @@ export default function WebDesigner() {
 
     const editor = grapesjs.init({
       container: grapesRef.current,
-      fromElement: false,
-      height: '100vh',
+      fromElement: true,
       width: '100%',
-      storageManager: false, // Disable to prevent auto-loading from localStorage
-      panels: { defaults: [] },
-      canvas: {
-        styles: [
-          '/tailwind.css',
-        ],
-      },
-      blockManager: {
-        appendTo: '#gjs-blocks',
+      height: '100%',
+      storageManager: {
+        id: 'gjs-',
+        type: 'local',
+        autosave: true,
+        autoload: true,
+        stepsBeforeSave: 1,
       },
       plugins: [
         'gjs-blocks-basic',
@@ -236,17 +225,15 @@ export default function WebDesigner() {
 
     grapesEditor.current = editor;
 
-    // Wait for GrapesJS to be fully ready before applying utilities and loading content
-    editor.onReady(() => {
-      // Apply custom utilities with contenteditable approach (no CKEditor)
-      registerEditableTags(editor);
-      makeAllTextAndContainersEditable(editor);
-      
-      // Load initial content
-      if (selectedPage) {
-        loadPageContent(selectedPage);
-      }
-    });
+    // Apply custom utilities
+    registerEditableTags(editor);
+    makeAllTextAndContainersEditable(editor);
+    convertTextBlocksToRichText(editor);
+
+    // Load initial content
+    if (selectedPage) {
+      loadPageContent(selectedPage);
+    }
 
     return () => {
       if (grapesEditor.current) {

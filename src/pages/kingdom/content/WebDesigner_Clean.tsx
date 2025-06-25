@@ -182,18 +182,15 @@ export default function WebDesigner() {
 
     const editor = grapesjs.init({
       container: grapesRef.current,
-      fromElement: false,
-      height: '100vh',
+      fromElement: true,
       width: '100%',
-      storageManager: false, // Disable to prevent auto-loading from localStorage
-      panels: { defaults: [] },
-      canvas: {
-        styles: [
-          '/tailwind.css',
-        ],
-      },
-      blockManager: {
-        appendTo: '#gjs-blocks',
+      height: '100%',
+      storageManager: {
+        id: 'gjs-',
+        type: 'local',
+        autosave: true,
+        autoload: true,
+        stepsBeforeSave: 1,
       },
       plugins: [
         'gjs-blocks-basic',
@@ -236,17 +233,15 @@ export default function WebDesigner() {
 
     grapesEditor.current = editor;
 
-    // Wait for GrapesJS to be fully ready before applying utilities and loading content
-    editor.onReady(() => {
-      // Apply custom utilities with contenteditable approach (no CKEditor)
-      registerEditableTags(editor);
-      makeAllTextAndContainersEditable(editor);
-      
-      // Load initial content
-      if (selectedPage) {
-        loadPageContent(selectedPage);
-      }
-    });
+    // Apply custom utilities with contenteditable approach (no CKEditor)
+    registerEditableTags(editor);
+    makeAllTextAndContainersEditable(editor);
+    convertTextBlocksToRichText(editor);
+
+    // Load initial content
+    if (selectedPage) {
+      loadPageContent(selectedPage);
+    }
 
     return () => {
       if (grapesEditor.current) {
@@ -255,6 +250,14 @@ export default function WebDesigner() {
       }
     };
   }, []);
+
+  if (!isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-yellow-300 text-2xl">
+        Access Denied: Admins Only
+      </div>
+    );
+  }
 
   return (
     <>

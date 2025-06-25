@@ -1,5 +1,495 @@
 [
   {
+    "id": 1750889682433.0627,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 210249
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:14:42.433Z"
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 210249
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:14:42.414Z",
+    "page": "/",
+    "id": 1750889682425.7002
+  },
+  {
+    "type": "session",
+    "action": "page_hidden",
+    "details": {
+      "page": "/",
+      "timeOnPage": 192872
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:14:25.037Z",
+    "page": "/",
+    "id": 1750889665066.0864
+  },
+  {
+    "id": 1750889665061.8037,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "page_hidden",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 192872
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:14:25.061Z"
+  },
+  {
+    "type": "session",
+    "action": "page_visible",
+    "details": {
+      "page": "/",
+      "timeOnPage": 191696
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:14:23.861Z",
+    "page": "/",
+    "id": 1750889663890.8167
+  },
+  {
+    "id": 1750889663884.7659,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "page_visible",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 191696
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:14:23.884Z"
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 180260
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:14:12.426Z",
+    "page": "/",
+    "id": 1750889652442.4353
+  },
+  {
+    "id": 1750889652437.7983,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 180260
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:14:12.437Z"
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 150247
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:13:42.412Z",
+    "page": "/",
+    "id": 1750889622429.8857
+  },
+  {
+    "id": 1750889622423.72,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 150247
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:13:42.423Z"
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 120253
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:13:12.418Z",
+    "page": "/",
+    "id": 1750889592431.8853
+  },
+  {
+    "id": 1750889592427.8792,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 120253
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:13:12.428Z"
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 90253
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:12:42.418Z",
+    "page": "/",
+    "id": 1750889562430.9248
+  },
+  {
+    "id": 1750889562426.573,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 90253
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:12:42.426Z"
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 60261
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:12:12.426Z",
+    "page": "/",
+    "id": 1750889532444.952
+  },
+  {
+    "id": 1750889532437.0933,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 60261
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:12:12.437Z"
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 30252
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:11:42.417Z",
+    "page": "/",
+    "id": 1750889502433.381
+  },
+  {
+    "id": 1750889502428.0781,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 30252
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:11:42.428Z"
+  },
+  {
+    "type": "auth",
+    "action": "session_initialized",
+    "timestamp": "2025-06-25T22:11:12.165Z",
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "page": "/",
+    "id": 1750889472181.4292
+  },
+  {
+    "id": 1750889472176.688,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "auth",
+    "action": "session_initialized",
+    "page": "/",
+    "details": {},
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:11:12.176Z"
+  },
+  {
+    "id": 1750889471466.3308,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "navigation",
+    "action": "page_unload",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 192823
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:11:11.466Z"
+  },
+  {
+    "type": "navigation",
+    "action": "page_unload",
+    "details": {
+      "page": "/",
+      "timeOnPage": 192823
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:11:11.118Z",
+    "page": "/",
+    "id": 1750889471460.7393
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 180121
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:10:58.416Z",
+    "page": "/",
+    "id": 1750889458430.9512
+  },
+  {
+    "id": 1750889458426.4004,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 180121
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:10:58.426Z"
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 150124
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:10:28.419Z",
+    "page": "/",
+    "id": 1750889428437.6448
+  },
+  {
+    "id": 1750889428432.9897,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 150124
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:10:28.432Z"
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 120119
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:09:58.414Z",
+    "page": "/",
+    "id": 1750889398428.7305
+  },
+  {
+    "id": 1750889398423.392,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 120119
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:09:58.423Z"
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 90119
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:09:28.414Z",
+    "page": "/",
+    "id": 1750889368429.6226
+  },
+  {
+    "id": 1750889368425.1682,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 90119
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:09:28.425Z"
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 60124
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:08:58.419Z",
+    "page": "/",
+    "id": 1750889338437.2278
+  },
+  {
+    "id": 1750889338430.5735,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 60124
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:08:58.430Z"
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 30120
+    },
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "timestamp": "2025-06-25T22:08:28.415Z",
+    "page": "/",
+    "id": 1750889308432.2585
+  },
+  {
+    "id": 1750889308426.2932,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 30120
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:08:28.426Z"
+  },
+  {
+    "id": 1750889278792.5403,
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "type": "auth",
+    "action": "session_initialized",
+    "page": "/",
+    "details": {},
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-06-25T22:07:58.792Z"
+  },
+  {
+    "type": "auth",
+    "action": "session_initialized",
+    "timestamp": "2025-06-25T22:07:58.295Z",
+    "userId": 20312530434,
+    "sessionId": "dw7fyem69v7mc7930ab",
+    "page": "/",
+    "id": 1750889278783.7803
+  },
+  {
     "type": "auth",
     "action": "session_initialized",
     "timestamp": "2025-06-25T20:29:17.639Z",
@@ -13445,509 +13935,5 @@
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
     "ip": "::1",
     "timestamp": "2025-06-23T01:33:22.481Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13950005
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:32:52.463Z",
-    "page": "/",
-    "id": 1750642372488.7014
-  },
-  {
-    "id": 1750642372481.053,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13950005
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:32:52.481Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13920002
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:32:22.460Z",
-    "page": "/",
-    "id": 1750642342485.233
-  },
-  {
-    "id": 1750642342478.1272,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13920002
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:32:22.478Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13890001
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:31:52.459Z",
-    "page": "/",
-    "id": 1750642312481.7183
-  },
-  {
-    "id": 1750642312475.0164,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13890001
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:31:52.475Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13860001
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:31:22.459Z",
-    "page": "/",
-    "id": 1750642282476.2932
-  },
-  {
-    "id": 1750642282471.6235,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13860001
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:31:22.471Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13830003
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:30:52.461Z",
-    "page": "/",
-    "id": 1750642252479.3938
-  },
-  {
-    "id": 1750642252473.4058,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13830003
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:30:52.473Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13800002
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:30:22.460Z",
-    "page": "/",
-    "id": 1750642222477.7407
-  },
-  {
-    "id": 1750642222471.116,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13800002
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:30:22.471Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13770003
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:29:52.461Z",
-    "page": "/",
-    "id": 1750642192478.9922
-  },
-  {
-    "id": 1750642192473.9417,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13770003
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:29:52.473Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13740003
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:29:22.461Z",
-    "page": "/",
-    "id": 1750642162476.4324
-  },
-  {
-    "id": 1750642162471.6782,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13740003
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:29:22.471Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13710001
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:28:52.459Z",
-    "page": "/",
-    "id": 1750642132479.397
-  },
-  {
-    "id": 1750642132473.0918,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13710001
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:28:52.473Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13680002
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:28:22.460Z",
-    "page": "/",
-    "id": 1750642102480.7515
-  },
-  {
-    "id": 1750642102474.6946,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13680002
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:28:22.474Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13650003
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:27:52.461Z",
-    "page": "/",
-    "id": 1750642072484.92
-  },
-  {
-    "id": 1750642072477.2827,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13650003
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:27:52.477Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13620009
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:27:22.467Z",
-    "page": "/",
-    "id": 1750642042492.5645
-  },
-  {
-    "id": 1750642042485.3806,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13620009
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:27:22.485Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13590002
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:26:52.460Z",
-    "page": "/",
-    "id": 1750642012483.9568
-  },
-  {
-    "id": 1750642012477.5325,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13590002
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:26:52.477Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13560007
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:26:22.466Z",
-    "page": "/",
-    "id": 1750641982495.2312
-  },
-  {
-    "id": 1750641982485.2002,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13560007
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:26:22.485Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13530001
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:25:52.459Z",
-    "page": "/",
-    "id": 1750641952483.307
-  },
-  {
-    "id": 1750641952476.5151,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13530001
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:25:52.476Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13500003
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:25:22.461Z",
-    "page": "/",
-    "id": 1750641922483.4114
-  },
-  {
-    "id": 1750641922476.6655,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13500003
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:25:22.476Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13470005
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:24:52.463Z",
-    "page": "/",
-    "id": 1750641892486.98
-  },
-  {
-    "id": 1750641892479.3708,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13470005
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:24:52.479Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13440002
-    },
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "timestamp": "2025-06-23T01:24:22.460Z",
-    "page": "/",
-    "id": 1750641862479.1184
-  },
-  {
-    "id": 1750641862474.8062,
-    "userId": 20312530434,
-    "sessionId": "dw7fyem69v7mc7930ab",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 13440002
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-06-23T01:24:22.474Z"
   }
 ]

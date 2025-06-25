@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNode, useEditor } from '@craftjs/core';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNode, useEditor, UserComponent } from '@craftjs/core';
 
 // TypeScript interfaces for component props
 interface TextProps {
@@ -76,7 +76,7 @@ interface SliderProps {
 }
 
 // Enhanced Craft.js Text Component
-export const Text: React.FC<TextProps> = ({ text, fontSize, textAlign, color, fontWeight, fontFamily }) => {
+export const Text: UserComponent<TextProps> = ({ text, fontSize, textAlign, color, fontWeight, fontFamily }) => {
   const { connectors: { connect, drag }, selected, actions: { setProp } } = useNode((state) => ({
     selected: state.events.selected,
   }));
@@ -91,7 +91,11 @@ export const Text: React.FC<TextProps> = ({ text, fontSize, textAlign, color, fo
 
   return (
     <div
-      ref={(ref) => ref && connect(drag(ref))}
+      ref={(ref) => {
+        if (ref) {
+          connect(drag(ref));
+        }
+      }}
       onClick={() => selected && setEditable(true)}
       style={{
         fontSize: `${fontSize}px`,
@@ -139,14 +143,16 @@ export const Text: React.FC<TextProps> = ({ text, fontSize, textAlign, color, fo
 };
 
 // Enhanced Craft.js Button Component
-export const Button: React.FC<ButtonProps> = ({ text, size, backgroundColor, textColor, borderRadius, padding, onClick }) => {
+export const Button: UserComponent<ButtonProps> = ({ text, size, backgroundColor, textColor, borderRadius, padding, onClick }) => {
   const { connectors: { connect, drag }, selected } = useNode((state) => ({
     selected: state.events.selected,
   }));
 
   return (
     <button
-      ref={(ref) => ref && connect(drag(ref))}
+      ref={(ref) => {
+        if (ref) connect(drag(ref));
+      }}
       onClick={onClick}
       style={{
         backgroundColor,
@@ -177,14 +183,16 @@ export const Button: React.FC<ButtonProps> = ({ text, size, backgroundColor, tex
 };
 
 // Enhanced Craft.js Container Component
-export const Container: React.FC<ContainerProps> = ({ children, backgroundColor, padding, borderRadius, boxShadow, flexDirection }) => {
+export const Container: UserComponent<ContainerProps> = ({ children, backgroundColor, padding, borderRadius, boxShadow, flexDirection }) => {
   const { connectors: { connect, drag }, selected } = useNode((state) => ({
     selected: state.events.selected,
   }));
 
   return (
     <div
-      ref={(ref) => ref && connect(drag(ref))}
+      ref={(ref) => {
+        if (ref) connect(drag(ref));
+      }}
       style={{
         backgroundColor,
         padding: `${padding}px`,
@@ -203,14 +211,16 @@ export const Container: React.FC<ContainerProps> = ({ children, backgroundColor,
 };
 
 // Enhanced Craft.js Image Component
-export const Image: React.FC<ImageProps> = ({ src, alt, width, height, objectFit, borderRadius }) => {
+export const Image: UserComponent<ImageProps> = ({ src, alt, width, height, objectFit, borderRadius }) => {
   const { connectors: { connect, drag }, selected } = useNode((state) => ({
     selected: state.events.selected,
   }));
 
   return (
     <img
-      ref={(ref) => ref && connect(drag(ref))}
+      ref={(ref) => {
+        if (ref) connect(drag(ref));
+      }}
       src={src}
       alt={alt}
       style={{
@@ -225,14 +235,16 @@ export const Image: React.FC<ImageProps> = ({ src, alt, width, height, objectFit
 };
 
 // Enhanced Craft.js Card Component
-export const Card: React.FC<CardProps> = ({ children, backgroundColor, padding, borderRadius, boxShadow }) => {
+export const Card: UserComponent<CardProps> = ({ children, backgroundColor, padding, borderRadius, boxShadow }) => {
   const { connectors: { connect, drag }, selected } = useNode((state) => ({
     selected: state.events.selected,
   }));
 
   return (
     <div
-      ref={(ref) => ref && connect(drag(ref))}
+      ref={(ref) => {
+        if (ref) connect(drag(ref));
+      }}
       style={{
         backgroundColor,
         padding: `${padding}px`,
@@ -248,13 +260,15 @@ export const Card: React.FC<CardProps> = ({ children, backgroundColor, padding, 
 };
 
 // Enhanced Form Components
-export const Input: React.FC<InputProps> = ({ placeholder, type, label, required }) => {
+export const Input: UserComponent<InputProps> = ({ placeholder, type, label, required }) => {
   const { connectors: { connect, drag }, selected } = useNode((state) => ({
     selected: state.events.selected,
   }));
 
   return (
-    <div ref={(ref) => ref && connect(drag(ref))} style={{ outline: selected ? '2px solid #facc15' : 'none' }}>
+    <div ref={(ref) => {
+      if (ref) connect(drag(ref));
+    }} style={{ outline: selected ? '2px solid #facc15' : 'none' }}>
       {label && <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>}
       <input
         type={type}
@@ -266,13 +280,15 @@ export const Input: React.FC<InputProps> = ({ placeholder, type, label, required
   );
 };
 
-export const Select: React.FC<SelectProps> = ({ options, label, required }) => {
+export const Select: UserComponent<SelectProps> = ({ options, label, required }) => {
   const { connectors: { connect, drag }, selected } = useNode((state) => ({
     selected: state.events.selected,
   }));
 
   return (
-    <div ref={(ref) => ref && connect(drag(ref))} style={{ outline: selected ? '2px solid #facc15' : 'none' }}>
+    <div ref={(ref) => {
+      if (ref) connect(drag(ref));
+    }} style={{ outline: selected ? '2px solid #facc15' : 'none' }}>
       {label && <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>}
       <select
         required={required}
@@ -289,14 +305,16 @@ export const Select: React.FC<SelectProps> = ({ options, label, required }) => {
 };
 
 // Advanced Components
-export const Chart: React.FC<ChartProps> = ({ type, width, height }) => {
+export const Chart: UserComponent<ChartProps> = ({ type, width, height }) => {
   const { connectors: { connect, drag }, selected } = useNode((state) => ({
     selected: state.events.selected,
   }));
 
   return (
     <div
-      ref={(ref) => ref && connect(drag(ref))}
+      ref={(ref) => {
+        if (ref) connect(drag(ref));
+      }}
       style={{
         width: `${width}px`,
         height: `${height}px`,
@@ -316,7 +334,7 @@ export const Chart: React.FC<ChartProps> = ({ type, width, height }) => {
   );
 };
 
-export const Slider: React.FC<SliderProps> = ({ images, autoplay, duration }) => {
+export const Slider: UserComponent<SliderProps> = ({ images, autoplay, duration }) => {
   const { connectors: { connect, drag }, selected } = useNode((state) => ({
     selected: state.events.selected,
   }));
@@ -334,7 +352,9 @@ export const Slider: React.FC<SliderProps> = ({ images, autoplay, duration }) =>
 
   return (
     <div
-      ref={(ref) => ref && connect(drag(ref))}
+      ref={(ref) => {
+        if (ref) connect(drag(ref));
+      }}
       style={{
         position: 'relative',
         width: '100%',
