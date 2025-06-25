@@ -6,6 +6,10 @@ import 'grapesjs/dist/css/grapes.min.css';
 import InlineEditor from '@ckeditor/ckeditor5-build-inline';
 import { Dialog } from '@headlessui/react';
 
+// Craft.js imports for enhanced functionality
+import { Editor, Frame, Element, useNode, useEditor } from '@craftjs/core';
+import { Layers } from '@craftjs/layers';
+
 // Placeholder for admin check (replace with real auth logic)
 const isAdmin = true;
 
@@ -59,6 +63,499 @@ function convertTextBlocksToRichText(editor: any) {
   }
   walk(editor.getWrapper());
 }
+
+// Enhanced Craft.js components
+const Text = ({ text, fontSize, textAlign, color, fontWeight, fontFamily }) => {
+  const { connectors: { connect, drag }, selected, actions: { setProp } } = useNode((state) => ({
+    selected: state.events.selected,
+    dragged: state.events.dragged,
+  }));
+
+  const [editable, setEditable] = useState(false);
+
+  useEffect(() => {
+    if (selected) {
+      return;
+    }
+    setEditable(false);
+  }, [selected]);
+
+  return (
+    <div
+      {...connect(drag())}
+      onClick={() => selected && setEditable(true)}
+      style={{
+        fontSize: `${fontSize}px`,
+        textAlign,
+        color,
+        fontWeight,
+        fontFamily,
+        cursor: 'pointer',
+        minHeight: '20px',
+        padding: '4px',
+      }}
+    >
+      {editable ? (
+        <input
+          autoFocus
+          defaultValue={text}
+          onBlur={(e) => {
+            setProp((props) => (props.text = e.target.value));
+            setEditable(false);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              setProp((props) => (props.text = e.target.value));
+              setEditable(false);
+            }
+          }}
+          style={{
+            fontSize: `${fontSize}px`,
+            textAlign,
+            color,
+            fontWeight,
+            fontFamily,
+            background: 'transparent',
+            border: 'none',
+            outline: 'none',
+            width: '100%',
+          }}
+        />
+      ) : (
+        <span>{text}</span>
+      )}
+    </div>
+  );
+};
+
+const Button = ({ text, size, variant, onClick, backgroundColor, textColor, borderRadius, padding }) => {
+  const { connectors: { connect, drag }, selected } = useNode((state) => ({
+    selected: state.events.selected,
+  }));
+
+  return (
+    <button
+      {...connect(drag())}
+      onClick={onClick}
+      style={{
+        backgroundColor,
+        color: textColor,
+        borderRadius: `${borderRadius}px`,
+        padding: `${padding}px ${padding * 2}px`,
+        border: 'none',
+        cursor: 'pointer',
+        fontSize: size === 'small' ? '14px' : size === 'large' ? '18px' : '16px',
+        fontWeight: '600',
+        transition: 'all 0.2s ease',
+        outline: selected ? '2px solid #facc15' : 'none',
+      }}
+      onMouseEnter={(e) => {
+        e.target.style.transform = 'scale(1.02)';
+        e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+      }}
+      onMouseLeave={(e) => {
+        e.target.style.transform = 'scale(1)';
+        e.target.style.boxShadow = 'none';
+      }}
+    >
+      {text}
+    </button>
+  );
+};
+
+const Container = ({ children, backgroundColor, padding, borderRadius, boxShadow, flexDirection }) => {
+  const { connectors: { connect, drag }, selected } = useNode((state) => ({
+    selected: state.events.selected,
+  }));
+
+  return (
+    <div
+      {...connect(drag())}
+      style={{
+        backgroundColor,
+        padding: `${padding}px`,
+        borderRadius: `${borderRadius}px`,
+        boxShadow,
+        display: 'flex',
+        flexDirection,
+        minHeight: '50px',
+        minWidth: '50px',
+        outline: selected ? '2px solid #facc15' : 'none',
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+const Image = ({ src, alt, width, height, objectFit, borderRadius }) => {
+  const { connectors: { connect, drag }, selected } = useNode((state) => ({
+    selected: state.events.selected,
+  }));
+
+  return (
+    <img
+      {...connect(drag())}
+      src={src}
+      alt={alt}
+      style={{
+        width: width ? `${width}px` : '100%',
+        height: height ? `${height}px` : 'auto',
+        objectFit,
+        borderRadius: `${borderRadius}px`,
+        outline: selected ? '2px solid #facc15' : 'none',
+      }}
+    />
+  );
+};
+
+const Card = ({ children, backgroundColor, padding, borderRadius, boxShadow }) => {
+  const { connectors: { connect, drag }, selected } = useNode((state) => ({
+    selected: state.events.selected,
+  }));
+
+  return (
+    <div
+      {...connect(drag())}
+      style={{
+        backgroundColor,
+        padding: `${padding}px`,
+        borderRadius: `${borderRadius}px`,
+        boxShadow,
+        minHeight: '100px',
+        outline: selected ? '2px solid #facc15' : 'none',
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+// Enhanced Form Components
+const Input = ({ placeholder, type, label, required, validation }) => {
+  const { connectors: { connect, drag }, selected } = useNode((state) => ({
+    selected: state.events.selected,
+  }));
+
+  return (
+    <div {...connect(drag())} style={{ outline: selected ? '2px solid #facc15' : 'none' }}>
+      {label && <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>}
+      <input
+        type={type}
+        placeholder={placeholder}
+        required={required}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
+      />
+    </div>
+  );
+};
+
+const Select = ({ options, label, required }) => {
+  const { connectors: { connect, drag }, selected } = useNode((state) => ({
+    selected: state.events.selected,
+  }));
+
+  return (
+    <div {...connect(drag())} style={{ outline: selected ? '2px solid #facc15' : 'none' }}>
+      {label && <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>}
+      <select
+        required={required}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
+      >
+        {options.map((option, index) => (
+          <option key={index} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
+// Advanced Components
+const Chart = ({ type, data, width, height }) => {
+  const { connectors: { connect, drag }, selected } = useNode((state) => ({
+    selected: state.events.selected,
+  }));
+
+  return (
+    <div
+      {...connect(drag())}
+      style={{
+        width: `${width}px`,
+        height: `${height}px`,
+        border: '2px dashed #ccc',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f9f9f9',
+        outline: selected ? '2px solid #facc15' : 'none',
+      }}
+    >
+      <div className="text-center">
+        <div className="text-lg font-semibold text-gray-600">{type.toUpperCase()} CHART</div>
+        <div className="text-sm text-gray-500">Chart placeholder</div>
+      </div>
+    </div>
+  );
+};
+
+const Slider = ({ images, autoplay, duration }) => {
+  const { connectors: { connect, drag }, selected } = useNode((state) => ({
+    selected: state.events.selected,
+  }));
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (autoplay && images.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % images.length);
+      }, duration * 1000);
+      return () => clearInterval(interval);
+    }
+  }, [autoplay, duration, images.length]);
+
+  return (
+    <div
+      {...connect(drag())}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '300px',
+        overflow: 'hidden',
+        borderRadius: '8px',
+        outline: selected ? '2px solid #facc15' : 'none',
+      }}
+    >
+      {images.length > 0 ? (
+        <img
+          src={images[currentIndex]?.src || '/placeholder.jpg'}
+          alt={images[currentIndex]?.alt || 'Slide'}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
+      ) : (
+        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+          <span className="text-gray-500">No images added</span>
+        </div>
+      )}
+      
+      {images.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {images.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={`w-3 h-3 rounded-full ${
+                index === currentIndex ? 'bg-white' : 'bg-white/50'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Component Settings Panels
+Text.craft = {
+  props: {
+    text: 'Hello World',
+    fontSize: 16,
+    textAlign: 'left',
+    color: '#333',
+    fontWeight: 'normal',
+    fontFamily: 'inherit',
+  },
+  related: {
+    settings: () => (
+      <div className="space-y-4 p-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Text</label>
+          <input
+            type="text"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            onChange={(e) => {
+              const { actions: { setProp } } = useNode();
+              setProp((props) => (props.text = e.target.value));
+            }}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Font Size</label>
+          <input
+            type="number"
+            min="8"
+            max="72"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            onChange={(e) => {
+              const { actions: { setProp } } = useNode();
+              setProp((props) => (props.fontSize = parseInt(e.target.value)));
+            }}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+          <input
+            type="color"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            onChange={(e) => {
+              const { actions: { setProp } } = useNode();
+              setProp((props) => (props.color = e.target.value));
+            }}
+          />
+        </div>
+      </div>
+    ),
+  },
+};
+
+Button.craft = {
+  props: {
+    text: 'Button',
+    size: 'medium',
+    variant: 'primary',
+    backgroundColor: '#facc15',
+    textColor: '#000',
+    borderRadius: 6,
+    padding: 12,
+  },
+  related: {
+    settings: () => (
+      <div className="space-y-4 p-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Button Text</label>
+          <input
+            type="text"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            onChange={(e) => {
+              const { actions: { setProp } } = useNode();
+              setProp((props) => (props.text = e.target.value));
+            }}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
+          <input
+            type="color"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            onChange={(e) => {
+              const { actions: { setProp } } = useNode();
+              setProp((props) => (props.backgroundColor = e.target.value));
+            }}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
+          <input
+            type="color"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            onChange={(e) => {
+              const { actions: { setProp } } = useNode();
+              setProp((props) => (props.textColor = e.target.value));
+            }}
+          />
+        </div>
+      </div>
+    ),
+  },
+};
+
+Container.craft = {
+  props: {
+    backgroundColor: '#ffffff',
+    padding: 20,
+    borderRadius: 8,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    flexDirection: 'column',
+  },
+  related: {
+    settings: () => (
+      <div className="space-y-4 p-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
+          <input
+            type="color"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            onChange={(e) => {
+              const { actions: { setProp } } = useNode();
+              setProp((props) => (props.backgroundColor = e.target.value));
+            }}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Padding</label>
+          <input
+            type="number"
+            min="0"
+            max="100"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            onChange={(e) => {
+              const { actions: { setProp } } = useNode();
+              setProp((props) => (props.padding = parseInt(e.target.value)));
+            }}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Direction</label>
+          <select
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            onChange={(e) => {
+              const { actions: { setProp } } = useNode();
+              setProp((props) => (props.flexDirection = e.target.value));
+            }}
+          >
+            <option value="column">Column</option>
+            <option value="row">Row</option>
+          </select>
+        </div>
+      </div>
+    ),
+  },
+};
+
+Image.craft = {
+  props: {
+    src: '/placeholder.jpg',
+    alt: 'Image',
+    width: 300,
+    height: 200,
+    objectFit: 'cover',
+    borderRadius: 8,
+  },
+  related: {
+    settings: () => (
+      <div className="space-y-4 p-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+          <input
+            type="text"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            onChange={(e) => {
+              const { actions: { setProp } } = useNode();
+              setProp((props) => (props.src = e.target.value));
+            }}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Alt Text</label>
+          <input
+            type="text"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            onChange={(e) => {
+              const { actions: { setProp } } = useNode();
+              setProp((props) => (props.alt = e.target.value));
+            }}
+          />
+        </div>
+      </div>
+    ),
+  },
+};
 
 // Main Web Designer Component
 export default function WebDesigner() {
@@ -209,7 +706,8 @@ export default function WebDesigner() {
 
   // --- Palette state and add logic ---
   const [showPalette, setShowPalette] = useState(false);
-  type ElementType = 'text' | 'box' | 'button' | 'heading' | 'image' | 'link' | 'divider' | 'custom' | 'card' | 'columns' | 'video';
+  // Enhanced Element Types with more comprehensive functionality
+  type ElementType = 'text' | 'box' | 'button' | 'heading' | 'image' | 'link' | 'divider' | 'custom' | 'card' | 'columns' | 'video' | 'form' | 'table' | 'slider' | 'chart' | 'map' | 'social' | 'icon' | 'spacer' | 'html' | 'countdown' | 'testimonial' | 'pricing' | 'gallery' | 'accordion' | 'tabs' | 'progress' | 'timeline' | 'carousel' | 'modal' | 'navbar' | 'footer' | 'breadcrumb' | 'pagination' | 'search' | 'notification' | 'grid' | 'flexbox';
   interface DesignerElement {
     id: string;
     type: ElementType;
@@ -218,18 +716,123 @@ export default function WebDesigner() {
     y: number;
     w: number;
     h: number;
-    style: React.CSSProperties; // Allow any CSS property
-    src?: string; // Allow images to use el.src
-    // Advanced/optional properties
-    target?: string; // for link
-    alt?: string; // for image
-    fit?: 'contain' | 'cover' | 'fill'; // for image
-    widgetType?: string; // for custom
-    parentId?: string; // for nesting
-    children?: string[]; // for rendering order
-    animation?: 'none' | 'fade' | 'slide-up' | 'slide-down' | 'zoom-in';
-    hoverEffect?: 'none' | 'shadow' | 'scale' | 'glow';
-    targetPage?: string; // for button navigation
+    style: React.CSSProperties;
+    
+    // Enhanced properties for all elements
+    src?: string;
+    alt?: string;
+    href?: string;
+    target?: string;
+    fit?: 'contain' | 'cover' | 'fill' | 'scale-down' | 'none';
+    
+    // Layout & positioning
+    position?: 'relative' | 'absolute' | 'fixed' | 'sticky';
+    zIndex?: number;
+    overflow?: 'visible' | 'hidden' | 'scroll' | 'auto';
+    
+    // Animation & effects
+    animation?: 'none' | 'fade' | 'slide-up' | 'slide-down' | 'slide-left' | 'slide-right' | 'zoom-in' | 'zoom-out' | 'rotate' | 'bounce' | 'pulse' | 'shake' | 'flip';
+    animationDuration?: number;
+    animationDelay?: number;
+    animationEasing?: 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out' | 'linear';
+    
+    hoverEffect?: 'none' | 'shadow' | 'scale' | 'glow' | 'blur' | 'brightness' | 'contrast' | 'grayscale' | 'sepia' | 'rotate' | 'translate' | 'skew';
+    hoverStyle?: React.CSSProperties;
+    
+    // Interaction
+    onClick?: string; // JavaScript code to execute
+    onHover?: string;
+    onLoad?: string;
+    
+    // Responsive design
+    responsive?: {
+      mobile?: Partial<DesignerElement>;
+      tablet?: Partial<DesignerElement>;
+      desktop?: Partial<DesignerElement>;
+    };
+    
+    // Form elements
+    placeholder?: string;
+    required?: boolean;
+    validation?: string;
+    
+    // Advanced features
+    conditional?: {
+      show?: boolean;
+      condition?: string;
+    };
+    
+    // Data binding
+    dataSource?: string;
+    dataField?: string;
+    
+    // Accessibility
+    ariaLabel?: string;
+    ariaDescribedBy?: string;
+    role?: string;
+    tabIndex?: number;
+    
+    // Component-specific properties
+    columns?: number;
+    rows?: number;
+    items?: any[];
+    settings?: Record<string, any>;
+    
+    // Hierarchy
+    parentId?: string;
+    children?: string[];
+    
+    // Navigation
+    targetPage?: string;
+    
+    // Widget type for custom elements
+    widgetType?: string;
+    
+    // Advanced styling
+    gradient?: {
+      type: 'linear' | 'radial' | 'conic';
+      direction?: string;
+      colors: { color: string; stop: number }[];
+    };
+    
+    boxShadow?: {
+      x: number;
+      y: number;
+      blur: number;
+      spread: number;
+      color: string;
+      inset?: boolean;
+    }[];
+    
+    textShadow?: {
+      x: number;
+      y: number;
+      blur: number;
+      color: string;
+    }[];
+    
+    // Transforms
+    transform?: {
+      rotate?: number;
+      scale?: number;
+      skewX?: number;
+      skewY?: number;
+      translateX?: number;
+      translateY?: number;
+    };
+    
+    // Filters
+    filter?: {
+      blur?: number;
+      brightness?: number;
+      contrast?: number;
+      grayscale?: number;
+      hueRotate?: number;
+      invert?: number;
+      opacity?: number;
+      saturate?: number;
+      sepia?: number;
+    };
   }
   function handleAddElement(type: ElementType) {
     setShowPalette(false);
@@ -955,13 +1558,25 @@ export default function WebDesigner() {
     let pageParam = selectedPage.replace(/^\//, '') || '';
     if (pageParam === 'homepage') pageParam = '';
     fetch(`/api/page-rendered-html?page=${encodeURIComponent(pageParam)}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
         let html = data.html || '';
         grapesEditor.current.setComponents(html);
         setTimeout(() => {
           convertTextBlocksToRichText(grapesEditor.current);
         }, 200);
+      })
+      .catch(error => {
+        console.error('Failed to fetch page rendered HTML:', error);
+        // Set empty content on error
+        if (grapesEditor.current) {
+          grapesEditor.current.setComponents('');
+        }
       });
   }, [selectedPage, grapesReady]);
 
@@ -1088,10 +1703,19 @@ export default function WebDesigner() {
   const [pagesLoading, setPagesLoading] = useState(false);
   async function fetchBackendTree() {
     setPagesLoading(true);
-    const res = await fetch('/api/pages');
-    const data = await res.json();
-    setBackendTree(data.tree || []);
-    setPagesLoading(false);
+    try {
+      const res = await fetch('/api/pages');
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      setBackendTree(data.tree || []);
+    } catch (error) {
+      console.error('Failed to fetch backend tree:', error);
+      setBackendTree([]);
+    } finally {
+      setPagesLoading(false);
+    }
   }
   useEffect(() => { fetchBackendTree(); }, []);
 
@@ -1170,34 +1794,58 @@ export default function WebDesigner() {
   async function handleAddPage(folderPath: string) {
     const name = prompt('New page name?');
     if (!name) return;
-    await fetch('/api/pages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, section: folderPath })
-    });
-    fetchBackendTree();
+    try {
+      const response = await fetch('/api/pages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, section: folderPath })
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      fetchBackendTree();
+    } catch (error) {
+      console.error('Failed to add page:', error);
+      alert('Failed to add page. Please check the console for details.');
+    }
   }
   // Delete page via backend
   async function handleDeletePage(page: { name: string; path: string }) {
     if (!confirm(`Delete page "${page.name}"? This will remove the file.`)) return;
-    await fetch('/api/pages', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: page.path })
-    });
-    fetchBackendTree();
+    try {
+      const response = await fetch('/api/pages', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: page.path })
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      fetchBackendTree();
+    } catch (error) {
+      console.error('Failed to delete page:', error);
+      alert('Failed to delete page. Please check the console for details.');
+    }
   }
 
   // Add new folder via backend
   async function handleAddFolder(parentPath: string) {
     const name = prompt('New folder name?');
     if (!name) return;
-    await fetch('/api/pages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, section: parentPath, type: 'folder' })
-    });
-    fetchBackendTree();
+    try {
+      const response = await fetch('/api/pages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, section: parentPath, type: 'folder' })
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      fetchBackendTree();
+    } catch (error) {
+      console.error('Failed to add folder:', error);
+      alert('Failed to add folder. Please check the console for details.');
+    }
   }
 
   // --- Virtual Folders/Sections State (localStorage + backend fallback) ---
@@ -1244,14 +1892,26 @@ export default function WebDesigner() {
       setVirtualFolders(JSON.parse(saved));
     } else {
       // Fetch backend tree and convert to virtualFolders
-      fetch('/api/pages').then(res => res.json()).then(data => {
-        if (data.tree) {
-          console.log('Backend tree:', data.tree);
-          const folders = backendTreeToVirtualFolders(data.tree);
-          console.log('Converted folders:', folders);
-          setVirtualFolders(folders);
-        }
-      });
+      fetch('/api/pages')
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then(data => {
+          if (data.tree) {
+            console.log('Backend tree:', data.tree);
+            const folders = backendTreeToVirtualFolders(data.tree);
+            console.log('Converted folders:', folders);
+            setVirtualFolders(folders);
+          }
+        })
+        .catch(error => {
+          console.error('Failed to fetch pages for virtual folders:', error);
+          // Set default empty folders structure
+          setVirtualFolders([]);
+        });
     }
   }, []);
 
@@ -1338,6 +1998,184 @@ export default function WebDesigner() {
     setModalOpen(false);
     setModalBlock(null);
   }
+
+  // Enhanced tool palette with comprehensive functionality
+  const enhancedTools = [
+    // Basic Elements
+    { 
+      category: 'Basic', 
+      tools: [
+        { type: 'text', icon: 'fa-font', label: 'Rich Text', description: 'Editable text with formatting' },
+        { type: 'heading', icon: 'fa-heading', label: 'Heading', description: 'H1-H6 headings' },
+        { type: 'button', icon: 'fa-mouse-pointer', label: 'Button', description: 'Interactive button' },
+        { type: 'image', icon: 'fa-image', label: 'Image', description: 'Responsive image' },
+        { type: 'video', icon: 'fa-video', label: 'Video', description: 'Video player' },
+        { type: 'link', icon: 'fa-link', label: 'Link', description: 'Hyperlink' },
+        { type: 'divider', icon: 'fa-minus', label: 'Divider', description: 'Horizontal line' },
+        { type: 'spacer', icon: 'fa-arrows-alt-v', label: 'Spacer', description: 'Vertical spacing' },
+      ]
+    },
+    // Layout Elements
+    { 
+      category: 'Layout', 
+      tools: [
+        { type: 'container', icon: 'fa-square', label: 'Container', description: 'Flex container' },
+        { type: 'columns', icon: 'fa-columns', label: 'Columns', description: 'Multi-column layout' },
+        { type: 'grid', icon: 'fa-th', label: 'Grid', description: 'CSS Grid layout' },
+        { type: 'flexbox', icon: 'fa-arrows-alt', label: 'Flexbox', description: 'Flexible box layout' },
+        { type: 'card', icon: 'fa-id-card', label: 'Card', description: 'Content card' },
+        { type: 'section', icon: 'fa-window-maximize', label: 'Section', description: 'Page section' },
+      ]
+    },
+    // Form Elements
+    { 
+      category: 'Forms', 
+      tools: [
+        { type: 'form', icon: 'fa-wpforms', label: 'Form', description: 'Form container' },
+        { type: 'input', icon: 'fa-i-cursor', label: 'Input', description: 'Text input field' },
+        { type: 'textarea', icon: 'fa-align-left', label: 'Textarea', description: 'Multi-line text' },
+        { type: 'select', icon: 'fa-caret-square-down', label: 'Select', description: 'Dropdown menu' },
+        { type: 'checkbox', icon: 'fa-check-square', label: 'Checkbox', description: 'Checkbox input' },
+        { type: 'radio', icon: 'fa-dot-circle', label: 'Radio', description: 'Radio button' },
+        { type: 'file', icon: 'fa-file-upload', label: 'File Upload', description: 'File input' },
+        { type: 'submit', icon: 'fa-paper-plane', label: 'Submit', description: 'Submit button' },
+      ]
+    },
+    // Interactive Elements
+    { 
+      category: 'Interactive', 
+      tools: [
+        { type: 'slider', icon: 'fa-images', label: 'Image Slider', description: 'Image carousel' },
+        { type: 'accordion', icon: 'fa-list', label: 'Accordion', description: 'Collapsible content' },
+        { type: 'tabs', icon: 'fa-folder', label: 'Tabs', description: 'Tabbed content' },
+        { type: 'modal', icon: 'fa-window-restore', label: 'Modal', description: 'Popup modal' },
+        { type: 'tooltip', icon: 'fa-question-circle', label: 'Tooltip', description: 'Hover tooltip' },
+        { type: 'dropdown', icon: 'fa-angle-down', label: 'Dropdown', description: 'Dropdown menu' },
+        { type: 'progress', icon: 'fa-tasks', label: 'Progress Bar', description: 'Progress indicator' },
+        { type: 'rating', icon: 'fa-star', label: 'Rating', description: 'Star rating' },
+      ]
+    },
+    // Data & Charts
+    { 
+      category: 'Data', 
+      tools: [
+        { type: 'table', icon: 'fa-table', label: 'Table', description: 'Data table' },
+        { type: 'chart', icon: 'fa-chart-bar', label: 'Chart', description: 'Data visualization' },
+        { type: 'counter', icon: 'fa-plus-circle', label: 'Counter', description: 'Animated counter' },
+        { type: 'timeline', icon: 'fa-clock', label: 'Timeline', description: 'Event timeline' },
+        { type: 'pricing', icon: 'fa-dollar-sign', label: 'Pricing Table', description: 'Pricing plans' },
+        { type: 'testimonial', icon: 'fa-quote-left', label: 'Testimonial', description: 'Customer review' },
+      ]
+    },
+    // Navigation
+    { 
+      category: 'Navigation', 
+      tools: [
+        { type: 'navbar', icon: 'fa-bars', label: 'Navigation Bar', description: 'Site navigation' },
+        { type: 'breadcrumb', icon: 'fa-arrow-right', label: 'Breadcrumb', description: 'Navigation trail' },
+        { type: 'pagination', icon: 'fa-ellipsis-h', label: 'Pagination', description: 'Page navigation' },
+        { type: 'menu', icon: 'fa-list-ul', label: 'Menu', description: 'Navigation menu' },
+        { type: 'footer', icon: 'fa-window-minimize', label: 'Footer', description: 'Page footer' },
+      ]
+    },
+    // Media
+    { 
+      category: 'Media', 
+      tools: [
+        { type: 'gallery', icon: 'fa-th-large', label: 'Gallery', description: 'Image gallery' },
+        { type: 'audio', icon: 'fa-volume-up', label: 'Audio', description: 'Audio player' },
+        { type: 'embed', icon: 'fa-code', label: 'Embed', description: 'Embed code' },
+        { type: 'map', icon: 'fa-map', label: 'Map', description: 'Google Maps' },
+        { type: 'icon', icon: 'fa-smile', label: 'Icon', description: 'Font icon' },
+      ]
+    },
+    // E-commerce
+    { 
+      category: 'E-commerce', 
+      tools: [
+        { type: 'product', icon: 'fa-shopping-bag', label: 'Product', description: 'Product showcase' },
+        { type: 'cart', icon: 'fa-shopping-cart', label: 'Cart', description: 'Shopping cart' },
+        { type: 'checkout', icon: 'fa-credit-card', label: 'Checkout', description: 'Checkout form' },
+        { type: 'wishlist', icon: 'fa-heart', label: 'Wishlist', description: 'Wishlist button' },
+      ]
+    },
+    // Advanced
+    { 
+      category: 'Advanced', 
+      tools: [
+        { type: 'code', icon: 'fa-code', label: 'Code Block', description: 'Syntax highlighted code' },
+        { type: 'custom', icon: 'fa-cogs', label: 'Custom HTML', description: 'Custom HTML/CSS' },
+        { type: 'animation', icon: 'fa-magic', label: 'Animation', description: 'CSS animations' },
+        { type: 'parallax', icon: 'fa-mountain', label: 'Parallax', description: 'Parallax effect' },
+        { type: 'countdown', icon: 'fa-stopwatch', label: 'Countdown', description: 'Countdown timer' },
+      ]
+    }
+  ];
+
+  // Enhanced properties for better element management
+  const enhancedElementProperties = {
+    // Responsive breakpoints
+    responsive: {
+      mobile: { maxWidth: 768 },
+      tablet: { minWidth: 769, maxWidth: 1024 },
+      desktop: { minWidth: 1025 }
+    },
+    
+    // Animation presets
+    animations: [
+      { name: 'Fade In', class: 'animate-fadeIn', duration: '0.5s' },
+      { name: 'Slide Up', class: 'animate-slideUp', duration: '0.6s' },
+      { name: 'Slide Down', class: 'animate-slideDown', duration: '0.6s' },
+      { name: 'Slide Left', class: 'animate-slideLeft', duration: '0.6s' },
+      { name: 'Slide Right', class: 'animate-slideRight', duration: '0.6s' },
+      { name: 'Zoom In', class: 'animate-zoomIn', duration: '0.5s' },
+      { name: 'Zoom Out', class: 'animate-zoomOut', duration: '0.5s' },
+      { name: 'Bounce', class: 'animate-bounce', duration: '1s' },
+      { name: 'Pulse', class: 'animate-pulse', duration: '2s' },
+      { name: 'Shake', class: 'animate-shake', duration: '0.8s' },
+      { name: 'Rotate', class: 'animate-rotate', duration: '1s' },
+      { name: 'Flip', class: 'animate-flip', duration: '0.8s' }
+    ],
+    
+    // Hover effects
+    hoverEffects: [
+      { name: 'None', class: '' },
+      { name: 'Shadow', class: 'hover:shadow-xl' },
+      { name: 'Scale', class: 'hover:scale-105' },
+      { name: 'Glow', class: 'hover:ring-4 hover:ring-yellow-400/40' },
+      { name: 'Blur', class: 'hover:blur-sm' },
+      { name: 'Brightness', class: 'hover:brightness-110' },
+      { name: 'Contrast', class: 'hover:contrast-125' },
+      { name: 'Grayscale', class: 'hover:grayscale' },
+      { name: 'Sepia', class: 'hover:sepia' },
+      { name: 'Rotate', class: 'hover:rotate-3' },
+      { name: 'Translate', class: 'hover:translate-y-1' },
+      { name: 'Skew', class: 'hover:skew-x-3' }
+    ],
+    
+    // CSS filters
+    filters: {
+      blur: { min: 0, max: 10, unit: 'px' },
+      brightness: { min: 0, max: 200, unit: '%' },
+      contrast: { min: 0, max: 200, unit: '%' },
+      grayscale: { min: 0, max: 100, unit: '%' },
+      hueRotate: { min: 0, max: 360, unit: 'deg' },
+      invert: { min: 0, max: 100, unit: '%' },
+      opacity: { min: 0, max: 100, unit: '%' },
+      saturate: { min: 0, max: 200, unit: '%' },
+      sepia: { min: 0, max: 100, unit: '%' }
+    },
+    
+    // Transform properties
+    transforms: {
+      rotate: { min: -180, max: 180, unit: 'deg' },
+      scale: { min: 0.1, max: 3, unit: '' },
+      skewX: { min: -45, max: 45, unit: 'deg' },
+      skewY: { min: -45, max: 45, unit: 'deg' },
+      translateX: { min: -500, max: 500, unit: 'px' },
+      translateY: { min: -500, max: 500, unit: 'px' }
+    }
+  };
 
   // --- Helper: Render elements recursively (must be above return) ---
   function renderElement(el: DesignerElement) {
@@ -1506,193 +2344,538 @@ export default function WebDesigner() {
   return (
     <>
       <div className="w-full h-full flex bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900">
-        {/* Modern Sidebar */}
-        <aside className="h-full w-60 min-w-60 max-w-60 bg-gradient-to-b from-zinc-900 via-zinc-800 to-zinc-900 border-r border-yellow-400/20 shadow-2xl rounded-tr-2xl rounded-br-2xl flex flex-col gap-8 overflow-y-auto z-40">
-          <div className="flex flex-col p-6 gap-6">
-            <h2 className="text-2xl font-extrabold text-yellow-300 mb-2 tracking-wide flex items-center gap-2">
-              <span className="fa fa-paint-brush text-yellow-400" />
+        {/* Enhanced Modern Sidebar */}
+        <aside className="h-full w-80 min-w-80 max-w-80 bg-gradient-to-b from-zinc-900 via-zinc-800 to-zinc-900 border-r border-yellow-400/30 shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden z-40">
+          {/* Header */}
+          <div className="p-6 border-b border-yellow-400/20">
+            <h2 className="text-3xl font-extrabold text-yellow-300 mb-4 tracking-wide flex items-center gap-3">
+              <span className="fa fa-paint-brush text-yellow-400 text-2xl" />
               Web Designer
+              <span className="text-xs bg-yellow-400/20 text-yellow-300 px-2 py-1 rounded-full">PRO</span>
             </h2>
-            <select value={selectedPage} onChange={e => setSelectedPage(e.target.value)} className="px-4 py-2 rounded-lg bg-zinc-800 text-yellow-200 mb-4 shadow-inner border border-zinc-700 focus:ring-2 focus:ring-yellow-400">
-              <option value="">Select a page</option>
-              {pages.map(p => <option key={p.path} value={p.path}>{p.name}</option>)}
-            </select>
-            <button
-              onClick={() => setPreviewMode((prev) => !prev)}
-              className={`px-4 py-2 rounded-xl font-bold shadow-lg mb-2 transition ${previewMode ? 'bg-yellow-900 text-yellow-200' : 'bg-yellow-400 text-black hover:bg-yellow-300'}`}
-            >
-              {previewMode ? (
-                <><span className="fa fa-eye-slash mr-2" />Exit Preview</>
-              ) : (
-                <><span className="fa fa-eye mr-2" />Preview</>
-              )}
-            </button>
-            <button onClick={handleGrapesSave} className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-300 text-black rounded-xl font-bold shadow-lg hover:from-yellow-300 hover:to-yellow-200 transition mb-4" disabled={!selectedPage}>
-              <span className="fa fa-save mr-2" />Save
-            </button>
+            
+            {/* Page Selector */}
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-yellow-200 uppercase tracking-wider">Current Page</label>
+              <select 
+                value={selectedPage} 
+                onChange={e => setSelectedPage(e.target.value)} 
+                className="w-full px-4 py-3 rounded-xl bg-zinc-800/80 text-yellow-200 border border-zinc-700/50 focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
+              >
+                <option value="">Select a page</option>
+                {pages.map(p => <option key={p.path} value={p.path}>{p.name}</option>)}
+              </select>
+            </div>
+            
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <button
+                onClick={() => setPreviewMode((prev) => !prev)}
+                className={`px-4 py-3 rounded-xl font-bold shadow-lg transition-all duration-200 flex items-center justify-center gap-2 ${
+                  previewMode 
+                    ? 'bg-yellow-900/80 text-yellow-200 hover:bg-yellow-800/80' 
+                    : 'bg-gradient-to-r from-yellow-400 to-yellow-300 text-black hover:from-yellow-300 hover:to-yellow-200 shadow-yellow-400/25'
+                }`}
+              >
+                <span className={`fa ${previewMode ? 'fa-eye-slash' : 'fa-eye'}`} />
+                {previewMode ? 'Edit' : 'Preview'}
+              </button>
+              
+              <button 
+                onClick={handleGrapesSave} 
+                className="px-4 py-3 bg-gradient-to-r from-green-500 to-green-400 text-white rounded-xl font-bold shadow-lg hover:from-green-400 hover:to-green-300 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-green-500/25"
+                disabled={!selectedPage}
+              >
+                <span className="fa fa-save" />
+                Save
+              </button>
+            </div>
+          </div>
+          
+          {/* Tools Section */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {/* Device Preview */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-yellow-300 flex items-center gap-2">
+                <span className="fa fa-devices text-yellow-400" />
+                Device Preview
+              </h3>
+              <div className="grid grid-cols-3 gap-2">
+                <button className="px-3 py-2 bg-zinc-800 hover:bg-yellow-400/20 text-yellow-200 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 text-xs">
+                  <span className="fa fa-mobile-alt" />
+                  Mobile
+                </button>
+                <button className="px-3 py-2 bg-zinc-800 hover:bg-yellow-400/20 text-yellow-200 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 text-xs">
+                  <span className="fa fa-tablet-alt" />
+                  Tablet
+                </button>
+                <button className="px-3 py-2 bg-yellow-400/20 text-yellow-300 rounded-lg flex flex-col items-center gap-1 text-xs">
+                  <span className="fa fa-desktop" />
+                  Desktop
+                </button>
+              </div>
+            </div>
+            
+            {/* Page Settings */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-yellow-300 flex items-center gap-2">
+                <span className="fa fa-cog text-yellow-400" />
+                Page Settings
+              </h3>
+              <div className="space-y-2">
+                <button className="w-full px-4 py-2 text-left text-yellow-200 hover:bg-zinc-800/50 rounded-lg transition-all duration-200 flex items-center gap-3">
+                  <span className="fa fa-palette text-yellow-400" />
+                  Page Background
+                </button>
+                <button className="w-full px-4 py-2 text-left text-yellow-200 hover:bg-zinc-800/50 rounded-lg transition-all duration-200 flex items-center gap-3">
+                  <span className="fa fa-font text-yellow-400" />
+                  Typography
+                </button>
+                <button className="w-full px-4 py-2 text-left text-yellow-200 hover:bg-zinc-800/50 rounded-lg transition-all duration-200 flex items-center gap-3">
+                  <span className="fa fa-code text-yellow-400" />
+                  Custom CSS
+                </button>
+              </div>
+            </div>
+            
+            {/* Advanced Tools */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-yellow-300 flex items-center gap-2">
+                <span className="fa fa-tools text-yellow-400" />
+                Advanced Tools
+              </h3>
+              <div className="space-y-2">
+                <button className="w-full px-4 py-2 text-left text-yellow-200 hover:bg-zinc-800/50 rounded-lg transition-all duration-200 flex items-center gap-3">
+                  <span className="fa fa-layer-group text-yellow-400" />
+                  Layers Panel
+                </button>
+                <button className="w-full px-4 py-2 text-left text-yellow-200 hover:bg-zinc-800/50 rounded-lg transition-all duration-200 flex items-center gap-3">
+                  <span className="fa fa-history text-yellow-400" />
+                  Undo/Redo
+                </button>
+                <button className="w-full px-4 py-2 text-left text-yellow-200 hover:bg-zinc-800/50 rounded-lg transition-all duration-200 flex items-center gap-3">
+                  <span className="fa fa-download text-yellow-400" />
+                  Export HTML
+                </button>
+                <button className="w-full px-4 py-2 text-left text-yellow-200 hover:bg-zinc-800/50 rounded-lg transition-all duration-200 flex items-center gap-3">
+                  <span className="fa fa-upload text-yellow-400" />
+                  Import Template
+                </button>
+              </div>
+            </div>
           </div>
         </aside>
-        {/* Modern Block Panel */}
-        <div id="gjs-blocks" style={{ width: 200, background: 'linear-gradient(180deg, #23232b 0%, #18181b 100%)', borderRight: '2px solid #facc15', padding: 16, overflowY: 'auto', borderRadius: '0 1.5rem 1.5rem 0', boxShadow: '2px 0 16px #0002' }} className="flex flex-col gap-4">
-          {/* GrapesJS will render blocks here, but you can style .gjs-block for modern look in global CSS */}
+        {/* Enhanced Block Panel */}
+        <div className="w-72 bg-gradient-to-b from-zinc-900 via-zinc-800 to-zinc-900 border-r border-yellow-400/30 shadow-xl flex flex-col overflow-hidden">
+          {/* Block Panel Header */}
+          <div className="p-4 border-b border-yellow-400/20">
+            <h3 className="text-xl font-bold text-yellow-300 flex items-center gap-2">
+              <span className="fa fa-cubes text-yellow-400" />
+              Components
+            </h3>
+            <p className="text-xs text-yellow-200/70 mt-1">Drag components to the canvas</p>
+          </div>
+          
+          {/* Block Categories */}
+          <div className="flex-1 overflow-y-auto">
+            <div id="gjs-blocks" className="p-4 space-y-4">
+              {/* GrapesJS will render blocks here, enhanced with our custom styling */}
+            </div>
+          </div>
+          
+          {/* Quick Add Section */}
+          <div className="p-4 border-t border-yellow-400/20 space-y-3">
+            <h4 className="text-sm font-semibold text-yellow-300 uppercase tracking-wider">Quick Add</h4>
+            <div className="grid grid-cols-2 gap-2">
+              <button className="p-3 bg-zinc-800/50 hover:bg-yellow-400/20 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 text-xs text-yellow-200">
+                <span className="fa fa-plus-circle text-yellow-400" />
+                Section
+              </button>
+              <button className="p-3 bg-zinc-800/50 hover:bg-yellow-400/20 rounded-lg transition-all duration-200 flex flex-col items-center gap-1 text-xs text-yellow-200">
+                <span className="fa fa-th-large text-yellow-400" />
+                Container
+              </button>
+            </div>
+          </div>
         </div>
-        {/* Main GrapesJS Editor */}
-        <div style={{ flex: 1, height: '100vh', background: 'linear-gradient(135deg, #18181b 60%, #23232b 100%)', borderRadius: '1.5rem', margin: 16, boxShadow: '0 4px 32px #0004' }}>
-          <Head>
-            <title>Web Designer</title>
-            {/* FontAwesome for icons */}
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-            <style>{`
-              .gjs-block {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                background: linear-gradient(90deg, #23232b 60%, #18181b 100%);
-                border-radius: 0.75rem;
-                box-shadow: 0 2px 8px #0001;
-                padding: 12px 18px;
-                margin-bottom: 10px;
-                cursor: grab;
-                transition: box-shadow 0.2s, background 0.2s;
-                border: 1.5px solid #23232b;
-              }
-              .gjs-block:hover, .gjs-block.gjs-block-selected {
-                background: linear-gradient(90deg, #facc15 10%, #23232b 100%);
-                box-shadow: 0 4px 16px #facc1533;
-                border-color: #facc15;
-              }
-              .gjs-block-label {
-                font-weight: 600;
-                color: #facc15;
-                font-size: 1.1em;
-                letter-spacing: 0.02em;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-              }
-              .gjs-block-category {
-                font-size: 0.95em;
-                color: #a1a1aa;
-                font-weight: 700;
-                margin: 10px 0 4px 0;
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-              }
-              .gjs-block .fa {
-                font-size: 1.3em;
-                color: #facc15;
-                margin-right: 8px;
-              }
-            `}</style>
-          </Head>
-          <div ref={grapesRef} style={{ width: '100%', height: '100vh', borderRadius: '1.5rem' }} />
+        {/* Enhanced Main Editor Area */}
+        <div className="flex-1 flex flex-col bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 relative overflow-hidden">
+          {/* Top Toolbar */}
+          <div className="h-16 bg-zinc-900/90 backdrop-blur-xl border-b border-yellow-400/20 flex items-center justify-between px-6 z-10">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-yellow-300">
+                <span className="fa fa-mouse-pointer text-yellow-400" />
+                <span className="text-sm font-medium">Select Tool</span>
+              </div>
+              <div className="h-6 w-px bg-yellow-400/30"></div>
+              <div className="flex items-center gap-1">
+                <button className="p-2 hover:bg-yellow-400/20 rounded-lg transition-all duration-200 text-yellow-300 hover:text-yellow-400">
+                  <span className="fa fa-undo text-sm" />
+                </button>
+                <button className="p-2 hover:bg-yellow-400/20 rounded-lg transition-all duration-200 text-yellow-300 hover:text-yellow-400">
+                  <span className="fa fa-redo text-sm" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 bg-zinc-800/50 rounded-lg p-1">
+                <button className="px-3 py-1 bg-yellow-400/20 text-yellow-300 rounded text-xs font-medium">
+                  100%
+                </button>
+                <button className="p-1 hover:bg-yellow-400/20 rounded text-yellow-300 hover:text-yellow-400">
+                  <span className="fa fa-search-minus text-xs" />
+                </button>
+                <button className="p-1 hover:bg-yellow-400/20 rounded text-yellow-300 hover:text-yellow-400">
+                  <span className="fa fa-search-plus text-xs" />
+                </button>
+              </div>
+              
+              <button className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-lg text-xs font-medium hover:bg-blue-500/30 transition-all duration-200">
+                <span className="fa fa-eye mr-1" />
+                Preview
+              </button>
+            </div>
+          </div>
+          
+          {/* Main Canvas */}
+          <div className="flex-1 relative">
+            <Head>
+              <title>Web Designer - Migistus</title>
+              <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+              <style>{`
+                /* Enhanced GrapesJS Block Styling */
+                .gjs-block {
+                  display: flex;
+                  align-items: center;
+                  gap: 12px;
+                  background: linear-gradient(135deg, #27272a 0%, #18181b 100%);
+                  border-radius: 12px;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                  padding: 16px 20px;
+                  margin-bottom: 12px;
+                  cursor: grab;
+                  transition: all 0.3s ease;
+                  border: 2px solid transparent;
+                  backdrop-filter: blur(10px);
+                }
+                
+                .gjs-block:hover {
+                  background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
+                  box-shadow: 0 8px 24px rgba(250, 204, 21, 0.4);
+                  border-color: #facc15;
+                  transform: translateY(-2px);
+                }
+                
+                .gjs-block.gjs-block-selected {
+                  background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
+                  box-shadow: 0 8px 24px rgba(250, 204, 21, 0.5);
+                  border-color: #fbbf24;
+                }
+                
+                .gjs-block-label {
+                  font-weight: 600;
+                  color: #facc15;
+                  font-size: 14px;
+                  letter-spacing: 0.025em;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  transition: color 0.3s ease;
+                }
+                
+                .gjs-block:hover .gjs-block-label {
+                  color: #000;
+                }
+                
+                .gjs-block-category {
+                  font-size: 11px;
+                  color: #facc15;
+                  font-weight: 700;
+                  margin: 16px 0 8px 0;
+                  text-transform: uppercase;
+                  letter-spacing: 0.1em;
+                  padding: 8px 12px;
+                  background: linear-gradient(90deg, #facc15/20 0%, transparent 100%);
+                  border-left: 3px solid #facc15;
+                  border-radius: 0 8px 8px 0;
+                }
+                
+                .gjs-block .fa {
+                  font-size: 18px;
+                  color: #facc15;
+                  margin-right: 0;
+                  transition: color 0.3s ease;
+                }
+                
+                .gjs-block:hover .fa {
+                  color: #000;
+                }
+                
+                /* Enhanced Canvas Styling */
+                .gjs-cv-canvas {
+                  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+                  min-height: 100vh;
+                }
+                
+                /* Enhanced Component Selection */
+                .gjs-comp-selected {
+                  outline: 3px solid #facc15 !important;
+                  outline-offset: 2px !important;
+                  box-shadow: 0 0 0 6px rgba(250, 204, 21, 0.2) !important;
+                }
+                
+                /* Panel Enhancements */
+                .gjs-pn-panel {
+                  background: rgba(39, 39, 42, 0.95);
+                  backdrop-filter: blur(10px);
+                  border: 1px solid rgba(250, 204, 21, 0.3);
+                  border-radius: 12px;
+                }
+                
+                .gjs-pn-btn {
+                  background: transparent;
+                  border: 1px solid rgba(250, 204, 21, 0.3);
+                  color: #facc15;
+                  border-radius: 8px;
+                  margin: 2px;
+                  transition: all 0.3s ease;
+                }
+                
+                .gjs-pn-btn:hover,
+                .gjs-pn-btn.gjs-pn-active {
+                  background: #facc15;
+                  color: #000;
+                  box-shadow: 0 4px 12px rgba(250, 204, 21, 0.4);
+                }
+              `}</style>
+            </Head>
+            
+            <div 
+              ref={grapesRef} 
+              className="w-full h-full"
+              style={{ 
+                background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%)',
+                borderRadius: '0',
+                position: 'relative'
+              }} 
+            />
+            
+            {/* Floating Action Buttons */}
+            <div className="absolute bottom-6 right-6 flex flex-col gap-3 z-20">
+              <button className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-300 text-black rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center">
+                <span className="fa fa-plus text-lg" />
+              </button>
+              <button className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-400 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center">
+                <span className="fa fa-layer-group text-lg" />
+              </button>
+              <button className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-400 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center">
+                <span className="fa fa-save text-lg" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-      {/* Modal for block editing (must be inside the return fragment) */}
-      <Dialog open={modalOpen} onClose={closeBlockModal} className="fixed z-50 inset-0 flex items-center justify-center">
-        <div className="fixed inset-0 bg-black/60" />
-        <div className="relative bg-zinc-900 rounded-xl shadow-2xl p-8 w-full max-w-lg mx-auto">
-          <Dialog.Title className="text-xl font-bold text-yellow-300 mb-4">Edit Block</Dialog.Title>
-          {modalBlock && (
-            <div className="flex flex-col gap-4">
-              {/* Text Block Controls */}
-              {modalBlock.type === 'text' && (
-                <>
-                  <label className="text-yellow-200 font-semibold">Text</label>
-                  <input type="text" value={modalBlock.content} onChange={e => setModalBlock({ ...modalBlock, content: e.target.value })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Font Size</label>
-                  <input type="number" value={modalBlock.style.fontSize || 16} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, fontSize: Number(e.target.value) } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Font Family</label>
-                  <input type="text" value={modalBlock.style.fontFamily || ''} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, fontFamily: e.target.value } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Text Color</label>
-                  <input type="color" value={modalBlock.style.color || '#fde047'} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, color: e.target.value } })} className="w-12 h-8 rounded" />
-                  <label className="text-yellow-200 font-semibold">Background/Gradient</label>
-                  <input type="text" value={modalBlock.style.background || ''} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, background: e.target.value } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" placeholder="linear-gradient(...) or #hex" />
-                  <label className="text-yellow-200 font-semibold">Box Shadow</label>
-                  <input type="text" value={modalBlock.style.boxShadow || ''} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, boxShadow: e.target.value } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" placeholder="e.g. 0 2px 8px #0003" />
-                  <label className="text-yellow-200 font-semibold">Animation</label>
-                  <select value={modalBlock.animation || 'none'} onChange={e => setModalBlock({ ...modalBlock, animation: e.target.value })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100">
-                    <option value="none">None</option>
-                    <option value="fade">Fade In</option>
-                    <option value="slide-up">Slide Up</option>
-                    <option value="slide-down">Slide Down</option>
-                    <option value="zoom-in">Zoom In</option>
-                  </select>
-                  <label className="text-yellow-200 font-semibold">Hover Effect</label>
-                  <select value={modalBlock.hoverEffect || 'none'} onChange={e => setModalBlock({ ...modalBlock, hoverEffect: e.target.value })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100">
-                    <option value="none">None</option>
-                    <option value="shadow">Shadow</option>
-                    <option value="scale">Scale</option>
-                    <option value="glow">Glow</option>
-                  </select>
-                  <label className="text-yellow-200 font-semibold">Custom CSS</label>
-                  <input type="text" value={modalBlock.style.custom || ''} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, custom: e.target.value } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" placeholder="Any CSS (advanced)" />
-                </>
-              )}
-              {/* Image Block Controls */}
-              {modalBlock.type === 'image' && (
-                <>
-                  <label className="text-yellow-200 font-semibold">Image URL</label>
-                  <input type="text" value={modalBlock.src || modalBlock.content} onChange={e => setModalBlock({ ...modalBlock, src: e.target.value, content: e.target.value })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Alt Text</label>
-                  <input type="text" value={modalBlock.alt || ''} onChange={e => setModalBlock({ ...modalBlock, alt: e.target.value })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Width</label>
-                  <input type="number" value={modalBlock.style.width || 320} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, width: Number(e.target.value) } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Height</label>
-                  <input type="number" value={modalBlock.style.height || 160} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, height: Number(e.target.value) } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Border Radius</label>
-                  <input type="number" value={modalBlock.style.borderRadius || 8} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, borderRadius: Number(e.target.value) } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Box Shadow</label>
-                  <input type="text" value={modalBlock.style.boxShadow || ''} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, boxShadow: e.target.value } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                </>
-              )}
-              {/* Button Block Controls */}
-              {modalBlock.type === 'button' && (
-                <>
-                  <label className="text-yellow-200 font-semibold">Button Text</label>
-                  <input type="text" value={modalBlock.content} onChange={e => setModalBlock({ ...modalBlock, content: e.target.value })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Link URL</label>
-                  <input type="text" value={modalBlock.targetPage || ''} onChange={e => setModalBlock({ ...modalBlock, targetPage: e.target.value })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Font Size</label>
-                  <input type="number" value={modalBlock.style.fontSize || 18} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, fontSize: Number(e.target.value) } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Text Color</label>
-                  <input type="color" value={modalBlock.style.color || '#fff'} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, color: e.target.value } })} className="w-12 h-8 rounded" />
-                  <label className="text-yellow-200 font-semibold">Background</label>
-                  <input type="text" value={modalBlock.style.background || '#facc15'} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, background: e.target.value } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Border Radius</label>
-                  <input type="number" value={modalBlock.style.borderRadius || 6} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, borderRadius: Number(e.target.value) } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Box Shadow</label>
-                  <input type="text" value={modalBlock.style.boxShadow || ''} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, boxShadow: e.target.value } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                </>
-              )}
-              {/* Columns Block Controls */}
-              {modalBlock.type === 'columns' && (
-                <>
-                  <label className="text-yellow-200 font-semibold">Number of Columns</label>
-                  <input type="number" min={1} max={6} value={modalBlock.columns || 2} onChange={e => setModalBlock({ ...modalBlock, columns: Number(e.target.value) })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Gap (px)</label>
-                  <input type="number" value={modalBlock.style.gap || 16} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, gap: Number(e.target.value) } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Background</label>
-                  <input type="text" value={modalBlock.style.background || '#f3f4f6'} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, background: e.target.value } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Border Radius</label>
-                  <input type="number" value={modalBlock.style.borderRadius || 6} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, borderRadius: Number(e.target.value) } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                </>
-              )}
-              {/* Video Block Controls */}
-              {modalBlock.type === 'video' && (
-                <>
-                  <label className="text-yellow-200 font-semibold">Video URL</label>
-                  <input type="text" value={modalBlock.src || ''} onChange={e => setModalBlock({ ...modalBlock, src: e.target.value })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Width</label>
-                  <input type="number" value={modalBlock.style.width || 640} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, width: Number(e.target.value) } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Height</label>
-                  <input type="number" value={modalBlock.style.height || 360} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, height: Number(e.target.value) } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                  <label className="text-yellow-200 font-semibold">Border Radius</label>
-                  <input type="number" value={modalBlock.style.borderRadius || 8} onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, borderRadius: Number(e.target.value) } })} className="px-3 py-2 rounded bg-zinc-800 text-yellow-100" />
-                </>
-              )}
-              {/* Save/Cancel Buttons */}
-              <button onClick={() => {
+      {/* Enhanced Modal for block editing */}
+      <Dialog open={modalOpen} onClose={closeBlockModal} className="fixed z-50 inset-0 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
+        <div className="relative bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 rounded-2xl shadow-2xl border border-yellow-400/30 w-full max-w-2xl mx-auto overflow-hidden">
+          {/* Modal Header */}
+          <div className="p-6 border-b border-yellow-400/20 bg-gradient-to-r from-zinc-900 to-zinc-800">
+            <div className="flex items-center justify-between">
+              <Dialog.Title className="text-2xl font-bold text-yellow-300 flex items-center gap-3">
+                <span className="fa fa-edit text-yellow-400" />
+                Edit Component
+                {modalBlock && (
+                  <span className="text-sm bg-yellow-400/20 text-yellow-300 px-3 py-1 rounded-full capitalize">
+                    {modalBlock.type}
+                  </span>
+                )}
+              </Dialog.Title>
+              <button 
+                onClick={closeBlockModal}
+                className="p-2 hover:bg-zinc-700 rounded-lg transition-all duration-200 text-zinc-400 hover:text-white"
+              >
+                <span className="fa fa-times text-lg" />
+              </button>
+            </div>
+          </div>
+          
+          {/* Modal Content */}
+          <div className="max-h-96 overflow-y-auto">
+            {modalBlock && (
+              <div className="p-6 space-y-6">
+                {/* Text Block Controls */}
+                {modalBlock.type === 'text' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-yellow-200 mb-2 uppercase tracking-wider">Text Content</label>
+                        <textarea 
+                          value={modalBlock.content} 
+                          onChange={e => setModalBlock({ ...modalBlock, content: e.target.value })} 
+                          className="w-full px-4 py-3 rounded-xl bg-zinc-800/80 text-yellow-100 border border-zinc-700/50 focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all duration-200 resize-none"
+                          rows={3}
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-yellow-200 mb-2">Font Size</label>
+                          <input 
+                            type="number" 
+                            value={modalBlock.style.fontSize || 16} 
+                            onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, fontSize: Number(e.target.value) } })} 
+                            className="w-full px-3 py-2 rounded-lg bg-zinc-800/80 text-yellow-100 border border-zinc-700/50 focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-semibold text-yellow-200 mb-2">Text Color</label>
+                          <div className="flex gap-2">
+                            <input 
+                              type="color" 
+                              value={modalBlock.style.color || '#fde047'} 
+                              onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, color: e.target.value } })} 
+                              className="w-12 h-10 rounded-lg border border-zinc-700/50"
+                            />
+                            <input 
+                              type="text" 
+                              value={modalBlock.style.color || '#fde047'} 
+                              onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, color: e.target.value } })} 
+                              className="flex-1 px-3 py-2 rounded-lg bg-zinc-800/80 text-yellow-100 border border-zinc-700/50 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-yellow-200 mb-2">Font Family</label>
+                        <select 
+                          value={modalBlock.style.fontFamily || ''} 
+                          onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, fontFamily: e.target.value } })} 
+                          className="w-full px-3 py-2 rounded-lg bg-zinc-800/80 text-yellow-100 border border-zinc-700/50 focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                        >
+                          <option value="">Default</option>
+                          <option value="Inter, sans-serif">Inter</option>
+                          <option value="Poppins, sans-serif">Poppins</option>
+                          <option value="Roboto, sans-serif">Roboto</option>
+                          <option value="Open Sans, sans-serif">Open Sans</option>
+                          <option value="Montserrat, sans-serif">Montserrat</option>
+                          <option value="Georgia, serif">Georgia</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-semibold text-yellow-200 mb-2">Background</label>
+                        <input 
+                          type="text" 
+                          value={modalBlock.style.background || ''} 
+                          onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, background: e.target.value } })} 
+                          className="w-full px-3 py-2 rounded-lg bg-zinc-800/80 text-yellow-100 border border-zinc-700/50 focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          placeholder="linear-gradient(...) or #hex"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-yellow-200 mb-2">Animation</label>
+                          <select 
+                            value={modalBlock.animation || 'none'} 
+                            onChange={e => setModalBlock({ ...modalBlock, animation: e.target.value })} 
+                            className="w-full px-3 py-2 rounded-lg bg-zinc-800/80 text-yellow-100 border border-zinc-700/50 focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          >
+                            <option value="none">None</option>
+                            <option value="fade">Fade In</option>
+                            <option value="slide-up">Slide Up</option>
+                            <option value="slide-down">Slide Down</option>
+                            <option value="zoom-in">Zoom In</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-semibold text-yellow-200 mb-2">Hover Effect</label>
+                          <select 
+                            value={modalBlock.hoverEffect || 'none'} 
+                            onChange={e => setModalBlock({ ...modalBlock, hoverEffect: e.target.value })} 
+                            className="w-full px-3 py-2 rounded-lg bg-zinc-800/80 text-yellow-100 border border-zinc-700/50 focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          >
+                            <option value="none">None</option>
+                            <option value="shadow">Shadow</option>
+                            <option value="scale">Scale</option>
+                            <option value="glow">Glow</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Other component types with enhanced styling... */}
+                {modalBlock.type === 'image' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-yellow-200 mb-2">Image URL</label>
+                        <input 
+                          type="text" 
+                          value={modalBlock.src || modalBlock.content} 
+                          onChange={e => setModalBlock({ ...modalBlock, src: e.target.value, content: e.target.value })} 
+                          className="w-full px-3 py-2 rounded-lg bg-zinc-800/80 text-yellow-100 border border-zinc-700/50 focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-yellow-200 mb-2">Alt Text</label>
+                        <input 
+                          type="text" 
+                          value={modalBlock.alt || ''} 
+                          onChange={e => setModalBlock({ ...modalBlock, alt: e.target.value })} 
+                          className="w-full px-3 py-2 rounded-lg bg-zinc-800/80 text-yellow-100 border border-zinc-700/50 focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-yellow-200 mb-2">Width</label>
+                          <input 
+                            type="number" 
+                            value={modalBlock.style.width || 320} 
+                            onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, width: Number(e.target.value) } })} 
+                            className="w-full px-3 py-2 rounded-lg bg-zinc-800/80 text-yellow-100 border border-zinc-700/50 focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-yellow-200 mb-2">Height</label>
+                          <input 
+                            type="number" 
+                            value={modalBlock.style.height || 160} 
+                            onChange={e => setModalBlock({ ...modalBlock, style: { ...modalBlock.style, height: Number(e.target.value) } })} 
+                            className="w-full px-3 py-2 rounded-lg bg-zinc-800/80 text-yellow-100 border border-zinc-700/50 focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Continue with other component types... */}
+              </div>
+            )}
+          </div>
+          
+          {/* Modal Footer */}
+          <div className="p-6 border-t border-yellow-400/20 bg-gradient-to-r from-zinc-900 to-zinc-800 flex justify-end gap-3">
+            <button 
+              onClick={closeBlockModal} 
+              className="px-6 py-3 bg-zinc-700/80 hover:bg-zinc-600/80 text-zinc-300 hover:text-white rounded-xl font-semibold transition-all duration-200"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={() => {
                 // Save changes to GrapesJS or local state
                 if (modalBlock && grapesEditor.current) {
                   const comp = grapesEditor.current.getSelected();
@@ -1708,10 +2891,13 @@ export default function WebDesigner() {
                   }
                 }
                 closeBlockModal();
-              }} className="mt-4 px-4 py-2 bg-yellow-400 text-black rounded font-bold">Save</button>
-              <button onClick={closeBlockModal} className="mt-2 px-4 py-2 bg-zinc-700 text-yellow-200 rounded font-bold">Cancel</button>
-            </div>
-          )}
+              }} 
+              className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-300 hover:from-yellow-300 hover:to-yellow-200 text-black rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <span className="fa fa-save mr-2" />
+              Save Changes
+            </button>
+          </div>
         </div>
       </Dialog>
     </>
