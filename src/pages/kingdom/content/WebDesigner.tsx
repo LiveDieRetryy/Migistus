@@ -78,6 +78,17 @@ export default function WebDesigner() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalBlock, setModalBlock] = useState<any>(null);
 
+  // --- UI State for our enhanced components ---
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [blockPanelVisible, setBlockPanelVisible] = useState(true);
+  const [selectedComponent, setSelectedComponent] = useState<any>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+
+  // Toggle functions for our enhanced UI
+  const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
+  const toggleBlockPanel = () => setBlockPanelVisible(!blockPanelVisible);
+  const togglePreview = () => setPreviewMode(!previewMode);
+
   const openBlockModal = (block: any) => {
     setModalBlock(block);
     setModalOpen(true);
@@ -242,6 +253,37 @@ export default function WebDesigner() {
       registerEditableTags(editor);
       makeAllTextAndContainersEditable(editor);
       
+      // Add component selection handler for edit modal
+      editor.on('component:selected', (component: any) => {
+        setSelectedComponent(component);
+      });
+      
+      editor.on('component:deselected', () => {
+        setSelectedComponent(null);
+      });
+      
+      // Double-click to open edit modal
+      editor.on('component:double-click', (component: any) => {
+        setSelectedComponent(component);
+        setEditModalOpen(true);
+      });
+      
+      // Configure GrapesJS panels to render in our custom sidebar locations
+      const layerManager = editor.LayerManager;
+      const styleManager = editor.StyleManager;
+      
+      // Render layers panel in sidebar
+      const layersContainer = document.getElementById('gjs-layers');
+      if (layersContainer && layerManager) {
+        layersContainer.appendChild(layerManager.render());
+      }
+      
+      // Render style manager in sidebar
+      const stylesContainer = document.getElementById('gjs-styles');
+      if (stylesContainer && styleManager) {
+        stylesContainer.appendChild(styleManager.render());
+      }
+      
       // Load initial content
       if (selectedPage) {
         loadPageContent(selectedPage);
@@ -264,37 +306,55 @@ export default function WebDesigner() {
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
       </Head>
 
-      <div className="w-full h-full flex bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900">
-        {/* Sidebar */}
-        <DesignerSidebar
+      <div className="w-full h-full flex flex-col bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900">
+        {/* Top Toolbar */}
+        <TopToolbar 
+          editor={grapesEditor.current}
+          isPreviewMode={previewMode}
+          onTogglePreview={togglePreview}
+          onToggleSidebar={toggleSidebar}
+          sidebarVisible={sidebarVisible}
+          onToggleBlockPanel={toggleBlockPanel}
+          blockPanelVisible={blockPanelVisible}
           selectedPage={selectedPage}
-          setSelectedPage={setSelectedPage}
+          onPageChange={setSelectedPage}
           pages={pages}
-          previewMode={previewMode}
-          setPreviewMode={setPreviewMode}
-          handleGrapesSave={handleGrapesSave}
+          onSave={handleGrapesSave}
         />
 
-        {/* Block Panel */}
-        <BlockPanel />
-
-        {/* Main Editor Area */}
-        <div className="flex-1 flex flex-col bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 relative overflow-hidden">
-          {/* Top Toolbar */}
-          <TopToolbar />
+        {/* Main Content Area */}
+        <div className="flex-1 flex">
+          {/* Block Panel */}
+          {blockPanelVisible && (
+            <BlockPanel 
+              editor={grapesEditor.current}
+              isVisible={blockPanelVisible}
+              onToggle={toggleBlockPanel}
+            />
+          )}
 
           {/* Main Canvas */}
-          <DesignerCanvas grapesRef={grapesRef} />
+          <div className="flex-1 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 relative overflow-hidden">
+            <DesignerCanvas grapesRef={grapesRef} />
+          </div>
+
+          {/* Sidebar */}
+          {sidebarVisible && (
+            <DesignerSidebar
+              editor={grapesEditor.current}
+              isVisible={sidebarVisible}
+              onToggle={toggleSidebar}
+            />
+          )}
         </div>
       </div>
 
       {/* Edit Modal */}
       <EditModal
-        modalOpen={modalOpen}
-        modalBlock={modalBlock}
-        setModalBlock={setModalBlock}
-        closeBlockModal={closeBlockModal}
-        grapesEditor={grapesEditor}
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        editor={grapesEditor.current}
+        selectedComponent={selectedComponent}
       />
     </>
   );
