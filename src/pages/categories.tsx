@@ -23,10 +23,10 @@ const DEPARTMENTS = [
 
 const departmentImages: Record<string, string> = {
   "Electronics": "/images/electronics.png",
-  "Computers": "/images/computers.png",
+  "Computers": "/images/Computer.png",
   "Smart Home": "/images/smarthome.png",
   "Home, Garden & Tools": "/images/home.png",
-  "Pet Supplies": "/images/pet.png",
+  "Pet Supplies": "/images/pets.png",
   "Food & Grocery": "/images/food&grocery.png",
   "Beauty & Health": "/images/beauty.png",
   "Toys, Kids & Baby": "/images/toys.png",

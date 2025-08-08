@@ -84,12 +84,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       console.log(`Starting login process for: ${email}`);
       
-      // Check if this is an existing user first
+      // First try API authentication with the database
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const authenticatedUser = data.user;
+          
+          console.log('API authentication successful:', authenticatedUser);
+          
+          const sessionId = generateSessionId();
+          const sessionData = {
+            user: {...authenticatedUser, sessionId: sessionId},
+            createdAt: new Date().toISOString(),
+            sessionId: sessionId
+          };
+
+          localStorage.setItem('userSession', JSON.stringify(sessionData));
+          localStorage.setItem('currentUserId', authenticatedUser.id.toString());
+          
+          setUser(authenticatedUser);
+          console.log('User logged in successfully via API');
+          
+          // Initialize activity tracking
+          const { activityTracker } = await import('@/utils/activityTracker');
+          activityTracker.initialize(authenticatedUser.id, sessionId);
+          
+          // Initialize sync service and trigger immediate sync
+          if ((window as any).MigistusUserSync) {
+            (window as any).MigistusUserSync.initialize();
+            setTimeout(() => {
+              (window as any).MigistusUserSync.triggerManualSync();
+            }, 1000);
+          }
+          
+          return true;
+        }
+      } catch (apiError) {
+        console.log('API login failed, trying localStorage fallback:', apiError);
+      }
+      
+      // Fallback: Check if this is an existing user in localStorage
       const existingUser = findExistingUser(email);
       
       if (existingUser) {
         // Existing user login
-        console.log('Found existing user, logging them in:', existingUser);
+        console.log('Found existing user in localStorage, logging them in:', existingUser);
         
         const sessionId = generateSessionId();
         const sessionData = {

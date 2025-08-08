@@ -273,7 +273,39 @@
       "metadata": {
         "page": "suppliers"
       }
+    },
+    {
+      "id": "1750972043834-1rhp3hztv",
+      "type": "view",
+      "timestamp": 1750972043834,
+      "metadata": {
+        "page": "suppliers"
+      }
+    },
+    {
+      "id": "1750972043835-jfozs2bmw",
+      "type": "view",
+      "timestamp": 1750972043835,
+      "metadata": {
+        "page": "suppliers"
+      }
+    },
+    {
+      "id": "1750972070681-a2lqfosd0",
+      "type": "view",
+      "timestamp": 1750972070681,
+      "metadata": {
+        "page": "suppliers"
+      }
+    },
+    {
+      "id": "1750972070695-s4mdm2t97",
+      "type": "view",
+      "timestamp": 1750972070695,
+      "metadata": {
+        "page": "suppliers"
+      }
     }
   ],
-  "lastUpdated": 1750876867636
+  "lastUpdated": 1750972070695
 }

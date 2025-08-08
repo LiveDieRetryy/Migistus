@@ -1,0 +1,266 @@
+[
+  {
+    "id": 1,
+    "name": "Oture G2000 Stereo Gaming Headset with Noise Cancelling Mic & LED Light - Orange",
+    "image": "/images/uploads/image-1754683221504-485082060.avif",
+    "images": [
+      "/images/uploads/image-1754683221504-485082060.avif",
+      "/images/uploads/image-1754683224889-851355336.avif",
+      "/images/uploads/image-1754683228384-312494387.avif",
+      "/images/uploads/image-1754683230563-27801700.avif",
+      "/images/uploads/image-1754683235203-886538227.avif"
+    ],
+    "description": "Premium gaming headset with surround sound and crystal-clear communication\n\nSpecifications at a glance\nConnection\n3.5 mm Jack\nWorks with\nMac, Laptop Computers, iPads, Desktop Computers, Tablet Computers, Video Game Consoles, Smart Phones\nHeadphone style\nOver-Ear\nWireless\nNone\nHeadset type\nHeadphones\nBrand\nPVUEL",
+    "fullDescription": "Experience immersive gaming like never before with the Gilded Vanguard Headset. Featuring advanced 7.1 surround sound technology, noise-canceling microphone, and premium comfort padding for extended gaming sessions. Built with durable materials and backed by our community-driven quality assurance.",
+    "goal": 100,
+    "link": "https://example.com/headset",
+    "timeframe": "30 days",
+    "category": "electronics",
+    "price": 149.99,
+    "originalPrice": 149.99,
+    "votes": 73,
+    "featured": true,
+    "pledges": 42,
+    "pledgeGoal": 100,
+    "pricingTiers": [
+      {
+        "quantity": 10,
+        "price": 139.99,
+        "discount": 7,
+        "label": "Early Bird"
+      },
+      {
+        "quantity": 25,
+        "price": 129.99,
+        "discount": 13,
+        "label": "Community Choice"
+      },
+      {
+        "quantity": 50,
+        "price": 119.99,
+        "discount": 20,
+        "label": "Bulk Discount"
+      }
+    ],
+    "slug": "gilded-vanguard-headset",
+    "stage": "community-drops",
+    "stageEnteredAt": "2024-01-15T10:00:00.000Z",
+    "promotedAt": "2024-01-08T15:30:00.000Z",
+    "features": [
+      "Multiplatform Compatibility",
+      "Flexible Boom Mic",
+      "Immersive 3D Sound",
+      "Durable Construction"
+    ],
+    "specifications": {},
+    "supplier": {
+      "name": "AudioTech Innovations",
+      "rating": 4.8,
+      "verified": true,
+      "location": "California, USA"
+    }
+  },
+  {
+    "id": 2,
+    "name": "Warehouse-15 LED Headlamp",
+    "image": "/images/uploads/image-1754683239493-282296738.avif",
+    "images": [
+      "/images/uploads/image-1754683239493-282296738.avif",
+      "/images/uploads/image-1754683242162-151417440.avif"
+    ],
+    "description": "Professional-grade LED headlamp for outdoor activities and work",
+    "fullDescription": "Illuminate your path with the Warehouse-15 LED Headlamp. Features adjustable brightness levels, long battery life, and weather-resistant construction perfect for camping, hiking, or professional use.",
+    "goal": 75,
+    "link": "https://example.com/headlamp",
+    "timeframe": "45 days",
+    "category": "electronics",
+    "price": 89.99,
+    "originalPrice": 89.99,
+    "votes": 45,
+    "featured": false,
+    "pledges": 28,
+    "pledgeGoal": 75,
+    "pricingTiers": [
+      {
+        "quantity": 15,
+        "price": 79.99,
+        "discount": 11,
+        "label": "Early Bird"
+      }
+    ],
+    "slug": "warehouse-15-led-headlamp",
+    "stage": "live-drops",
+    "stageEnteredAt": "2024-01-20T14:00:00.000Z",
+    "promotedAt": "2024-01-18T09:15:00.000Z",
+    "features": [
+      "Adjustable Brightness",
+      "Weather Resistant",
+      "Long Battery Life",
+      "Comfortable Fit"
+    ],
+    "specifications": {
+      "brightness": "1000 lumens",
+      "battery": "Rechargeable Li-ion",
+      "runtime": "Up to 10 hours",
+      "weight": "120g"
+    },
+    "supplier": {
+      "name": "OutdoorGear Pro",
+      "rating": 4.6,
+      "verified": true,
+      "location": "Colorado, USA"
+    }
+  },
+  {
+    "id": 3,
+    "name": "Wireless Mouse Pro",
+    "image": "/images/uploads/image-1754683244118-728479485.avif",
+    "images": [
+      "/images/uploads/image-1754683244118-728479485.avif",
+      "/images/uploads/image-1754683246746-513336673.avif"
+    ],
+    "description": "High-precision wireless gaming mouse with RGB lighting",
+    "fullDescription": "Enhance your gaming performance with the Wireless Mouse Pro. Features high-DPI sensor, customizable RGB lighting, and ergonomic design for competitive gaming.",
+    "goal": 50,
+    "link": "https://example.com/mouse",
+    "timeframe": "30 days",
+    "category": "electronics",
+    "price": 79.99,
+    "originalPrice": 79.99,
+    "votes": 38,
+    "featured": false,
+    "pledges": 15,
+    "pledgeGoal": 50,
+    "pricingTiers": [
+      {
+        "quantity": 20,
+        "price": 69.99,
+        "discount": 13,
+        "label": "Gaming Pack"
+      }
+    ],
+    "slug": "wireless-mouse-pro",
+    "stage": "voting",
+    "stageEnteredAt": "2024-01-25T11:00:00.000Z",
+    "promotedAt": null,
+    "features": [
+      "High-DPI Sensor",
+      "RGB Lighting",
+      "Wireless Connectivity",
+      "Ergonomic Design"
+    ],
+    "specifications": {
+      "dpi": "Up to 12,000 DPI",
+      "connectivity": "2.4GHz Wireless",
+      "battery": "Rechargeable",
+      "weight": "95g"
+    },
+    "supplier": {
+      "name": "GamerTech Solutions",
+      "rating": 4.7,
+      "verified": true,
+      "location": "Texas, USA"
+    }
+  },
+  {
+    "id": 4,
+    "name": "Smart Home Security Camera",
+    "image": "/images/uploads/image-1754685696855-516327488.avif",
+    "images": [
+      "/images/uploads/image-1754685696855-516327488.avif",
+      "/images/uploads/image-1754685700035-569566318.avif"
+    ],
+    "description": "AI-powered security camera with night vision and mobile alerts",
+    "fullDescription": "Protect your home with this advanced security camera featuring AI motion detection, crystal-clear night vision, and instant mobile notifications. Easy setup and cloud storage included.",
+    "goal": 60,
+    "link": "https://example.com/security-camera",
+    "timeframe": "35 days",
+    "category": "electronics",
+    "price": 199.99,
+    "originalPrice": 199.99,
+    "votes": 29,
+    "featured": false,
+    "pledges": 12,
+    "pledgeGoal": 60,
+    "pricingTiers": [
+      {
+        "quantity": 25,
+        "price": 179.99,
+        "discount": 10,
+        "label": "Security Bundle"
+      }
+    ],
+    "slug": "smart-home-security-camera",
+    "stage": "voting",
+    "stageEnteredAt": "2024-01-28T16:00:00.000Z",
+    "promotedAt": null,
+    "features": [
+      "AI Motion Detection",
+      "Night Vision",
+      "Mobile Alerts",
+      "Cloud Storage"
+    ],
+    "specifications": {
+      "resolution": "1080p HD",
+      "connectivity": "Wi-Fi",
+      "storage": "Cloud + Local",
+      "power": "Battery/USB"
+    },
+    "supplier": {
+      "name": "SecureTech Pro",
+      "rating": 4.9,
+      "verified": true,
+      "location": "California, USA"
+    }
+  },
+  {
+    "id": 5,
+    "name": "Bluetooth Portable Speaker",
+    "image": "/images/uploads/image-1754685741704-152781516.avif",
+    "images": [
+      "/images/uploads/image-1754685741704-152781516.avif"
+    ],
+    "description": "Waterproof portable speaker with 360° sound and 20-hour battery",
+    "fullDescription": "Take your music anywhere with this rugged, waterproof Bluetooth speaker. Features 360-degree sound technology, 20-hour battery life, and voice assistant integration.",
+    "goal": 40,
+    "link": "https://example.com/bluetooth-speaker",
+    "timeframe": "25 days",
+    "category": "electronics",
+    "price": 129.99,
+    "originalPrice": 129.99,
+    "votes": 51,
+    "featured": false,
+    "pledges": 8,
+    "pledgeGoal": 40,
+    "pricingTiers": [
+      {
+        "quantity": 30,
+        "price": 109.99,
+        "discount": 15,
+        "label": "Music Lover"
+      }
+    ],
+    "slug": "bluetooth-portable-speaker",
+    "stage": "voting",
+    "stageEnteredAt": "2024-01-30T12:00:00.000Z",
+    "promotedAt": null,
+    "features": [
+      "360° Sound",
+      "Waterproof Design",
+      "20-Hour Battery",
+      "Voice Assistant"
+    ],
+    "specifications": {
+      "connectivity": "Bluetooth 5.0",
+      "battery": "20 hours",
+      "waterproof": "IPX7",
+      "weight": "680g"
+    },
+    "supplier": {
+      "name": "AudioWave Systems",
+      "rating": 4.5,
+      "verified": true,
+      "location": "New York, USA"
+    }
+  }
+]

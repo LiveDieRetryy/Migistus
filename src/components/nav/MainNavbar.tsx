@@ -269,7 +269,7 @@ export default function MainNavbar() {
       } else {
         setLoginForm(prev => ({ 
           ...prev, 
-          error: isRegistering ? 'Registration failed. Please try again.' : 'No account found with this email. Please register first or check your email.',
+          error: isRegistering ? 'Registration failed. Please try again.' : 'No account found with this email or username. Please register first or check your credentials.',
           loading: false 
         }));
       }
@@ -717,14 +717,14 @@ export default function MainNavbar() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Email or Username</label>
                 <input
-                  type="email"
+                  type="text"
                   value={loginForm.email}
                   onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))
                   }
                   className="w-full px-4 py-3 bg-zinc-800 border border-zinc-600 rounded-lg text-white focus:border-yellow-400 focus:outline-none"
-                  placeholder="your.email@example.com"
+                  placeholder="your.email@example.com or username"
                   required
                 />
               </div>
@@ -778,7 +778,7 @@ export default function MainNavbar() {
             </div>
 
             <div className="mt-4 text-center text-xs text-gray-400">
-              <p>This is a demo - {loginForm.isRegistering ? 'choose any email and username' : 'use your registered email'}</p>
+              <p>This is a demo - {loginForm.isRegistering ? 'choose any email and username' : 'use your registered email or username'}</p>
             </div>
           </div>
         </div>

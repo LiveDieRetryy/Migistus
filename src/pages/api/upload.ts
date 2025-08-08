@@ -2,6 +2,17 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import multer from 'multer';
 import path from 'path';
 import { promises as fs } from 'fs';
+import crypto from 'crypto';
+import ImageRegistry from '@/utils/imageRegistry';
+
+// Create unique filename with hash to prevent conflicts
+const generateUniqueFilename = (originalName: string): string => {
+  const timestamp = Date.now();
+  const hash = crypto.randomBytes(8).toString('hex');
+  const ext = path.extname(originalName);
+  const baseName = path.basename(originalName, ext).replace(/[^a-zA-Z0-9-_]/g, '-');
+  return `${baseName}-${timestamp}-${hash}${ext}`;
+};
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
@@ -15,11 +26,9 @@ const storage = multer.diskStorage({
     }
   },
   filename: (req, file, cb) => {
-    // Generate unique filename with timestamp
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    const name = file.fieldname + '-' + uniqueSuffix + ext;
-    cb(null, name);
+    // Generate unique filename with timestamp and hash
+    const uniqueFilename = generateUniqueFilename(file.originalname);
+    cb(null, uniqueFilename);
   }
 });
 
@@ -73,15 +82,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Return the relative path to the uploaded file
     const filePath = `/images/uploads/${file.filename}`;
     
+    // Register image in the registry system
+    const imageRegistry = ImageRegistry.getInstance();
+    const imageId = imageRegistry.registerImage(
+      file.filename,
+      file.originalname,
+      filePath,
+      file.size,
+      req.body?.productId || 'upload-temp'
+    );
+    
+    // Log successful upload for debugging
+    console.log(`✅ Image uploaded successfully: ${filePath} (ID: ${imageId})`);
+    
     res.status(200).json({
       success: true,
-      filePath,
+      url: filePath,  // Use 'url' instead of 'filePath' for consistency
+      filePath,       // Keep for backward compatibility
       originalName: file.originalname,
-      size: file.size
+      size: file.size,
+      filename: file.filename, // Add filename for tracking
+      imageId         // Add imageId for tracking
     });
 
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('❌ Upload error:', error);
     
     if (error instanceof Error) {
       if (error.message === 'Only image files are allowed') {

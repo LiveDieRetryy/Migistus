@@ -247,7 +247,7 @@ export default function VotingPage() {
       
       <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white">
         {/* Hero Section */}
-        <div className="relative overflow-hidden pt-8 pb-16">
+        <div className="relative overflow-hidden pt-8 pb-24">
           <div className="absolute inset-0 bg-gradient-to-br from-yellow-900/10 via-transparent to-purple-900/10" />
           
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -309,60 +309,13 @@ export default function VotingPage() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
 
-            {/* Top Products Leaderboard */}
-            {showStats && topProducts.length > 0 && (
-              <div className="mb-12">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-yellow-400 flex items-center">
-                    <Trophy className="w-6 h-6 mr-2" />
-                    Top Voted Products
-                  </h2>
-                  <button
-                    onClick={() => setShowStats(!showStats)}
-                    className="text-zinc-400 hover:text-white transition-colors"
-                  >
-                    <ChevronUp className="w-5 h-5" />
-                  </button>
-                </div>
-                
-                <div className="grid md:grid-cols-3 gap-6">
-                  {topProducts.map((product, index) => (
-                    <div key={product.id} className="bg-zinc-800/30 border border-zinc-700 rounded-xl p-6 relative">
-                      {/* Rank Badge */}
-                      <div className={`absolute -top-3 -left-3 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                        index === 0 ? 'bg-yellow-500 text-black' :
-                        index === 1 ? 'bg-zinc-400 text-black' :
-                        'bg-amber-600 text-white'
-                      }`}>
-                        {index + 1}
-                      </div>
-                      
-                      <div className="flex items-center space-x-4">
-                        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-zinc-700">
-                          <Image
-                            src={product.image || "/images/placeholder.png"}
-                            alt={product.name}
-                            fill
-                            className="object-cover"
-                            sizes="64px"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-white truncate">{product.name}</h3>
-                          <div className="text-yellow-400 font-bold">{getWeightedVoteCount(product.id)} points</div>
-                          <div className="text-sm text-zinc-400">{getVoteCount(product.id)} votes</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Search and Filter Controls */}
-            <div className="bg-zinc-800/30 border border-zinc-700 rounded-2xl p-6 mb-8">
-              <div className="grid md:grid-cols-3 gap-4">
+        {/* Search and Filter Controls */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-zinc-800/30 border border-zinc-700 rounded-2xl p-6 mb-8">
+            <div className="grid md:grid-cols-3 gap-4">
                 {/* Search */}
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 w-5 h-5" />
@@ -400,7 +353,8 @@ export default function VotingPage() {
               </div>
             </div>
           </div>
-        </div>        {/* Products Grid */}
+
+        {/* Products Grid */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
           {error && (
             <div className="bg-red-900/20 border border-red-500 rounded-xl p-4 mb-8">
@@ -526,9 +480,11 @@ export default function VotingPage() {
                 </div>
                 </Link>
               ))}
-            </div>          )}
+            </div>
+          )}
         </div>
-          {/* Voting Tiers Modal */}
+
+        {/* Voting Tiers Modal */}
         {showVotingModal && (
           <div 
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"

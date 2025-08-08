@@ -1,22 +1,24 @@
 [
   {
     "id": 1,
-    "name": "Gilded Vanguard Headset",
-    "image": "https://placehold.co/400x400.png?text=Headset",
+    "name": "Oture G2000 Stereo Gaming Headset with Noise Cancelling Mic & LED Light - Orange",
+    "image": "blob:http://localhost:3000/870a98d7-8ba2-4bc2-b05f-fe21ef3ef02d",
     "images": [
-      "https://placehold.co/400x400.png?text=Headset+Main",
-      "https://placehold.co/400x400.png?text=Headset+Side",
-      "https://placehold.co/400x400.png?text=Headset+Back",
-      "https://placehold.co/400x400.png?text=Headset+Box"
+      "blob:http://localhost:3000/870a98d7-8ba2-4bc2-b05f-fe21ef3ef02d",
+      "blob:http://localhost:3000/73f464b7-df9d-440e-8684-f94bea2ac771",
+      "blob:http://localhost:3000/5af955ce-fb1c-4901-8e1c-595ace7785de",
+      "blob:http://localhost:3000/e1ded920-e3f4-4385-b7a9-e53d2f91bd56",
+      "blob:http://localhost:3000/d5cd6288-c6ad-423d-a821-8933d310e9e4",
+      "blob:http://localhost:3000/2ae48031-2103-41be-b459-78de9358cef5"
     ],
-    "description": "Premium gaming headset with surround sound and crystal-clear communication",
+    "description": "Premium gaming headset with surround sound and crystal-clear communication\n\nSpecifications at a glance\nConnection\n3.5 mm Jack\nWorks with\nMac, Laptop Computers, iPads, Desktop Computers, Tablet Computers, Video Game Consoles, Smart Phones\nHeadphone style\nOver-Ear\nWireless\nNone\nHeadset type\nHeadphones\nBrand\nPVUEL",
     "fullDescription": "Experience immersive gaming like never before with the Gilded Vanguard Headset. Featuring advanced 7.1 surround sound technology, noise-canceling microphone, and premium comfort padding for extended gaming sessions. Built with durable materials and backed by our community-driven quality assurance.",
     "goal": 100,
     "link": "https://example.com/headset",
     "timeframe": "30 days",
-    "category": "Electronics",
+    "category": "electronics",
     "price": 149.99,
-    "originalPrice": 199.99,
+    "originalPrice": 149.99,
     "votes": 73,
     "featured": true,
     "pledges": 42,
@@ -46,219 +48,264 @@
     "stageEnteredAt": "2024-01-15T10:00:00.000Z",
     "promotedAt": "2024-01-08T15:30:00.000Z",
     "features": [
-      "7.1 Surround Sound Technology",
-      "Noise-Canceling Microphone",
-      "Premium Memory Foam Padding",
-      "Adjustable Headband",
-      "RGB Lighting with Customization",
-      "Multi-Platform Compatibility",
-      "Detachable Cable Design",
-      "24-Month Warranty"
+      "Multiplatform Compatibility",
+      "Flexible Boom Mic",
+      "Immersive 3D Sound",
+      "Durable Construction"
     ],
-    "specifications": {
-      "Frequency Response": "20Hz - 20kHz",
-      "Impedance": "32 Ohms",
-      "Driver Size": "50mm",
-      "Microphone Type": "Unidirectional",
-      "Cable Length": "1.8m",
-      "Weight": "350g",
-      "Connectivity": "USB, 3.5mm Jack",
-      "Compatibility": "PC, PS5, Xbox, Nintendo Switch"
-    },
+    "specifications": {},
     "supplier": {
       "name": "AudioTech Innovations",
       "rating": 4.8,
       "verified": true,
       "location": "California, USA"
     },
-    "tags": [
-      "gaming",
-      "audio",
-      "headset",
-      "surround-sound",
-      "rgb"
-    ],
-    "compatibility": [
-      "Windows 10/11",
-      "macOS",
-      "PlayStation 5",
-      "Xbox Series X/S",
-      "Nintendo Switch"
-    ],
-    "warranty": "24-month manufacturer warranty with free replacement",
-    "shipping": {
-      "free": true,
-      "estimatedDays": 5,
-      "regions": [
-        "North America",
-        "Europe",
-        "Asia-Pacific"
-      ]
-    },
-    "socialMetrics": {
-      "likes": 234,
-      "shares": 67,
-      "comments": 89
-    },
-    "video": "https://example.com/headset-demo.mp4",
-    "gallery": [
-      "https://placehold.co/300x300.png?text=Gallery+1",
-      "https://placehold.co/300x300.png?text=Gallery+2",
-      "https://placehold.co/300x300.png?text=Gallery+3",
-      "https://placehold.co/300x300.png?text=Gallery+4"
-    ]
+    "createdAt": "2025-08-08T23:21:47.159Z",
+    "videos": [],
+    "pledgeTarget": 100,
+    "currentPledges": 42,
+    "minimumOrderQuantity": 58,
+    "maxDiscountPercent": 7,
+    "nextPriceDropTier": 120.99,
+    "nextPriceDropAmount": 500,
+    "status": "staff-pick"
   },
   {
     "id": 2,
-    "name": "Wireless Mouse Pro",
-    "image": "https://placehold.co/400x400.png?text=Mouse",
-    "description": "High-precision wireless gaming mouse",
+    "name": "LED Headlamp",
+    "image": "blob:http://localhost:3000/cf28dd11-10cc-4d45-b737-dd7c7b4ec295",
+    "images": [
+      "blob:http://localhost:3000/cf28dd11-10cc-4d45-b737-dd7c7b4ec295",
+      "blob:http://localhost:3000/9094c7f0-ac9d-49fa-83e9-a6aee51d1620"
+    ],
+    "description": "Professional-grade LED headlamp for outdoor activities and work",
+    "fullDescription": "Illuminate your path with the Warehouse-15 LED Headlamp. Features adjustable brightness levels, long battery life, and weather-resistant construction perfect for camping, hiking, or professional use.",
     "goal": 75,
-    "link": "https://example.com/mouse",
+    "link": "https://example.com/headlamp",
     "timeframe": "45 days",
-    "category": "Electronics",
-    "votes": 42,
+    "category": "electronics",
+    "price": 89.99,
+    "originalPrice": 89.99,
+    "votes": 45,
     "featured": false,
-    "pledges": 0,
-    "pricingTiers": [],
-    "slug": "wireless-mouse-pro",
-    "stage": "voting",
-    "stageEnteredAt": "2024-01-20T08:00:00.000Z"
+    "pledges": 28,
+    "pledgeGoal": 75,
+    "pricingTiers": [
+      {
+        "quantity": 15,
+        "price": 79.99,
+        "discount": 11,
+        "label": "Early Bird"
+      }
+    ],
+    "slug": "warehouse-15-led-headlamp",
+    "stage": "live-drops",
+    "stageEnteredAt": "2024-01-20T14:00:00.000Z",
+    "promotedAt": "2024-01-18T09:15:00.000Z",
+    "features": [
+      "Adjustable Brightness",
+      "Weather Resistant",
+      "Long Battery Life",
+      "Comfortable Fit"
+    ],
+    "specifications": {
+      "brightness": "1000 lumens",
+      "battery": "Rechargeable Li-ion",
+      "runtime": "Up to 10 hours",
+      "weight": "120g"
+    },
+    "supplier": {
+      "name": "OutdoorGear Pro",
+      "rating": 4.6,
+      "verified": true,
+      "location": "Colorado, USA"
+    },
+    "createdAt": "2025-08-08T22:57:51.750Z",
+    "videos": [],
+    "pledgeTarget": 100,
+    "currentPledges": 42,
+    "minimumOrderQuantity": 58,
+    "maxDiscountPercent": 7,
+    "nextPriceDropTier": 120.99,
+    "nextPriceDropAmount": 500,
+    "status": "staff-pick"
   },
   {
     "id": 3,
-    "name": "Mechanical Keyboard",
-    "image": "https://placehold.co/400x400.png?text=Keyboard",
-    "description": "RGB backlit mechanical keyboard",
-    "goal": 120,
-    "link": "https://example.com/keyboard",
-    "timeframe": "60 days",
-    "category": "Electronics",
-    "votes": 89,
-    "featured": true,
-    "pledges": 0,
-    "pricingTiers": [],
-    "slug": "mechanical-keyboard",
-    "stage": "coming-soon",
-    "stageEnteredAt": "2024-01-18T12:00:00.000Z",
-    "promotedAt": "2024-01-17T14:20:00.000Z"
-  },
-  {
-    "name": "Big booty Jooty",
+    "name": "Wireless Mouse Pro",
+    "image": "blob:http://localhost:3000/dcb0d707-4575-4efe-a005-998f64776581",
     "images": [
-      "blob:http://localhost:3000/c8d4770f-4ab7-4b5b-b902-cf22b4560118"
+      "blob:http://localhost:3000/dcb0d707-4575-4efe-a005-998f64776581",
+      "blob:http://localhost:3000/5f7e998b-1601-4ed4-986d-ef5678bf5e65",
+      "blob:http://localhost:3000/7da451d0-3c75-4dda-b086-c70b57e09833",
+      "blob:http://localhost:3000/d4e7d1e7-0186-4a9f-98ca-9012b0ae3831"
     ],
-    "description": "Ai Genrated photo",
-    "fullDescription": "This ai generated photo is sexy",
-    "category": "Beauty & Health",
-    "price": 400,
-    "originalPrice": 450,
-    "votes": 25,
-    "stage": "coming-soon",
-    "features": [
-      "White girl",
-      "White hair",
-      "Black Bikini"
-    ],
-    "specifications": {},
-    "supplier": {
-      "name": "Migistus",
-      "rating": 4.8,
-      "verified": true,
-      "location": "Global"
-    },
-    "pledges": 18,
-    "pledgeGoal": 100,
-    "pricingTiers": [],
-    "reviews": [],
-    "video": "",
-    "gallery": [],
-    "tags": [],
-    "compatibility": [],
-    "warranty": "1 Year Limited Warranty",
-    "shipping": {
-      "free": true,
-      "estimatedDays": 7,
-      "regions": [
-        "US",
-        "Canada",
-        "EU"
-      ]
-    },
-    "socialMetrics": {
-      "likes": 0,
-      "shares": 0,
-      "comments": 0
-    },
-    "status": "pending-review",
-    "submittedBy": "supplier",
-    "supplierId": "1750392546366",
-    "id": 4,
-    "slug": "big-booty-jooty",
-    "goal": 100,
+    "description": "High-precision wireless gaming mouse with RGB lighting",
+    "fullDescription": "Enhance your gaming performance with the Wireless Mouse Pro. Features high-DPI sensor, customizable RGB lighting, and ergonomic design for competitive gaming.",
+    "goal": 50,
+    "link": "https://example.com/mouse",
     "timeframe": "30 days",
-    "link": "https://migistus.com/products/big-booty-jooty",
+    "category": "electronics",
+    "price": 79.99,
+    "originalPrice": 79.99,
+    "votes": 38,
     "featured": false,
-    "updatedAt": "2025-06-20T19:04:50.114Z"
-  },
-  {
-    "name": "test",
-    "images": [
-      "blob:http://localhost:3000/b88a516a-063c-4645-8792-1a6921b9119b"
+    "pledges": 15,
+    "pledgeGoal": 50,
+    "pricingTiers": [
+      {
+        "quantity": 20,
+        "price": 69.99,
+        "discount": 13,
+        "label": "Gaming Pack"
+      }
     ],
-    "description": "test",
-    "fullDescription": "test",
-    "category": "Electronics",
-    "price": 49.99,
-    "originalPrice": 59.99,
-    "votes": 12,
-    "stage": "coming-soon",
+    "slug": "wireless-mouse-pro",
+    "stage": "voting",
+    "stageEnteredAt": "2024-01-25T11:00:00.000Z",
+    "promotedAt": null,
     "features": [
-      "test",
-      "test",
-      "test",
-      "test"
+      "High-DPI Sensor",
+      "RGB Lighting",
+      "Wireless Connectivity",
+      "Ergonomic Design"
     ],
     "specifications": {
-      "test": "test"
+      "dpi": "Up to 12,000 DPI",
+      "connectivity": "2.4GHz Wireless",
+      "battery": "Rechargeable",
+      "weight": "95g"
     },
     "supplier": {
-      "name": "Migistus",
-      "rating": 4.8,
+      "name": "GamerTech Solutions",
+      "rating": 4.7,
       "verified": true,
-      "location": "Global"
+      "location": "Texas, USA"
     },
-    "pledges": 8,
-    "pledgeGoal": 100,
-    "pricingTiers": [],
-    "reviews": [],
-    "video": "",
-    "gallery": [],
-    "tags": [],
-    "compatibility": [],
-    "warranty": "1 Year Limited Warranty",
-    "shipping": {
-      "free": true,
-      "estimatedDays": 7,
-      "regions": [
-        "US",
-        "Canada",
-        "EU"
-      ]
+    "createdAt": "2025-08-08T22:56:42.843Z",
+    "videos": [],
+    "pledgeTarget": 100,
+    "currentPledges": 42,
+    "minimumOrderQuantity": 58,
+    "maxDiscountPercent": 7,
+    "nextPriceDropTier": 120.99,
+    "nextPriceDropAmount": 500,
+    "status": "coming-soon"
+  },
+  {
+    "id": 4,
+    "name": "Smart Home Security Camera",
+    "image": "blob:http://localhost:3000/0d08be0d-e6fa-4c75-a874-a273c1c06e8c",
+    "images": [
+      "blob:http://localhost:3000/0d08be0d-e6fa-4c75-a874-a273c1c06e8c"
+    ],
+    "description": "AI-powered security camera with night vision and mobile alerts",
+    "fullDescription": "Protect your home with this advanced security camera featuring AI motion detection, crystal-clear night vision, and instant mobile notifications. Easy setup and cloud storage included.",
+    "goal": 60,
+    "link": "https://example.com/security-camera",
+    "timeframe": "35 days",
+    "category": "electronics",
+    "price": 199.99,
+    "originalPrice": 199.99,
+    "votes": 29,
+    "featured": false,
+    "pledges": 12,
+    "pledgeGoal": 60,
+    "pricingTiers": [
+      {
+        "quantity": 25,
+        "price": 179.99,
+        "discount": 10,
+        "label": "Security Bundle"
+      }
+    ],
+    "slug": "smart-home-security-camera",
+    "stage": "voting",
+    "stageEnteredAt": "2024-01-28T16:00:00.000Z",
+    "promotedAt": null,
+    "features": [
+      "AI Motion Detection",
+      "Night Vision",
+      "Mobile Alerts",
+      "Cloud Storage"
+    ],
+    "specifications": {
+      "resolution": "1080p HD",
+      "connectivity": "Wi-Fi",
+      "storage": "Cloud + Local",
+      "power": "Battery/USB"
     },
-    "socialMetrics": {
-      "likes": 0,
-      "shares": 0,
-      "comments": 0
+    "supplier": {
+      "name": "SecureTech Pro",
+      "rating": 4.9,
+      "verified": true,
+      "location": "California, USA"
     },
-    "status": "pending-review",
-    "submittedBy": "supplier",
-    "supplierId": "1750392546366",
+    "createdAt": "2025-08-08T22:59:27.641Z",
+    "videos": [],
+    "pledgeTarget": 100,
+    "currentPledges": 42,
+    "minimumOrderQuantity": 58,
+    "maxDiscountPercent": 7,
+    "nextPriceDropTier": 120.99,
+    "nextPriceDropAmount": 500
+  },
+  {
     "id": 5,
-    "slug": "test",
-    "goal": 100,
-    "timeframe": "30 days",
-    "link": "https://migistus.com/products/test",
-    "featured": false
+    "name": "Bluetooth Portable Speaker",
+    "image": "blob:http://localhost:3000/a2919866-bc1c-4f1a-a194-1d102866230e",
+    "images": [
+      "blob:http://localhost:3000/a2919866-bc1c-4f1a-a194-1d102866230e"
+    ],
+    "description": "Waterproof portable speaker with 360° sound and 20-hour battery",
+    "fullDescription": "Take your music anywhere with this rugged, waterproof Bluetooth speaker. Features 360-degree sound technology, 20-hour battery life, and voice assistant integration.",
+    "goal": 40,
+    "link": "https://example.com/bluetooth-speaker",
+    "timeframe": "25 days",
+    "category": "electronics",
+    "price": 129.99,
+    "originalPrice": 129.99,
+    "votes": 51,
+    "featured": false,
+    "pledges": 8,
+    "pledgeGoal": 40,
+    "pricingTiers": [
+      {
+        "quantity": 30,
+        "price": 109.99,
+        "discount": 15,
+        "label": "Music Lover"
+      }
+    ],
+    "slug": "bluetooth-portable-speaker",
+    "stage": "voting",
+    "stageEnteredAt": "2024-01-30T12:00:00.000Z",
+    "promotedAt": null,
+    "features": [
+      "360° Sound",
+      "Waterproof Design",
+      "20-Hour Battery",
+      "Voice Assistant"
+    ],
+    "specifications": {
+      "connectivity": "Bluetooth 5.0",
+      "battery": "20 hours",
+      "waterproof": "IPX7",
+      "weight": "680g"
+    },
+    "supplier": {
+      "name": "AudioWave Systems",
+      "rating": 4.5,
+      "verified": true,
+      "location": "New York, USA"
+    },
+    "createdAt": "2025-08-08T22:59:37.187Z",
+    "videos": [],
+    "pledgeTarget": 100,
+    "currentPledges": 42,
+    "minimumOrderQuantity": 58,
+    "maxDiscountPercent": 7,
+    "nextPriceDropTier": 120.99,
+    "nextPriceDropAmount": 500
   }
 ]

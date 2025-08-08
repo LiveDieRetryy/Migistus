@@ -95,10 +95,19 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const dataToSave = Array.isArray(productsData) ? products : { ...productsData, products };
     fs.writeFileSync(productsPath, JSON.stringify(dataToSave, null, 2));
 
+    // Send cache invalidation signal to all clients
+    if (typeof window !== 'undefined') {
+      // This is client-side - trigger a cache invalidation event
+      window.dispatchEvent(new CustomEvent('productUpdated', { 
+        detail: { productId: id, action: 'update' } 
+      }));
+    }
+
     res.status(200).json({ 
       success: true, 
       message: 'Product updated successfully',
-      product: updatedProduct 
+      product: updatedProduct,
+      cacheInvalidate: true // Signal to frontend to invalidate cache
     });
 
   } catch (error) {

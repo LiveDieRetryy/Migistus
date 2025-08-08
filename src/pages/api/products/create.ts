@@ -73,7 +73,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     products.push(newProduct);
     writeProductsData(products);
     
-    res.status(201).json({ success: true, product: newProduct });
+    res.status(201).json({ 
+      success: true, 
+      product: newProduct,
+      cacheInvalidate: true // Signal to frontend to invalidate cache
+    });
   } catch (error) {
     console.error('Error creating product:', error);
     res.status(500).json({ error: 'Failed to create product' });

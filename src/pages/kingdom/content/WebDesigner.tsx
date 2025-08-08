@@ -15,6 +15,7 @@ import {
   TopToolbar,
   DesignerCanvas,
   EditModal,
+  PropertiesPanel,
   makeAllTextAndContainersEditable,
   registerEditableTags,
   convertTextBlocksToRichText,
@@ -22,7 +23,7 @@ import {
   normalizeElements,
   enhancedElementProperties,
   enhancedTools
-} from './components';
+} from '../../../components/kingdom/content';
 
 // Import Craft.js components
 import { Text, Button, Container, Image, Card, Input, Select, Chart, Slider } from '../../../components/craft/CraftComponents';
@@ -83,20 +84,246 @@ export default function WebDesigner() {
   const [blockPanelVisible, setBlockPanelVisible] = useState(true);
   const [selectedComponent, setSelectedComponent] = useState<any>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [propertiesPanelVisible, setPropertiesPanelVisible] = useState(false);
 
   // Toggle functions for our enhanced UI
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
   const toggleBlockPanel = () => setBlockPanelVisible(!blockPanelVisible);
   const togglePreview = () => setPreviewMode(!previewMode);
+  const closePropertiesPanel = () => setPropertiesPanelVisible(false);
 
-  const openBlockModal = (block: any) => {
-    setModalBlock(block);
-    setModalOpen(true);
+  // Test function to manually show properties panel
+  const testPropertiesPanel = () => {
+    console.log('🧪 Testing properties panel with REAL GrapesJS component');
+    
+    if (grapesEditor.current) {
+      // Try to get the current selection first
+      const currentSelected = grapesEditor.current.getSelected();
+      
+      if (currentSelected && currentSelected.get && typeof currentSelected.get === 'function') {
+        console.log('✅ Found REAL GrapesJS selection for test');
+        
+        const realData = {
+          tagName: currentSelected.get('tagName') || 'div',
+          content: currentSelected.get('content') || 'Real content from GrapesJS',
+          attributes: currentSelected.get('attributes') || {},
+          styles: currentSelected.get('style') || {},
+          classes: currentSelected.get('classes') || []
+        };
+        
+        console.log('📊 Real GrapesJS data for test:', realData);
+        
+        setSelectedComponent({ 
+          ...currentSelected,
+          _forceUpdate: Date.now(),
+          _eventSource: 'test-button-real',
+          _realComponent: true,
+          _testExtraction: realData
+        });
+        setPropertiesPanelVisible(true);
+        
+        alert(`✅ Test: Using REAL GrapesJS ${realData.tagName} element!`);
+      } else {
+        console.log('⚠️ No real GrapesJS selection found, using mock data for test');
+        
+        setSelectedComponent({ 
+          get: (key: string) => {
+            switch(key) {
+              case 'tagName': return 'div';
+              case 'content': return 'Test content for properties panel (MOCK DATA)';
+              case 'attributes': return { class: 'test-class', id: 'test-element' };
+              case 'style': return { color: 'red', fontSize: '16px', padding: '10px' };
+              case 'classes': return ['test-class', 'properties-test'];
+              default: return '';
+            }
+          },
+          tagName: 'div',
+          set: (key: string, value: any) => console.log('Mock set:', key, value),
+          getEl: () => null,
+          _forceUpdate: Date.now(),
+          _eventSource: 'test-button-mock',
+          _realComponent: true, // Mark as real even though it's mock for testing
+          _testExtraction: {
+            tagName: 'div',
+            content: 'Test content for properties panel (MOCK DATA)',
+            attributes: { class: 'test-class', id: 'test-element' },
+            styles: { color: 'red', fontSize: '16px', padding: '10px' },
+            classes: ['test-class', 'properties-test']
+          }
+        });
+        setPropertiesPanelVisible(true);
+        
+        alert('⚠️ Test: Using MOCK data (no real selection found)');
+      }
+    } else {
+      console.log('❌ GrapesJS editor not available for test');
+      alert('GrapesJS editor not ready. Please wait for the editor to load.');
+    }
   };
 
-  const closeBlockModal = () => {
-    setModalOpen(false);
-    setModalBlock(null);
+  // Function to get current GrapesJS selection
+  const getCurrentSelection = () => {
+    console.log('🔍 Getting current GrapesJS selection...');
+    if (grapesEditor.current) {
+      // Try multiple methods to get selection
+      const selected = grapesEditor.current.getSelected();
+      const selectedAll = grapesEditor.current.getSelectedAll ? grapesEditor.current.getSelectedAll() : [];
+      const components = grapesEditor.current.getComponents ? grapesEditor.current.getComponents() : null;
+      
+      console.log('📋 Selection attempts:', {
+        selected: !!selected,
+        selectedAll: selectedAll.length,
+        componentsCount: components ? components.length : 0
+      });
+      
+      if (selected) {
+        const componentId = selected.getId ? selected.getId() : selected.cid;
+        console.log('📊 Selected component details:', {
+          id: componentId,
+          tagName: selected.get?.('tagName'),
+          content: selected.get?.('content')?.substring(0, 50) + '...',
+          hasAttributes: !!selected.get?.('attributes'),
+          hasStyles: !!selected.get?.('style')
+        });
+        
+        const uniqueComponent = {
+          ...selected,
+          _forceUpdate: Date.now(),
+          _eventSource: 'manual-get-selection',
+          _id: componentId,
+          _realComponent: true
+        };
+        setSelectedComponent(uniqueComponent);
+        setPropertiesPanelVisible(true);
+        
+        console.log('✅ Component selected and properties panel opened');
+        alert(`✅ Found REAL selection: ${selected.get?.('tagName')} element!`);
+      } else {
+        console.log('❌ No selection found - showing test component');
+        alert('❌ No selection found - try clicking on an element first');
+      }
+    } else {
+      console.log('❌ GrapesJS editor not available');
+      alert('GrapesJS editor not ready. Please wait for the editor to load.');
+    }
+  };
+
+  // Enhanced debugging function for selection issues
+  const debugCanvasSelection = () => {
+    console.log('🐛 Starting comprehensive canvas selection debug...');
+    
+    if (!grapesEditor.current) {
+      console.log('❌ GrapesJS editor not available');
+      alert('GrapesJS editor not ready');
+      return;
+    }
+    
+    const editor = grapesEditor.current;
+    
+    // 1. Check current selection from GrapesJS
+    const selected = editor.getSelected();
+    console.log('1️⃣ GrapesJS getSelected():', selected);
+    
+    // 2. Check all selected components
+    const allSelected = editor.getSelectedAll ? editor.getSelectedAll() : [];
+    console.log('2️⃣ GrapesJS getSelectedAll():', allSelected, 'count:', allSelected.length);
+    
+    // 3. Check canvas state
+    const canvas = editor.Canvas;
+    const canvasEl = canvas.getElement();
+    const canvasBody = canvas.getBody();
+    console.log('3️⃣ Canvas elements:', { canvasEl: !!canvasEl, canvasBody: !!canvasBody });
+    
+    // 4. Check for visually selected elements
+    if (canvasBody) {
+      const visuallySelected = canvasBody.querySelector('.gjs-selected');
+      const allVisuallySelected = canvasBody.querySelectorAll('.gjs-selected');
+      console.log('4️⃣ Visually selected elements:', {
+        single: !!visuallySelected,
+        count: allVisuallySelected.length
+      });
+    }
+    
+    // 5. Check all components in the editor
+    const components = editor.getComponents();
+    console.log('5️⃣ All components:', components ? components.length : 0);
+    
+    // 6. Check React state
+    console.log('6️⃣ React state:', {
+      selectedComponent: !!selectedComponent,
+      propertiesPanelVisible,
+      componentEventSource: selectedComponent?._eventSource,
+      componentId: selectedComponent?._id
+    });
+    
+    // 7. Create a summary alert
+    const summary = `
+🐛 DEBUG SUMMARY:
+- GrapesJS selected: ${selected ? '✅ ' + selected.get?.('tagName') : '❌ None'}
+- All selected count: ${allSelected.length}
+- Visual selection: ${canvasBody?.querySelector('.gjs-selected') ? '✅ Found' : '❌ None'}
+- Total components: ${components ? components.length : 0}
+- Properties panel: ${propertiesPanelVisible ? '✅ Open' : '❌ Closed'}
+- React selected: ${selectedComponent ? '✅ ' + (selectedComponent.get?.('tagName') || selectedComponent.tagName) : '❌ None'}
+    `;
+    
+    console.log(summary);
+    alert(summary);
+  };
+
+  // Function to force select the first text element for testing
+  const forceSelectFirstText = () => {
+    console.log('🎯 Force selecting first text element...');
+    
+    if (!grapesEditor.current) {
+      alert('GrapesJS editor not ready');
+      return;
+    }
+    
+    const editor = grapesEditor.current;
+    const components = editor.getComponents();
+    
+    if (!components || components.length === 0) {
+      alert('No components found in the editor');
+      return;
+    }
+    
+    // Find first text-like component
+    let textComponent: any = null;
+    const textTags = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'div'];
+    
+    components.forEach((comp: any) => {
+      if (!textComponent && comp.get) {
+        const tagName = comp.get('tagName');
+        if (textTags.includes(tagName)) {
+          textComponent = comp;
+        }
+      }
+    });
+    
+    if (textComponent) {
+      console.log('✅ Found text component to select:', textComponent.get('tagName'));
+      
+      // Clear any existing selection first
+      editor.select(null);
+      
+      // Select the component
+      editor.select(textComponent);
+      
+      // Verify selection worked
+      setTimeout(() => {
+        const nowSelected = editor.getSelected();
+        if (nowSelected === textComponent) {
+          console.log('✅ Selection successful');
+          alert(`✅ Successfully selected ${textComponent.get('tagName')} element!`);
+        } else {
+          console.log('❌ Selection failed');
+          alert('❌ Selection failed - check console for details');
+        }
+      }, 100);
+    } else {
+      alert('No text components found to select');
+    }
   };
 
   // Load page content into GrapesJS
@@ -253,13 +480,29 @@ export default function WebDesigner() {
       registerEditableTags(editor);
       makeAllTextAndContainersEditable(editor);
       
-      // Add component selection handler for edit modal
+      // Add component selection handler for edit modal and properties panel
       editor.on('component:selected', (component: any) => {
-        setSelectedComponent(component);
+        console.log('🎯 Component selected:', component?.get?.('tagName'));
+        if (component) {
+          // Create a unique component reference to force React re-render
+          const uniqueComponent = {
+            ...component,
+            _forceUpdate: Date.now(),
+            _eventSource: 'grapesjs-selection',
+            _id: component.getId ? component.getId() : component.cid || Math.random(),
+            _realComponent: true
+          };
+          
+          setSelectedComponent(uniqueComponent);
+          setPropertiesPanelVisible(true);
+          console.log('📤 Auto-opening properties panel for selected component');
+        }
       });
       
       editor.on('component:deselected', () => {
+        console.log('🎯 Component deselected');
         setSelectedComponent(null);
+        setPropertiesPanelVisible(false);
       });
       
       // Double-click to open edit modal
@@ -298,6 +541,15 @@ export default function WebDesigner() {
     };
   }, []);
 
+  // Debug logging for state changes
+  useEffect(() => {
+    console.log('🔄 State changed:', {
+      propertiesPanelVisible,
+      hasSelectedComponent: !!selectedComponent,
+      componentType: selectedComponent?.get?.('tagName') || selectedComponent?.tagName || 'none'
+    });
+  }, [propertiesPanelVisible, selectedComponent]);
+
   return (
     <>
       <Head>
@@ -320,6 +572,10 @@ export default function WebDesigner() {
           onPageChange={setSelectedPage}
           pages={pages}
           onSave={handleGrapesSave}
+          onTestPropertiesPanel={testPropertiesPanel}
+          onGetCurrentSelection={getCurrentSelection}
+          onDebugSelection={debugCanvasSelection}
+          onForceSelectFirst={forceSelectFirstText}
         />
 
         {/* Main Content Area */}
@@ -336,7 +592,24 @@ export default function WebDesigner() {
           {/* Main Canvas */}
           <div className="flex-1 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 relative overflow-hidden">
             <DesignerCanvas grapesRef={grapesRef} />
+            
+            {/* Debug Status Overlay */}
+            <div className="absolute top-4 right-4 bg-black bg-opacity-75 text-white p-2 rounded text-xs">
+              <div>Props Panel: {propertiesPanelVisible ? '✅ Visible' : '❌ Hidden'}</div>
+              <div>Selected: {selectedComponent ? '✅ Yes' : '❌ No'}</div>
+              <div>Component: {selectedComponent?.get?.('tagName') || selectedComponent?.tagName || 'none'}</div>
+            </div>
           </div>
+
+          {/* Properties Panel */}
+          {propertiesPanelVisible && selectedComponent && (
+            <PropertiesPanel
+              selectedComponent={selectedComponent}
+              editor={grapesEditor.current}
+              isVisible={propertiesPanelVisible}
+              onClose={closePropertiesPanel}
+            />
+          )}
 
           {/* Sidebar */}
           {sidebarVisible && (

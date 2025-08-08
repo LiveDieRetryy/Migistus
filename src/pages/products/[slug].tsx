@@ -167,11 +167,11 @@ export default function ProductPage() {
       }
       
       const data = await response.json();
-      setProduct(data.product);
+      setProduct(data);
       
       // Check if user has voted for this product
       if (isAuthenticated && user) {
-        checkUserVote(data.product.id);
+        checkUserVote(data.id);
       }
       
     } catch (err) {

@@ -48,7 +48,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       setIsDragOver(false);
     }
   };
-  const processFile = async (file: File) => {
+  const processFile = async (file: File, productId?: string) => {
     // Validate file type
     if (!file.type.startsWith('image/')) {
       alert('Please select a valid image file.');
@@ -67,9 +67,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       const previewUrl = URL.createObjectURL(file);
       onChange(previewUrl);
 
-      // Upload to server
+      // Upload to server with productId for tracking
       const formData = new FormData();
       formData.append('image', file);
+      if (productId) {
+        formData.append('productId', productId);
+      }
 
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -87,6 +90,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       
       // Update with the server URL
       onChange(result.url);
+      
+      console.log(`✅ Image uploaded and persisted: ${result.url}`);
       
     } catch (error) {
       console.error('Error uploading file:', error);

@@ -49,6 +49,7 @@ const ProductPage = ({ productId }) => {
   const pledgesIntervalRef = useRef(null);
   const router = useRouter();
   const [currentUserData, setCurrentUserData] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Default pricing tiers
   const defaultPricingTiers = [
@@ -168,10 +169,19 @@ const ProductPage = ({ productId }) => {
     }
   };
 
-  // Fetch product data from backend
-  useEffect(() => {
+  // Extract fetchProduct function to component scope for reuse
+  const fetchProduct = () => {
     if (!productId) return;
-    fetch("/api/products")
+    
+    setIsRefreshing(true);
+    fetch("/api/products", {
+      // Add cache-busting to ensure fresh data
+      cache: 'no-cache',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    })
       .then(res => res.json())
       .then(data => {
         const match = (data.products || data).find(
@@ -200,7 +210,31 @@ const ProductPage = ({ productId }) => {
           rating: 0,
           reviews: 0
         });
+      })
+      .finally(() => {
+        setIsRefreshing(false);
       });
+  };
+
+  // Fetch product data from backend with automatic refresh
+  useEffect(() => {
+    // Initial fetch
+    fetchProduct();
+    
+    // Set up polling every 5 seconds to check for updates (only in development/admin mode)
+    const isAdmin = typeof window !== "undefined" && localStorage.getItem("isAdmin") === "true";
+    let pollInterval;
+    
+    if (isAdmin) {
+      pollInterval = setInterval(fetchProduct, 5000); // Poll every 5 seconds for admins
+    }
+    
+    // Cleanup function
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
   }, [productId]);
 
   // Fetch chat messages from backend (with polling)
@@ -459,8 +493,12 @@ const ProductPage = ({ productId }) => {
     }
   };
 
-  // Defensive fallback for productImages
-  const productImages = product?.image ? [product.image] : ["/api/placeholder/600/600"];
+  // Defensive fallback for productImages - support multiple images
+  const productImages = product?.images && product.images.length > 0 
+    ? product.images 
+    : product?.image 
+      ? [product.image] 
+      : ["/api/placeholder/600/600"];
   const safeActiveImageIndex = Math.min(activeImageIndex, productImages.length - 1);
 
   // Add early return for loading state
@@ -546,6 +584,25 @@ const userCooldown = tierCooldowns[currentUser.tier] || 30;
                 </h1>
               </div>
               <div className="flex items-center space-x-4 mt-2 sm:mt-0">
+                {/* Admin Controls */}
+                {isAdmin && (
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => fetchProduct()}
+                      disabled={isRefreshing}
+                      className="flex items-center space-x-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-800 px-3 py-2 rounded-lg border border-yellow-500 transition-colors text-black font-medium text-xs"
+                      title="Refresh product data"
+                    >
+                      <span className={`${isRefreshing ? 'animate-spin' : ''}`}>🔄</span>
+                      <span className="hidden sm:inline">{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+                    </button>
+                    {isRefreshing && (
+                      <div className="bg-yellow-600/20 px-2 py-1 rounded border border-yellow-500/30">
+                        <span className="text-yellow-300 text-xs">Live Updates Active</span>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="flex items-center space-x-2 bg-gray-800/50 px-3 py-2 rounded-lg border border-gray-700">
                   <Crown className="w-4 h-4 text-yellow-400" />
                   <span className="text-xs sm:text-sm text-yellow-300 font-medium">Guild Member</span>

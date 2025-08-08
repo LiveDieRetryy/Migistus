@@ -1,0 +1,323 @@
+[
+      "image": "/images/uploads/image-1754683221504-485082060.avif",
+    "images": [
+      "/images/uploads/image-1754683221504-485082060.avif",
+      "/images/uploads/image-1754683224889-851355336.avif",
+      "/images/uploads/image-1754683228384-312494387.avif",
+      "/images/uploads/image-1754683230563-27801700.avif",
+      "/images/uploads/image-1754683235203-886538227.avif"
+    ],d": 1,
+    "name": "Oture G2000 Stereo Gaming Headset with Noise Cancelling Mic & LED Light - Orange",
+    "image": "blob:http://localhost:3000/a27ab71d-0ff2-4028-aa43-43ae008cc6f1",
+    "images": [
+      "blob:http://localhost:3000/a27ab71d-0ff2-4028-aa43-43ae008cc6f1",
+      "blob:http://localhost:3000/5ecbd786-7e05-41a0-9bc4-0f487136142d",
+      "blob:http://localhost:3000/b7724efb-5661-4593-8803-16b9ebe29c5c",
+      "blob:http://localhost:3000/33a2f571-1af4-4bbb-a2d3-ec672e8f109d",
+      "blob:http://localhost:3000/611f2226-8beb-45fb-b27d-92372d35241a"
+    ],
+    "description": "Premium gaming headset with surround sound and crystal-clear communication\n\nSpecifications at a glance\nConnection\n3.5 mm Jack\nWorks with\nMac, Laptop Computers, iPads, Desktop Computers, Tablet Computers, Video Game Consoles, Smart Phones\nHeadphone style\nOver-Ear\nWireless\nNone\nHeadset type\nHeadphones\nBrand\nPVUEL",
+    "fullDescription": "Experience immersive gaming like never before with the Gilded Vanguard Headset. Featuring advanced 7.1 surround sound technology, noise-canceling microphone, and premium comfort padding for extended gaming sessions. Built with durable materials and backed by our community-driven quality assurance.",
+    "goal": 100,
+    "link": "https://example.com/headset",
+    "timeframe": "30 days",
+    "category": "electronics",
+    "price": 149.99,
+    "originalPrice": 149.99,
+    "votes": 73,
+    "featured": true,
+    "pledges": 42,
+    "pledgeGoal": 100,
+    "pricingTiers": [
+      {
+        "quantity": 10,
+        "price": 139.99,
+        "discount": 7,
+        "label": "Early Bird"
+      },
+      {
+        "quantity": 25,
+        "price": 129.99,
+        "discount": 13,
+        "label": "Community Choice"
+      },
+      {
+        "quantity": 50,
+        "price": 119.99,
+        "discount": 20,
+        "label": "Bulk Discount"
+      }
+    ],
+    "slug": "gilded-vanguard-headset",
+    "stage": "community-drops",
+    "stageEnteredAt": "2024-01-15T10:00:00.000Z",
+    "promotedAt": "2024-01-08T15:30:00.000Z",
+    "features": [
+      "Multiplatform Compatibility",
+      "Flexible Boom Mic",
+      "Immersive 3D Sound",
+      "Durable Construction"
+    ],
+    "specifications": {},
+    "supplier": {
+      "name": "AudioTech Innovations",
+      "rating": 4.8,
+      "verified": true,
+      "location": "California, USA"
+    },
+    "tags": [
+      "gaming",
+      "audio",
+      "headset",
+      "surround-sound",
+      "rgb"
+    ],
+    "compatibility": [
+      "Windows 10/11",
+      "macOS",
+      "PlayStation 5",
+      "Xbox Series X/S",
+      "Nintendo Switch"
+    ],
+    "warranty": "24-month manufacturer warranty with free replacement",
+    "shipping": {
+      "free": true,
+      "estimatedDays": 5,
+      "regions": [
+        "North America",
+        "Europe",
+        "Asia-Pacific"
+      ]
+    },
+    "socialMetrics": {
+      "likes": 234,
+      "shares": 67,
+      "comments": 89
+    },
+    "video": "https://example.com/headset-demo.mp4",
+    "gallery": [
+      "https://placehold.co/300x300.png?text=Gallery+1",
+      "https://placehold.co/300x300.png?text=Gallery+2",
+      "https://placehold.co/300x300.png?text=Gallery+3",
+      "https://placehold.co/300x300.png?text=Gallery+4"
+    ],
+    "updatedAt": "2025-08-08T20:42:25.790Z",
+    "createdAt": "2025-08-08T22:11:19.574Z",
+    "videos": [],
+    "pledgeTarget": 100,
+    "currentPledges": 42,
+    "minimumOrderQuantity": 58,
+    "maxDiscountPercent": 7,
+    "nextPriceDropTier": 120.99,
+    "nextPriceDropAmount": 500,
+    "status": "staff-pick"
+  },
+  {
+    "id": 2,
+    "name": "TAIPAN PRO M810 PRO Wireless Gaming Mouse",
+    "image": "blob:http://localhost:3000/fb31b20b-c8b6-4b80-a17f-9a6b2e6b7dad",
+    "description": "High-precision wireless gaming mouse",
+    "goal": 75,
+    "link": "https://example.com/mouse",
+    "timeframe": "45 days",
+    "category": "electronics",
+    "votes": 42,
+    "featured": false,
+    "pledges": 42,
+    "pricingTiers": [],
+    "slug": "wireless-mouse-pro",
+    "stage": "voting",
+    "stageEnteredAt": "2024-01-20T08:00:00.000Z",
+    "createdAt": "2025-08-08T22:14:10.400Z",
+    "features": [
+      "3 - Mode Connection",
+      "Paw3311 Sensor",
+      "9 Macro Buttons",
+      "1000 Mah battery",
+      "12000 Max DPI",
+      "DIY RGB Ligting",
+      "Rapid Fire Button"
+    ],
+    "specifications": {},
+    "images": [
+      "blob:http://localhost:3000/fb31b20b-c8b6-4b80-a17f-9a6b2e6b7dad",
+      "blob:http://localhost:3000/bcc831a3-1c75-44f2-8b33-5e02f84f7d5f",
+      "blob:http://localhost:3000/bb0663ec-50e2-4e51-b67e-2795260eb006",
+      "blob:http://localhost:3000/6d8c5fc6-847a-432e-8468-a48af1aaee9b",
+      "blob:http://localhost:3000/39e4c784-9fbc-43c4-9b5c-26b5aaf50a10",
+      "blob:http://localhost:3000/91fc8c69-9033-4631-b044-648d0941b64b"
+    ],
+    "videos": [],
+    "pledgeTarget": 100,
+    "currentPledges": 42,
+    "minimumOrderQuantity": 58,
+    "maxDiscountPercent": 7,
+    "nextPriceDropTier": 120.99,
+    "nextPriceDropAmount": 500,
+    "originalPrice": 34.99,
+    "price": 30,
+    "status": "staff-pick"
+  },
+  {
+    "id": 3,
+    "name": "DHARMA PRO K556 PRO Aluminum Keyboard",
+    "image": "blob:http://localhost:3000/9b233d8c-6f4b-4296-81a3-9aa3ab8127b1",
+    "description": "RGB backlit mechanical keyboard",
+    "goal": 120,
+    "link": "https://example.com/keyboard",
+    "timeframe": "60 days",
+    "category": "electronics",
+    "votes": 89,
+    "featured": true,
+    "pledges": 0,
+    "pricingTiers": [],
+    "slug": "mechanical-keyboard",
+    "stage": "coming-soon",
+    "stageEnteredAt": "2024-01-18T12:00:00.000Z",
+    "promotedAt": "2024-01-17T14:20:00.000Z",
+    "createdAt": "2025-08-08T22:18:50.382Z",
+    "features": [
+      "Connection: USB Type-C, 2.4GHz, Bluetooth 5.0",
+      "Hot swappable with 3 or 5-pin MX switches",
+      "Linear Quiet Red Switch",
+      "Aluminum Board",
+      "Customizable 16.8 Million RGB",
+      "Pro Software Customizable"
+    ],
+    "specifications": {},
+    "images": [
+      "blob:http://localhost:3000/2d0e6909-847f-492c-a748-4a9f3bca3709",
+      "blob:http://localhost:3000/9b233d8c-6f4b-4296-81a3-9aa3ab8127b1",
+      "blob:http://localhost:3000/475518bd-3854-47f0-82e7-21e1b9749861",
+      "blob:http://localhost:3000/46286eab-3982-4f41-a154-0ebf4b4e18f0"
+    ],
+    "videos": [],
+    "pledgeTarget": 100,
+    "currentPledges": 42,
+    "minimumOrderQuantity": 58,
+    "maxDiscountPercent": 7,
+    "nextPriceDropTier": 120.99,
+    "nextPriceDropAmount": 500,
+    "status": "staff-pick",
+    "price": 75,
+    "originalPrice": 79.99
+  },
+  {
+    "name": "Big booty Jooty",
+    "images": [
+      "blob:http://localhost:3000/c8d4770f-4ab7-4b5b-b902-cf22b4560118"
+    ],
+    "description": "Ai Genrated photo",
+    "fullDescription": "This ai generated photo is sexy",
+    "category": "Beauty & Health",
+    "price": 400,
+    "originalPrice": 450,
+    "votes": 25,
+    "stage": "coming-soon",
+    "features": [
+      "White girl",
+      "White hair",
+      "Black Bikini"
+    ],
+    "specifications": {},
+    "supplier": {
+      "name": "Migistus",
+      "rating": 4.8,
+      "verified": true,
+      "location": "Global"
+    },
+    "pledges": 18,
+    "pledgeGoal": 100,
+    "pricingTiers": [],
+    "reviews": [],
+    "video": "",
+    "gallery": [],
+    "tags": [],
+    "compatibility": [],
+    "warranty": "1 Year Limited Warranty",
+    "shipping": {
+      "free": true,
+      "estimatedDays": 7,
+      "regions": [
+        "US",
+        "Canada",
+        "EU"
+      ]
+    },
+    "socialMetrics": {
+      "likes": 0,
+      "shares": 0,
+      "comments": 0
+    },
+    "status": "pending-review",
+    "submittedBy": "supplier",
+    "supplierId": "1750392546366",
+    "id": 4,
+    "slug": "big-booty-jooty",
+    "goal": 100,
+    "timeframe": "30 days",
+    "link": "https://migistus.com/products/big-booty-jooty",
+    "featured": false,
+    "updatedAt": "2025-06-20T19:04:50.114Z"
+  },
+  {
+    "name": "test",
+    "images": [
+      "blob:http://localhost:3000/b88a516a-063c-4645-8792-1a6921b9119b"
+    ],
+    "description": "test",
+    "fullDescription": "test",
+    "category": "Electronics",
+    "price": 49.99,
+    "originalPrice": 59.99,
+    "votes": 12,
+    "stage": "coming-soon",
+    "features": [
+      "test",
+      "test",
+      "test",
+      "test"
+    ],
+    "specifications": {
+      "test": "test"
+    },
+    "supplier": {
+      "name": "Migistus",
+      "rating": 4.8,
+      "verified": true,
+      "location": "Global"
+    },
+    "pledges": 8,
+    "pledgeGoal": 100,
+    "pricingTiers": [],
+    "reviews": [],
+    "video": "",
+    "gallery": [],
+    "tags": [],
+    "compatibility": [],
+    "warranty": "1 Year Limited Warranty",
+    "shipping": {
+      "free": true,
+      "estimatedDays": 7,
+      "regions": [
+        "US",
+        "Canada",
+        "EU"
+      ]
+    },
+    "socialMetrics": {
+      "likes": 0,
+      "shares": 0,
+      "comments": 0
+    },
+    "status": "pending-review",
+    "submittedBy": "supplier",
+    "supplierId": "1750392546366",
+    "id": 5,
+    "slug": "test",
+    "goal": 100,
+    "timeframe": "30 days",
+    "link": "https://migistus.com/products/test",
+    "featured": false
+  }
+]

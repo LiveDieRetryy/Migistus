@@ -60,8 +60,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   const users = readUsers();
   
-  // Allow login by username or email
-  const userIndex = users.findIndex((u: any) => u.email === email || u.username === email);
+  // Debug logging
+  console.log("Login attempt with:", email);
+  console.log("Available users:");
+  users.forEach((u: any, index: number) => {
+    console.log(`  ${index}: email="${u.email}", username="${u.username}"`);
+  });
+  
+  // Allow login by username or email (case-insensitive)
+  const userIndex = users.findIndex((u: any) => 
+    u.email?.toLowerCase() === email.toLowerCase() || 
+    u.username?.toLowerCase() === email.toLowerCase()
+  );
+  
+  console.log("User search result:", userIndex);
+  
   if (userIndex === -1) {
     return res.status(401).json({ error: "Invalid credentials" });
   }
@@ -71,6 +84,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Check if user is banned
   if (user.banned) {
     return res.status(403).json({ error: "Account has been suspended" });
+  }
+  
+  // Handle users without passwords (legacy accounts)
+  if (!user.password) {
+    return res.status(401).json({ 
+      error: "Account needs password setup. Please contact support or reset your password." 
+    });
   }
   
   const valid = await bcrypt.compare(password, user.password);
