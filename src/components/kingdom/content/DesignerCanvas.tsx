@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import Head from "next/head";
 
 interface DesignerCanvasProps {
-  grapesRef: React.RefObject<HTMLDivElement>;
+  grapesRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function DesignerCanvas({ grapesRef }: DesignerCanvasProps) {
