@@ -161,7 +161,7 @@ export default function MainNavbar() {
     // Live Drops placeholder (will be rendered as dropdown)
     { name: "Live Drops", isDropdown: true },
     { name: "Community", href: "/community", icon: <img src="/Icons/Chat.png" alt="Community" width={32} height={32} /> },
-    { name: "Categories", href: "/categories", icon: <img src="/Icons/Categories.png" alt="Categories" width={32} height={32} /> },
+    { name: "Categories", href: "/categories", icon: <img src="/Icons/categories-icon.png" alt="Categories" width={32} height={32} /> },
     { name: "About", href: "/about", icon: <img src="/Icons/about.png" alt="About" width={32} height={32} /> },
   ];
 
