@@ -1,9 +1,52 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import fs from 'fs';
+import path from 'path';
 
 interface FollowData {
   followerId: number;
   followingId: number;
   timestamp: string;
+}
+
+interface User {
+  id: number;
+  username: string;
+  followers: number;
+  following: number;
+  [key: string]: any;
+}
+
+const FOLLOWERS_FILE = path.join(process.cwd(), 'public', 'data', 'followers.json');
+const USERS_FILE = path.join(process.cwd(), 'public', 'data', 'users.json');
+
+function readFollowers(): FollowData[] {
+  try {
+    const data = fs.readFileSync(FOLLOWERS_FILE, 'utf-8');
+    const json = JSON.parse(data);
+    return json.follows || [];
+  } catch {
+    return [];
+  }
+}
+
+function writeFollowers(follows: FollowData[]): void {
+  fs.writeFileSync(FOLLOWERS_FILE, JSON.stringify({ follows }, null, 2));
+}
+
+function updateUserFollowerCounts(userId: number, followers: number, following: number): void {
+  try {
+    const usersData = JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8'));
+    const userIndex = usersData.users.findIndex((u: User) => u.id === userId);
+    
+    if (userIndex !== -1) {
+      usersData.users[userIndex].followers = followers;
+      usersData.users[userIndex].following = following;
+      usersData.users[userIndex].updatedAt = new Date().toISOString();
+      fs.writeFileSync(USERS_FILE, JSON.stringify(usersData, null, 2));
+    }
+  } catch (error) {
+    console.error('Failed to update user follower counts:', error);
+  }
 }
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -16,7 +59,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     try {
-      const followData = JSON.parse(localStorage?.getItem('migistus_follows') || '[]');
+      const followData = readFollowers();
       
       if (type === 'followers') {
         // Get users following this user
@@ -67,7 +110,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     try {
-      const followData = JSON.parse(localStorage?.getItem('migistus_follows') || '[]');
+      const followData = readFollowers();
       const existingFollowIndex = followData.findIndex(
         (follow: FollowData) => follow.followerId === followerId && follow.followingId === followingId
       );
@@ -80,56 +123,61 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
             followingId,
             timestamp: new Date().toISOString()
           });
+          writeFollowers(followData);
           
-          // Track activity for both users
-          if (typeof window !== 'undefined') {
-            const { activityTracker } = require('@/utils/activityTracker');
-            activityTracker.trackActivity({
-              userId: followerId,
-              type: 'social',
-              action: `Started following user ${followingId}`,
-              targetUserId: followingId
-            });
-            
-            activityTracker.trackActivity({
-              userId: followingId,
-              type: 'social',
-              action: `Gained a new follower (${followerId})`,
-              targetUserId: followerId
-            });
-          }
+          // Update follower counts in users.json
+          // For the follower (the person doing the following):
+          const followerUserFollowers = followData.filter(f => f.followingId === followerId).length; // People following them
+          const followerUserFollowing = followData.filter(f => f.followerId === followerId).length; // People they follow
+          updateUserFollowerCounts(followerId, followerUserFollowers, followerUserFollowing);
+          
+          // For the person being followed:
+          const targetUserFollowers = followData.filter(f => f.followingId === followingId).length; // People following them
+          const targetUserFollowing = followData.filter(f => f.followerId === followingId).length; // People they follow
+          updateUserFollowerCounts(followingId, targetUserFollowers, targetUserFollowing);
+          
+          console.log(`✅ User ${followerId} followed user ${followingId} | Target now has ${targetUserFollowers} followers`);
+          return res.status(200).json({ 
+            success: true, 
+            message: 'Successfully followed user',
+            followerCount: targetUserFollowers,
+            followingCount: followerUserFollowing
+          });
+        } else {
+          return res.status(400).json({ error: 'Already following this user' });
         }
       } else if (action === 'unfollow') {
         if (existingFollowIndex !== -1) {
           // Remove follow
           followData.splice(existingFollowIndex, 1);
+          writeFollowers(followData);
           
-          // Track activity
-          if (typeof window !== 'undefined') {
-            const { activityTracker } = require('@/utils/activityTracker');
-            activityTracker.trackActivity({
-              userId: followerId,
-              type: 'social',
-              action: `Unfollowed user ${followingId}`,
-              targetUserId: followingId
-            });
-          }
+          // Update follower counts in users.json
+          // For the follower (the person doing the unfollowing):
+          const followerUserFollowers = followData.filter(f => f.followingId === followerId).length; // People following them
+          const followerUserFollowing = followData.filter(f => f.followerId === followerId).length; // People they follow
+          updateUserFollowerCounts(followerId, followerUserFollowers, followerUserFollowing);
+          
+          // For the person being unfollowed:
+          const targetUserFollowers = followData.filter(f => f.followingId === followingId).length; // People following them
+          const targetUserFollowing = followData.filter(f => f.followerId === followingId).length; // People they follow
+          updateUserFollowerCounts(followingId, targetUserFollowers, targetUserFollowing);
+          
+          console.log(`✅ User ${followerId} unfollowed user ${followingId} | Target now has ${targetUserFollowers} followers`);
+          return res.status(200).json({ 
+            success: true, 
+            message: 'Successfully unfollowed user',
+            followerCount: targetUserFollowers,
+            followingCount: followerUserFollowing
+          });
+        } else {
+          return res.status(400).json({ error: 'Not following this user' });
         }
+      } else {
+        return res.status(400).json({ error: 'Invalid action. Use "follow" or "unfollow"' });
       }
-
-      localStorage?.setItem('migistus_follows', JSON.stringify(followData));
-      
-      // Get updated counts
-      const followersCount = followData.filter((follow: FollowData) => follow.followingId === followingId).length;
-      const followingCount = followData.filter((follow: FollowData) => follow.followerId === followerId).length;
-      
-      return res.status(200).json({
-        success: true,
-        isFollowing: action === 'follow',
-        followersCount,
-        followingCount
-      });
     } catch (error) {
+      console.error('Followers API error:', error);
       return res.status(500).json({ error: 'Failed to update follow status' });
     }
   }

@@ -20,8 +20,23 @@
   to { transform: scale(1); opacity: 1; }
 }
 
+/* Gradient animation for About page */
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 /* Animation utility classes */
 .animate-fade-in { animation: fade-in 0.6s cubic-bezier(0.4,0,0.2,1) both; }
+.animate-fadeIn { animation: fade-in 0.4s cubic-bezier(0.4,0,0.2,1) both; }
 .animate-slide-up { animation: slide-up 0.6s cubic-bezier(0.4,0,0.2,1) both; }
 .animate-slide-down { animation: slide-down 0.6s cubic-bezier(0.4,0,0.2,1) both; }
 .animate-zoom-in { animation: zoom-in 0.6s cubic-bezier(0.4,0,0.2,1) both; }
+.animate-gradient { 
+  background-size: 200% 200%;
+  animation: gradient 8s ease infinite; 
+}

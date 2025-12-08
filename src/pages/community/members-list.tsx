@@ -111,9 +111,14 @@ export default function CommunityMembersListPage() {
       const username = (profile.username || '').toLowerCase();
       const email = (profile.email || '').toLowerCase();
       
+      // IMPORTANT: Never filter out the main admin account (user ID 1)
+      if (profile.id === 1) {
+        return false;
+      }
+      
       // Filter out accounts with test-related names
       const testPatterns = [
-        'test', 'bot', 'demo', 'sample', 'mock', 'fake', 'admin',
+        'test', 'bot', 'demo', 'sample', 'mock', 'fake',
         'placeholder', 'example', 'dummy', 'temp'
       ];
       
@@ -127,16 +132,8 @@ export default function CommunityMembersListPage() {
         return true;
       }
       
-      // Check email patterns
-      if (testPatterns.some(pattern => email.includes(pattern))) {
-        return true;
-      }
-      
-      // Filter out test email domains
-      const testDomains = ['example.com', 'test.com', 'demo.com', 'localhost'];
-      if (testDomains.some(domain => email.includes(domain))) {
-        return true;
-      }
+      // Check email patterns (but exclude legitimate test accounts from filtering)
+      // Don't filter by email domain anymore - users can use any email
       
       // Filter out specific test user IDs (if any known test IDs exist)
       const testUserIds = [1001, 1002, 1003, 1004, 101, 102, 103, 999];
@@ -324,77 +321,114 @@ export default function CommunityMembersListPage() {
       }
     }
 
-    const loadAllProfiles = () => {
+    const loadAllProfiles = async () => {
       try {
         const allProfiles: UserProfile[] = [];
+        const userIds = new Set<number>();
         
-        // Get users from new registry system
+        // 1. FIRST: Fetch users from the API (server-side database)
+        try {
+          console.log('📡 Fetching users from API...');
+          const response = await fetch('/api/users');
+          if (response.ok) {
+            const data = await response.json();
+            console.log(`✅ API returned ${data.users?.length || 0} users`);
+            
+            if (data.users && Array.isArray(data.users)) {
+              data.users.forEach((user: any) => {
+                if (user.id && user.username && !user.banned && !userIds.has(user.id)) {
+                  // Check if profile exists in localStorage for additional data
+                  let localProfile = null;
+                  try {
+                    localProfile = UserStorage?.getUserProfile?.(user.id);
+                  } catch (error) {
+                    const manualKey = `user_${user.id}_profile`;
+                    const manualProfile = localStorage.getItem(manualKey);
+                    localProfile = manualProfile ? JSON.parse(manualProfile) : null;
+                  }
+                  
+                  // Merge API data with local profile data (prefer local customizations)
+                  const profile: UserProfile = {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    bio: localProfile?.bio || user.bio || "",
+                    avatar: localProfile?.avatar || user.avatar || null,
+                    tier: user.tier || "New Member",
+                    guildTokens: user.guildCoins || user.guildTokens || 0,
+                    joinedDate: user.joinDate || user.createdAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+                    stats: {
+                      totalPledges: user.totalPledges || 0,
+                      totalVotes: user.totalVotes || 0,
+                      dropsJoined: user.dropsJoined || 0,
+                      followers: user.followers || 0,
+                      following: user.following || 0
+                    }
+                  };
+                  
+                  allProfiles.push(profile);
+                  userIds.add(user.id);
+                  console.log(`✅ Added API user: ${user.username} (ID: ${user.id})`);
+                }
+              });
+            }
+          } else {
+            console.warn('⚠️ API request failed, will use localStorage only');
+          }
+        } catch (apiError) {
+          console.error('❌ Error fetching from API:', apiError);
+        }
+        
+        // 2. FALLBACK: Get users from localStorage (for any users not in API)
         try {
           const userRegistry = JSON.parse(localStorage.getItem('migistus_user_registry') || '{}');
           
           Object.values(userRegistry).forEach((userData: any) => {
-            let profile;
-            try {
-              profile = UserStorage?.getUserProfile?.(userData.id);
-            } catch (error) {
-              const manualKey = `user_${userData.id}_profile`;
-              const manualProfile = localStorage.getItem(manualKey);
-              profile = manualProfile ? JSON.parse(manualProfile) : null;
-            }
-            
-            if (profile && profile.username) {
-              allProfiles.push({
-                ...profile,
-                stats: profile.stats || { totalPledges: 0, totalVotes: 0, dropsJoined: 0, followers: 0, following: 0 }
-              });
+            if (userData.id && !userIds.has(userData.id)) {
+              let profile;
+              try {
+                profile = UserStorage?.getUserProfile?.(userData.id);
+              } catch (error) {
+                const manualKey = `user_${userData.id}_profile`;
+                const manualProfile = localStorage.getItem(manualKey);
+                profile = manualProfile ? JSON.parse(manualProfile) : null;
+              }
+              
+              if (profile && profile.username) {
+                allProfiles.push({
+                  ...profile,
+                  stats: profile.stats || { totalPledges: 0, totalVotes: 0, dropsJoined: 0, followers: 0, following: 0 }
+                });
+                userIds.add(userData.id);
+                console.log(`✅ Added localStorage user: ${profile.username} (ID: ${userData.id})`);
+              }
             }
           });
         } catch (error) {
           console.error('Error reading user registry:', error);
         }
         
-        // Get users from other storage systems as fallback
+        // 3. Check new user_ system for any remaining users
         const allKeys = Object.keys(localStorage);
-        
-        // Check old userProfile_ system
-        const oldProfileKeys = allKeys.filter(key => key.startsWith('userProfile_'));
-        oldProfileKeys.forEach(key => {
-          try {
-            const profile = JSON.parse(localStorage.getItem(key) || '{}');
-            const userId = parseInt(key.replace('userProfile_', ''));
-            
-            if (allProfiles.some(p => p.id === userId)) return;
-            
-            if (profile.id && profile.username) {
-              allProfiles.push({
-                ...profile,
-                stats: profile.stats || { totalPledges: 0, totalVotes: 0, dropsJoined: 0, followers: 0, following: 0 }
-              });
-            }
-          } catch (error) {
-            console.error('Error parsing old profile:', error);
-          }
-        });
-        
-        // Check new user_ system
         const newProfileKeys = allKeys.filter(key => key.startsWith('user_') && key.endsWith('_profile'));
         newProfileKeys.forEach(key => {
           try {
             const profile = JSON.parse(localStorage.getItem(key) || '{}');
             
-            if (allProfiles.some(p => p.id === profile.id)) return;
-            
-            if (profile.id && profile.username) {
+            if (profile.id && profile.username && !userIds.has(profile.id)) {
               allProfiles.push({
                 ...profile,
                 stats: profile.stats || { totalPledges: 0, totalVotes: 0, dropsJoined: 0, followers: 0, following: 0 }
               });
+              userIds.add(profile.id);
+              console.log(`✅ Added new storage user: ${profile.username} (ID: ${profile.id})`);
             }
           } catch (error) {
             console.error('Error parsing new profile:', error);
           }
         });
         
+        console.log(`📊 Total community members loaded: ${allProfiles.length}`);
         setProfiles(allProfiles);
       } catch (error) {
         console.error('Error loading profiles:', error);
@@ -404,6 +438,61 @@ export default function CommunityMembersListPage() {
     };
 
     loadAllProfiles();
+  }, [mounted]);
+
+  // Listen for real-time follower updates
+  useEffect(() => {
+    if (!mounted) return;
+
+    const handleFollowerUpdate = async (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { action } = customEvent.detail;
+      
+      console.log(`🔄 Members List: Follower update detected (${action}), refreshing counts...`);
+      
+      // Fetch updated user data from API to get accurate follower counts
+      try {
+        // Small delay to ensure API has finished updating the database
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const response = await fetch('/api/users');
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.users && Array.isArray(data.users)) {
+            // Update profiles with fresh data from API
+            setProfiles(prevProfiles => 
+              prevProfiles.map(profile => {
+                const updatedUser = data.users.find((u: any) => u.id === profile.id);
+                if (updatedUser) {
+                  return {
+                    ...profile,
+                    stats: {
+                      totalPledges: updatedUser.totalPledges || 0,
+                      totalVotes: updatedUser.totalVotes || 0,
+                      dropsJoined: updatedUser.dropsJoined || 0,
+                      followers: updatedUser.followers || 0,
+                      following: updatedUser.following || 0
+                    }
+                  };
+                }
+                return profile;
+              })
+            );
+            
+            console.log(`✅ Members List: Refreshed follower counts from API`);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to refresh follower counts on members list:', error);
+      }
+    };
+
+    window.addEventListener('followerUpdate', handleFollowerUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('followerUpdate', handleFollowerUpdate as EventListener);
+    };
   }, [mounted]);
 
   const filteredAndSortedProfiles = profiles
@@ -429,7 +518,7 @@ export default function CommunityMembersListPage() {
   if (!mounted || loading) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="text-yellow-400 text-xl">Loading community members...</div>
+        <div className="text-yellow-400 text-xl">Loading guild mates...</div>
       </div>
     );
   }
@@ -437,8 +526,8 @@ export default function CommunityMembersListPage() {
   return (
     <>
       <Head>
-        <title>Community Members - MIGISTUS</title>
-        <meta name="description" content="Discover and connect with MIGISTUS community members" />
+        <title>Guild Mates - MIGISTUS</title>
+        <meta name="description" content="Discover and connect with MIGISTUS guild mates" />
       </Head>
 
       <MainNavbar />
@@ -448,9 +537,9 @@ export default function CommunityMembersListPage() {
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold mb-4">Community Members</h1>
+              <h1 className="text-4xl font-bold mb-4">Guild Mates</h1>
               <p className="text-gray-400 text-lg">
-                Discover and connect with {profiles.length} amazing MIGISTUS members
+                Discover and connect with {profiles.length} amazing MIGISTUS guild mates
               </p>
             </div>
 
@@ -460,7 +549,7 @@ export default function CommunityMembersListPage() {
                 <div className="flex-1">
                   <input
                     type="text"
-                    placeholder="Search members by username or bio..."
+                    placeholder="Search guild mates by username or bio..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full px-4 py-3 bg-zinc-800 border border-zinc-600 rounded-lg text-white focus:border-yellow-400 focus:outline-none"
@@ -626,9 +715,9 @@ export default function CommunityMembersListPage() {
             ) : (
               <div className="text-center py-16">
                 <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold mb-2">No members found</h3>
+                <h3 className="text-xl font-semibold mb-2">No guild mates found</h3>
                 <p className="text-gray-400">
-                  {searchTerm ? 'Try adjusting your search terms' : 'No community members found'}
+                  {searchTerm ? 'Try adjusting your search terms' : 'No guild mates found'}
                 </p>
               </div>
             )}

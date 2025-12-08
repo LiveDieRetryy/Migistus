@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {  const [form, setForm] = useState({ 
     username: "", 
@@ -19,6 +20,7 @@ export default function RegisterPage() {  const [form, setForm] = useState({
   });  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [showPassword, setShowPassword] = useState(false);
 
   const referralOptions = [
     "Search Engine (Google, Bing, etc.)",
@@ -332,15 +334,24 @@ export default function RegisterPage() {  const [form, setForm] = useState({
 
               <div>
                 <label className="block mb-2 text-sm font-medium">Password *</label>
-                <input
-                  name="password"
-                  type="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                  placeholder="At least 8 characters"
-                  className="w-full px-3 py-2 rounded bg-zinc-800 border border-zinc-700 text-white focus:border-yellow-400 focus:outline-none"
-                />
+                <div className="relative">
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                    placeholder="At least 8 characters"
+                    className="w-full px-3 py-2 pr-10 rounded bg-zinc-800 border border-zinc-700 text-white focus:border-yellow-400 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
                 <p className="text-sm text-gray-400 mt-1">Use a strong password with letters, numbers, and special characters</p>
               </div>
 

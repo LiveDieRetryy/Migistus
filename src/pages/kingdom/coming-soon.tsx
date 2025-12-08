@@ -380,3 +380,7 @@ export default function KingdomComingSoon() {
     </DashboardLayout>
   );
 }
+
+
+// Disable footer for Kingdom pages
+(KingdomComingSoon as any).showFooter = false;

@@ -54,106 +54,40 @@ type ProductFormData = {
 };
 
 export default function ProductPoolEditor() {
-	const [products, setProducts] = useState<Product[]>(
-		[
-			{
-				id: 1,
-				name: "Gilded Vanguard Headset",
-				image: "https://placehold.co/400x400?text=Headset",
-				description: "Premium gaming headset with surround sound",
-				goal: 100,
-				link: "https://example.com/headset",
-				timeframe: "30 days",
-				category: "Electronics",
-				votes: 73,
-				featured: true,
-			},
-			{
-				id: 2,
-				name: "Wireless Mouse Pro",
-				image: "https://placehold.co/400x400?text=Mouse",
-				description: "High-precision wireless gaming mouse",
-				goal: 75,
-				link: "https://example.com/mouse",
-				timeframe: "45 days",
-				category: "Electronics",
-				votes: 42,
-				featured: false,
-			},
-			{
-				id: 3,
-				name: "Mechanical Keyboard",
-				image: "https://placehold.co/400x400?text=Keyboard",
-				description: "RGB backlit mechanical keyboard",
-				goal: 120,
-				link: "https://example.com/keyboard",
-				timeframe: "60 days",
-				category: "Electronics",
-				votes: 89,
-				featured: true,
-			},
-			{
-				id: 4,
-				name: "Gaming Monitor",
-				image: "https://placehold.co/400x400?text=Monitor",
-				description: "4K 144Hz gaming monitor",
-				goal: 200,
-				link: "https://example.com/monitor",
-				timeframe: "90 days",
-				category: "Electronics",
-				votes: 156,
-				featured: false,
-			},
-			{
-				id: 5,
-				name: "Webcam HD",
-				image: "https://placehold.co/400x400?text=Webcam",
-				description: "1080p HD webcam for streaming",
-				goal: 60,
-				link: "https://example.com/webcam",
-				timeframe: "30 days",
-				category: "Electronics",
-				votes: 31,
-				featured: false,
-			},
-			{
-				id: 6,
-				name: "Smart Speaker",
-				image: "https://placehold.co/400x400?text=Speaker",
-				description: "Voice-controlled smart speaker",
-				goal: 85,
-				link: "https://example.com/speaker",
-				timeframe: "45 days",
-				category: "Smart Home",
-				votes: 67,
-				featured: true,
-			},
-			{
-				id: 7,
-				name: "Fitness Tracker",
-				image: "https://placehold.co/400x400?text=Tracker",
-				description: "Advanced fitness and health tracker",
-				goal: 95,
-				link: "https://example.com/tracker",
-				timeframe: "60 days",
-				category: "Electronics",
-				votes: 123,
-				featured: false,
-			},
-			{
-				id: 8,
-				name: "Bluetooth Earbuds",
-				image: "https://placehold.co/400x400?text=Earbuds",
-				description: "Wireless noise-canceling earbuds",
-				goal: 110,
-				link: "https://example.com/earbuds",
-				timeframe: "30 days",
-				category: "Electronics",
-				votes: 201,
-				featured: true,
-			},
-		]
-	);
+	const [products, setProducts] = useState<Product[]>([]);
+	const [isLoading, setIsLoading] = useState(true);
+
+	// Fetch real products from backend
+	useEffect(() => {
+		const fetchProducts = async () => {
+			try {
+				const response = await fetch('/api/voting/polls');
+				if (response.ok) {
+					const data = await response.json();
+					// Transform voting polls to product format
+					const transformedProducts = data.polls?.map((poll: any) => ({
+						id: poll.id,
+						name: poll.productName || poll.title,
+						image: poll.productImage || poll.image || '/images/placeholder.png',
+						description: poll.productDescription || poll.description,
+						goal: poll.threshold || 100,
+						link: poll.productLink || '#',
+						timeframe: poll.duration || '30 days',
+						category: poll.category || 'Other',
+						votes: poll.votes || 0,
+						featured: poll.featured || false,
+					})) || [];
+					setProducts(transformedProducts);
+				}
+			} catch (error) {
+				console.error('Failed to fetch products:', error);
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		fetchProducts();
+	}, []);
 
 	const [selectedCategory, setSelectedCategory] = useState("All");
 	const [searchTerm, setSearchTerm] = useState("");

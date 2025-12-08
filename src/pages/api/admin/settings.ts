@@ -8,33 +8,55 @@ function ensureSettingsFile() {
   try {
     if (!fs.existsSync(SETTINGS_PATH)) {
       const defaultSettings = {
-        siteName: 'MIGISTUS',
-        siteDescription: 'Community-driven group buying platform',
-        maintenanceMode: false,
-        registrationEnabled: true,
-        emailVerificationRequired: false,
-        autoApproveVotes: true,
-        autoApproveProducts: false,
-        defaultUserTier: 'New Initiate',
-        maxVotesPerDay: {
-          'New Initiate': 3,
-          'New Member': 5,
-          'Subscriber': 10,
-          'Premium': 20,
-          'Admin': 100
+        site: {
+          siteName: 'MIGISTUS',
+          siteDescription: 'The ultimate group buying platform',
+          siteTagline: 'Power in Numbers',
+          maintenanceMode: false,
+          registrationEnabled: true,
+          contactEmail: 'contact@migistus.com',
+          supportEmail: 'support@migistus.com',
+          logo: '/images/logo.png',
+          favicon: '/favicon.ico'
         },
-        voteMultipliers: {
-          'New Initiate': 1,
-          'New Member': 1.2,
-          'Subscriber': 1.5,
-          'Premium': 2,
-          'Admin': 5
+        voting: {
+          enabled: true,
+          maxVotesPerUser: 10,
+          votingCooldown: 24,
+          tierMultipliers: {
+            initiate: 1,
+            guild: 2,
+            migistus: 3
+          },
+          autoApproveThreshold: 100
         },
-        featuredProductsLimit: 6,
-        staffPicksLimit: 12,
-        liveDropsEnabled: true,
-        chatEnabled: true,
-        moderationEnabled: true
+        drops: {
+          enabled: true,
+          maxActiveDrops: 5,
+          defaultDuration: 24,
+          pledgeTimeLimit: 2,
+          minParticipants: 10,
+          maxParticipants: 1000
+        },
+        features: {
+          chatEnabled: true,
+          marketingEnabled: true,
+          analyticsEnabled: true,
+          notificationsEnabled: true,
+          emailNotifications: true,
+          pushNotifications: false,
+          wishlistEnabled: true,
+          reviewsEnabled: true
+        },
+        security: {
+          maxLoginAttempts: 5,
+          sessionTimeout: 60,
+          passwordMinLength: 8,
+          twoFactorRequired: false,
+          ipWhitelist: [],
+          rateLimitPerMinute: 60
+        },
+        updatedAt: new Date().toISOString()
       };
       
       // Ensure directory exists
@@ -66,13 +88,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const newSettings = req.body;
       
-      // Validate required fields
-      if (!newSettings.siteName || !newSettings.defaultUserTier) {
+      // Validate required fields (check new structure)
+      if (!newSettings.site?.siteName) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      // Read existing settings and merge
-      let existingSettings = {};
+      // Read existing settings and merge deeply
+      let existingSettings: any = {};
       try {
         const fileContent = fs.readFileSync(SETTINGS_PATH, 'utf-8');
         existingSettings = JSON.parse(fileContent);
@@ -80,41 +102,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // If file doesn't exist or can't be read, start with empty object
       }
 
+      // Deep merge settings by category
       const mergedSettings = {
-        ...existingSettings,
-        ...newSettings,
+        site: { ...existingSettings.site, ...newSettings.site },
+        voting: { 
+          ...existingSettings.voting, 
+          ...newSettings.voting,
+          tierMultipliers: {
+            ...existingSettings.voting?.tierMultipliers,
+            ...newSettings.voting?.tierMultipliers
+          }
+        },
+        drops: { ...existingSettings.drops, ...newSettings.drops },
+        features: { ...existingSettings.features, ...newSettings.features },
+        security: { ...existingSettings.security, ...newSettings.security },
         updatedAt: new Date().toISOString()
       };
 
       fs.writeFileSync(SETTINGS_PATH, JSON.stringify(mergedSettings, null, 2));
       
-      // Also update voting config if voting settings changed
-      if (newSettings.maxVotesPerDay || newSettings.voteMultipliers) {
-        const votingConfigPath = path.resolve('public/data/voting.json');
-        try {
-          let votingConfig = {};
-          if (fs.existsSync(votingConfigPath)) {
-            const votingContent = fs.readFileSync(votingConfigPath, 'utf-8');
-            votingConfig = JSON.parse(votingContent);
-          }          votingConfig = {
-            ...votingConfig,
-            tierLimits: newSettings.maxVotesPerDay || (votingConfig as any).tierLimits,
-            tierMultipliers: newSettings.voteMultipliers || (votingConfig as any).tierMultipliers
-          };
-
-          fs.writeFileSync(votingConfigPath, JSON.stringify(votingConfig, null, 2));
-        } catch (error) {
-          console.error('Error updating voting config:', error);
-        }
-      }
-
-      res.status(200).json({ success: true, settings: mergedSettings });
+      res.status(200).json({ 
+        success: true, 
+        message: 'Settings saved successfully',
+        settings: mergedSettings 
+      });
     } catch (error) {
       console.error('Error saving settings:', error);
       res.status(500).json({ error: 'Failed to save settings' });
     }
   } else {
-    res.setHeader('Allow', ['GET', 'POST', 'PUT']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+    res.status(405).json({ error: 'Method not allowed' });
   }
 }

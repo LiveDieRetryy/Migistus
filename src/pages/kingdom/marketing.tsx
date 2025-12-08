@@ -282,3 +282,7 @@ export default function KingdomMarketing() {
     </DashboardLayout>
   );
 }
+
+
+// Disable footer for Kingdom pages
+(KingdomMarketing as any).showFooter = false;

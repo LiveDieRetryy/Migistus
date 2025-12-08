@@ -15,6 +15,8 @@ export default function WalletPage() {
   const [sendAmount, setSendAmount] = useState<number>(0);
   const [sendStatus, setSendStatus] = useState<string>("");
   const [mounted, setMounted] = useState(false);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -24,6 +26,24 @@ export default function WalletPage() {
     if (user && mounted) {
       setBalance(UserStorage.getUserWalletBalance(user.id));
       setGuildCoins(UserStorage.getUserGuildCoins(user.id));
+      
+      // Fetch transaction history
+      const fetchTransactions = async () => {
+        setLoadingTransactions(true);
+        try {
+          const response = await fetch(`/api/wallet/transactions?userId=${user.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            setTransactions(data.transactions || []);
+          }
+        } catch (error) {
+          console.error('Failed to fetch transactions:', error);
+        } finally {
+          setLoadingTransactions(false);
+        }
+      };
+      
+      fetchTransactions();
     }
   }, [user, mounted]);
 
@@ -131,6 +151,16 @@ export default function WalletPage() {
       <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white">
         <div className="px-4 sm:px-6 lg:px-8 py-12">
           <div className="max-w-4xl mx-auto">
+            {/* Return Button */}
+            <div className="mb-8">
+              <Link href="/account">
+                <button className="group flex items-center gap-2 px-6 py-3 bg-zinc-900/50 hover:bg-zinc-800/50 border border-yellow-500/20 hover:border-yellow-500/40 rounded-xl text-gray-300 hover:text-yellow-400 font-semibold transition-all duration-300 shadow-lg hover:shadow-yellow-500/10">
+                  <span className="text-xl group-hover:-translate-x-1 transition-transform duration-300">←</span>
+                  <span>Return to My Account</span>
+                </button>
+              </Link>
+            </div>
+
             {/* Header */}
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-3 mb-4">
@@ -264,7 +294,7 @@ export default function WalletPage() {
               </div>
             </div>
 
-            {/* Transaction History Placeholder */}
+            {/* Transaction History */}
             <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-700/50 rounded-2xl p-8 shadow-xl">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-600 rounded-xl flex items-center justify-center text-2xl">
@@ -276,11 +306,32 @@ export default function WalletPage() {
                 </div>
               </div>
               
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4 opacity-50">📈</div>
-                <h3 className="text-xl font-semibold text-gray-400 mb-2">Coming Soon</h3>
-                <p className="text-gray-500">Transaction history will be available in a future update</p>
-              </div>
+              {loadingTransactions ? (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4 animate-spin">🔄</div>
+                  <p className="text-gray-500">Loading your transaction history...</p>
+                </div>
+              ) : transactions.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4 opacity-50">📉</div>
+                  <h3 className="text-xl font-semibold text-gray-400 mb-2">No Transactions Found</h3>
+                  <p className="text-gray-500">Your transaction history will appear here</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {transactions.map((tx, index) => (
+                    <div key={index} className="bg-zinc-800 rounded-xl p-4 shadow-md">
+                      <div className="flex justify-between text-sm text-gray-400 mb-2">
+                        <span>{new Date(tx.date).toLocaleString()}</span>
+                        <span>{tx.type === "credit" ? "🟢" : "🔴"} {tx.amount} {tx.currency}</span>
+                      </div>
+                      <div className="text-white">
+                        {tx.description || "No description provided."}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Quick Stats */}

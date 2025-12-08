@@ -545,3 +545,7 @@ export default function KingdomProducts() {
     </DashboardLayout>
   );
 }
+
+
+// Disable footer for Kingdom pages
+(KingdomProducts as any).showFooter = false;

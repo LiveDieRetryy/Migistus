@@ -1,3 +1,5 @@
+import { UserStorage3 as UserStorage } from './userStorage';
+
 export interface SocialPost {
   id: number;
   userId: number;
@@ -162,11 +164,15 @@ export class SocialPostsStorage {
           // Unlike
           post.likedBy = post.likedBy.filter(id => id !== userId);
           post.likes = Math.max(0, post.likes - 1);
+          // Decrement reputation of post owner when unliked
+          UserStorage.decrementReputation(post.userId, 1);
         } else {
           // Like
           post.likedBy.push(userId);
           post.likes += 1;
           this.addPostActivity(userId, `Liked ${post.username}'s post`, postId);
+          // Increment reputation of post owner when liked (+1 rep)
+          UserStorage.incrementReputation(post.userId, 1);
         }
         
         localStorage.setItem(this.POSTS_KEY, JSON.stringify(allPosts));
@@ -198,6 +204,9 @@ export class SocialPostsStorage {
         
         localStorage.setItem(this.POSTS_KEY, JSON.stringify(allPosts));
         this.addPostActivity(comment.userId, `Commented on ${allPosts[postIndex].username}'s post`, postId);
+        
+        // Increment reputation of post owner when someone comments (+1 rep)
+        UserStorage.incrementReputation(allPosts[postIndex].userId, 1);
         return true;
       }
       return false;
@@ -218,6 +227,9 @@ export class SocialPostsStorage {
           post.shares += 1;
           localStorage.setItem(this.POSTS_KEY, JSON.stringify(allPosts));
           this.addPostActivity(userId, `Shared ${post.username}'s post`, postId);
+          
+          // Increment reputation of post owner when someone shares (+1 rep)
+          UserStorage.incrementReputation(post.userId, 1);
         }
         return true;
       }

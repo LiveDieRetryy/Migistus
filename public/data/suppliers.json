@@ -17,5 +17,25 @@
     "totalProducts": 0,
     "totalSales": 0,
     "rating": 5
+  },
+  {
+    "id": "1765140087766",
+    "name": "GreenTech Innovations",
+    "email": "emily@greentech.com",
+    "password": "",
+    "supplierCode": "SUP-GREE1705",
+    "companyName": "GreenTech Innovations",
+    "status": "active",
+    "joinedDate": "2025-12-07T20:41:27.766Z",
+    "contactPerson": "Emily Chen",
+    "phone": "15551234567",
+    "address": "789 Innovation Blvd, Austin, TX 78701",
+    "productCategories": [
+      "Electronics",
+      "Renewable Energy"
+    ],
+    "totalProducts": 0,
+    "totalSales": 0,
+    "rating": 5
   }
 ]

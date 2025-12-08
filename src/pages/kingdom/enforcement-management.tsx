@@ -101,3 +101,7 @@ export default function EnforcementManagementPage() {
     </DashboardLayout>
   );
 }
+
+
+// Disable footer for Kingdom pages
+(EnforcementManagementPage as any).showFooter = false;

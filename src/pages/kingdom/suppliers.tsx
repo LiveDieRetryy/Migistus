@@ -330,3 +330,7 @@ export default function KingdomSuppliers() {
     </DashboardLayout>
   );
 }
+
+
+// Disable footer for Kingdom pages
+(KingdomSuppliers as any).showFooter = false;

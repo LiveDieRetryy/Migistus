@@ -299,3 +299,7 @@ export default function KingdomAnalytics() {
     </DashboardLayout>
   );
 }
+
+
+// Disable footer for Kingdom pages
+(KingdomAnalytics as any).showFooter = false;

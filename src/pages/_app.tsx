@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { AppProps } from "next/app";
+import { useRouter } from "next/router";
 import { AuthProvider } from "@/context/AuthContext";
 import { Web3Utils } from "@/utils/web3Utils";
 import MainLayout from "@/components/layout/MainLayout";
@@ -78,6 +79,9 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
 
 export default function App({ Component, pageProps }: AppProps) {
   const [mounted, setMounted] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [checkingMaintenance, setCheckingMaintenance] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
@@ -90,8 +94,40 @@ export default function App({ Component, pageProps }: AppProps) {
       }
     }, 3000);
   }, []);
+
+  // Check for maintenance mode
+  useEffect(() => {
+    const checkMaintenance = async () => {
+      // Don't check if we're already on maintenance or admin pages
+      if (router.pathname === '/maintenance' || router.pathname.startsWith('/kingdom') || router.pathname === '/admin-login') {
+        setCheckingMaintenance(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/maintenance-status');
+        const data = await response.json();
+        
+        if (data.maintenanceMode) {
+          setMaintenanceMode(true);
+          router.push('/maintenance');
+        } else {
+          setMaintenanceMode(false);
+        }
+      } catch (error) {
+        console.error('Failed to check maintenance status:', error);
+      } finally {
+        setCheckingMaintenance(false);
+      }
+    };
+
+    if (mounted) {
+      checkMaintenance();
+    }
+  }, [mounted, router]);
+
   // Prevent hydration mismatch by not rendering until mounted
-  if (!mounted) {
+  if (!mounted || checkingMaintenance) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="text-yellow-400 text-xl">Loading...</div>

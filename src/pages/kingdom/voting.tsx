@@ -303,3 +303,7 @@ export default function KingdomVoting() {
     </DashboardLayout>
   );
 }
+
+
+// Disable footer for Kingdom pages
+(KingdomVoting as any).showFooter = false;

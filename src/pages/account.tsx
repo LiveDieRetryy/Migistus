@@ -7,20 +7,26 @@ import { useAuth } from "@/context/AuthContext"; // Updated import
 import { UserStorage3 as UserStorage } from "@/utils/userStorage";
 import { activityTracker } from "@/utils/activityTracker";
 
-const accountNav = [
-  { label: "Account Overview", href: "/account", icon: "🏠" },
-  { label: "My Current Pledges", href: "/account/pledges", icon: "🤝" },
-  { label: "Pledge History", href: "/account/pledge-history", icon: "📋" },
-  { label: "My Wishlist", href: "/account/wishlist", icon: "❤️" },
-  { label: "My Votes", href: "/account/votes", icon: "🗳️" },
-  { label: "Wallet", href: "/wallet", icon: "💰" },
-  { label: "View Profile", href: "/account/profile", icon: "👤" },
-  { label: "Account Settings", href: "/account/settings", icon: "⚙️" },
-];
-
 export default function AccountPage() {
   const { user, isAuthenticated, loading } = useAuth(); // Updated to use correct hook
   const router = useRouter();
+  
+  // Generate profile slug from username
+  const getProfileSlug = () => {
+    if (!user?.username) return "/account/profile";
+    return `/account/profile/${user.username.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")}`;
+  };
+
+  const accountNav = [
+    { label: "Account Overview", href: "/account", icon: "🏠" },
+    { label: "My Current Pledges", href: "/account/pledges", icon: "🤝" },
+    { label: "Pledge History", href: "/account/pledge-history", icon: "📋" },
+    { label: "My Wishlist", href: "/account/wishlist", icon: "❤️" },
+    { label: "My Votes", href: "/account/votes", icon: "🗳️" },
+    { label: "Wallet", href: "/wallet", icon: "💰" },
+    { label: "View Profile", href: getProfileSlug(), icon: "👤" },
+    { label: "Account Settings", href: "/account/settings", icon: "⚙️" },
+  ];
   const [profile, setProfile] = useState<any>(null);
   const [stats, setStats] = useState({
     pledges: 0,
@@ -64,16 +70,25 @@ export default function AccountPage() {
       const pledges = await pledgesRes.json();
 
       // Load votes
-      const votesRes = await fetch(`/api/votes`);
-      const allVotes = await votesRes.json();
-      const userVotes = allVotes.filter((vote: any) => vote.userId === user.id);
-
-      setStats({
-        pledges: pledges.length,
-        votes: userVotes.length,
-        guildCoins,
-        walletBalance,
-      });      // Load recent activity - filter to only show votes, pledges, follows, likes, and comments
+      const votesRes = await fetch(`/api/account/votes`);
+      if (votesRes.ok) {
+        const votesResult = await votesRes.json();
+        const userVotes = votesResult.success && Array.isArray(votesResult.data) ? votesResult.data : [];
+        
+        setStats({
+          pledges: pledges.length,
+          votes: userVotes.length,
+          guildCoins,
+          walletBalance,
+        });
+      } else {
+        setStats({
+          pledges: pledges.length,
+          votes: 0,
+          guildCoins,
+          walletBalance,
+        });
+      }      // Load recent activity - filter to only show votes, pledges, follows, likes, and comments
       const activity = UserStorage.getUserActivity(user.id);
       const allowedActivityTypes = ['vote', 'pledge', 'social', 'like', 'comment'];
       const filteredActivity = activity.filter((a: any) => allowedActivityTypes.includes(a.type));

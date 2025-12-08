@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { 
@@ -32,6 +32,7 @@ export default function SuppliersLandingPage() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [testimonials, setTestimonials] = useState<any[]>([]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
@@ -118,26 +119,22 @@ export default function SuppliersLandingPage() {
     { number: "95%", label: "Supplier Satisfaction" }
   ];
 
-  const testimonials = [
-    {
-      name: "Sarah Chen",
-      company: "TechGear Innovations",
-      quote: "MIGISTUS helped us validate our product idea and connect with early adopters. We secured 300 pre-orders in our first month!",
-      avatar: "/Icons/SupplierPlaceHolder.png"
-    },
-    {
-      name: "Marcus Rodriguez",
-      company: "EcoHome Solutions",
-      quote: "The community feedback was invaluable. We refined our product based on user suggestions and it's now our best seller.",
-      avatar: "/Icons/SupplierPlaceHolder.png"
-    },
-    {
-      name: "Lisa Thompson",
-      company: "FitLife Products",
-      quote: "Transparent analytics and real-time tracking helped us optimize our campaigns. Revenue increased by 200% in 6 months.",
-      avatar: "/Icons/SupplierPlaceHolder.png"
-    }
-  ];
+  // Fetch real testimonials from backend
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const response = await fetch('/api/suppliers/testimonials');
+        if (response.ok) {
+          const data = await response.json();
+          setTestimonials(data.testimonials || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch testimonials:', error);
+      }
+    };
+
+    fetchTestimonials();
+  }, []);
 
   if (showSuccessMessage) {
     return (

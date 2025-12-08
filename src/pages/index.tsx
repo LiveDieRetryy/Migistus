@@ -172,76 +172,144 @@ export default function HomePage() {
         </div>
 
         {/* Hero Section */}
-        <section className="relative flex flex-col items-center justify-center min-h-[70vh] px-4 sm:px-6 pt-32 pb-20 text-center bg-gradient-to-b from-zinc-950/90 to-zinc-900/60">
-          <div className="relative z-10 max-w-3xl mx-auto">
-            <h1 className="text-4xl sm:text-6xl font-extrabold mb-2 bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500 bg-clip-text text-transparent leading-tight drop-shadow-lg playfair-heading">
-              Welcome to MIGISTUS
-            </h1>
-            <h2 className="text-xl sm:text-3xl font-semibold mb-10 text-yellow-300 tracking-wide drop-shadow playfair-heading-light">
-              The Guild Marketplace
-            </h2>
+        <section className="relative flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 pt-24 pb-20 text-center bg-gradient-to-b from-zinc-950/90 via-zinc-900/80 to-zinc-900/60">
+          {/* Floating particles effect */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {Array.from({ length: 20 }).map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-2 h-2 bg-yellow-400/30 rounded-full animate-float-particle"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 5}s`,
+                  animationDuration: `${10 + Math.random() * 10}s`,
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="relative z-10 max-w-5xl mx-auto">
+            {/* Main Title */}
+            <div className="mb-6 animate-fade-in-up">
+              <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold mb-4 bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-600 bg-clip-text text-transparent leading-tight playfair-heading">
+                MIGISTUS
+              </h1>
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="h-px w-12 sm:w-20 bg-gradient-to-r from-transparent to-yellow-400"></div>
+                <h2 className="text-2xl sm:text-4xl font-semibold text-yellow-300 tracking-wide playfair-heading-light">
+                  The Guild Marketplace
+                </h2>
+                <div className="h-px w-12 sm:w-20 bg-gradient-to-l from-transparent to-yellow-400"></div>
+              </div>
+            </div>
             
-            <div className="mb-10 flex justify-center">
-              <div className="relative animate-float flex items-center justify-center" style={{width: 200, height: 200}}>
-                <div className="absolute inset-0 z-0 animate-pulse" style={{
+            {/* Animated Logo */}
+            <div className="mb-8 flex justify-center animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <div className="relative group cursor-pointer" style={{width: 240, height: 240}}>
+                {/* Rotating ring */}
+                <div className="absolute inset-0 z-0">
+                  <div className="absolute inset-4 rounded-full border-2 border-yellow-400/20 animate-spin-slow"></div>
+                  <div className="absolute inset-8 rounded-full border border-yellow-400/30 animate-spin-reverse"></div>
+                </div>
+                {/* Pulsing glow */}
+                <div className="absolute inset-0 z-0 animate-pulse-slow" style={{
                   borderRadius: '50%',
-                  background: 'radial-gradient(circle, #FFD70088 0%, #FFD70022 60%, transparent 100%)',
-                  filter: 'blur(32px)',
-                  opacity: 0.9,
+                  background: 'radial-gradient(circle, #FFD70099 0%, #FFD70044 40%, transparent 70%)',
+                  filter: 'blur(40px)',
                 }} />
-                <Image
-                  src="/Icons/groupbuying.png"
-                  alt="Guild Icon"
-                  width={180}
-                  height={180}
-                  className="object-contain bg-transparent relative z-10 drop-shadow-xl"
-                  priority
-                />
+                {/* Icon */}
+                <div className="relative z-10 flex items-center justify-center h-full group-hover:scale-110 transition-transform duration-500">
+                  <Image
+                    src="/Icons/groupbuying.png"
+                    alt="Guild Icon"
+                    width={200}
+                    height={200}
+                    className="object-contain bg-transparent drop-shadow-2xl"
+                    priority
+                  />
+                </div>
               </div>
             </div>
 
-            <p className="text-lg sm:text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-              Join the revolution in commerce. Migistus isn't a store—it's a guild where your voice shapes the marketplace, 
-              collective action drives down prices, and every purchase strengthens the community.
+            {/* Value Proposition */}
+            <p className="text-xl sm:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed font-light animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              Where <span className="text-yellow-400 font-semibold">your voice shapes the marketplace</span>, 
+              <span className="text-yellow-400 font-semibold"> collective action</span> drives down prices, and every purchase 
+              <span className="text-yellow-400 font-semibold"> strengthens the community</span>.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-10">
+            {/* Unique Selling Points */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto animate-fade-in" style={{ animationDelay: '0.6s' }}>
+              <div className="bg-zinc-900/60 backdrop-blur-sm border border-yellow-400/20 rounded-xl p-6 hover:border-yellow-400/40 transition-all hover:scale-105 hover:shadow-xl hover:shadow-yellow-400/10">
+                <div className="text-4xl mb-3">🗳️</div>
+                <h3 className="text-lg font-bold text-yellow-400 mb-2">Democratic Catalog</h3>
+                <p className="text-zinc-300 text-sm">You vote, we source. Every product is chosen by the community.</p>
+              </div>
+              <div className="bg-zinc-900/60 backdrop-blur-sm border border-yellow-400/20 rounded-xl p-6 hover:border-yellow-400/40 transition-all hover:scale-105 hover:shadow-xl hover:shadow-yellow-400/10">
+                <div className="text-4xl mb-3">💰</div>
+                <h3 className="text-lg font-bold text-yellow-400 mb-2">Bulk Power Pricing</h3>
+                <p className="text-zinc-300 text-sm">Unite for massive discounts. More members = lower prices.</p>
+              </div>
+              <div className="bg-zinc-900/60 backdrop-blur-sm border border-yellow-400/20 rounded-xl p-6 hover:border-yellow-400/40 transition-all hover:scale-105 hover:shadow-xl hover:shadow-yellow-400/10">
+                <div className="text-4xl mb-3">🏆</div>
+                <h3 className="text-lg font-bold text-yellow-400 mb-2">Member Rewards</h3>
+                <p className="text-zinc-300 text-sm">Earn tiers, unlock perks, amplify your voting power.</p>
+              </div>
+            </div>
+
+            {/* Primary CTAs */}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16 animate-fade-in" style={{ animationDelay: '0.8s' }}>
+              <Link href="/register" legacyBehavior>
+                <a className="group relative overflow-hidden font-bold px-10 py-5 rounded-2xl transition-all duration-300 text-xl bg-gradient-to-r from-yellow-400 to-yellow-500 text-black hover:from-yellow-300 hover:to-yellow-400 shadow-2xl shadow-yellow-400/30 hover:shadow-yellow-400/50 hover:scale-105 transform">
+                  <span className="relative z-10 flex items-center gap-2">
+                    ⚔️ Join the Guild
+                    <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+                  </span>
+                </a>
+              </Link>
               <Link href="/voting" legacyBehavior>
-                <a className="group font-bold px-8 py-4 rounded-2xl transition-all duration-300 text-lg border-2 bg-zinc-900 text-blue-300 border-blue-700 hover:bg-blue-900 hover:text-white shadow-md">
-                  🗳️ Shape Our Catalog
-                </a>
-              </Link>
-              <Link href="/coming-soon" legacyBehavior>
-                <a className="group font-bold px-8 py-4 rounded-2xl transition-all duration-300 text-lg border-2 bg-zinc-900 text-yellow-300 border-yellow-700 hover:bg-yellow-900 hover:text-white shadow-md">
-                  ⏳ Track Development
-                </a>
-              </Link>
-              <Link href="/community-drops" legacyBehavior>
-                <a className="group font-bold px-8 py-4 rounded-2xl transition-all duration-300 text-lg border-2 bg-zinc-900 text-green-300 border-green-700 hover:bg-green-900 hover:text-white shadow-md">
-                  ⚔️ Join Guild Drops
+                <a className="group font-bold px-10 py-5 rounded-2xl transition-all duration-300 text-xl border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400/10 hover:scale-105 shadow-lg hover:shadow-yellow-400/20">
+                  <span className="flex items-center gap-2">
+                    🗳️ Start Voting
+                    <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+                  </span>
                 </a>
               </Link>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-8 mt-8">
-              <div className="text-center">
-                <div className="text-4xl font-extrabold text-yellow-400 mb-2">{totalUsers.toLocaleString()}+</div>
-                <div className="text-gray-400 text-sm uppercase tracking-wider">Guild Members</div>
+            {/* Live Stats with Animation */}
+            <div className="flex flex-wrap justify-center gap-8 lg:gap-16 animate-fade-in" style={{ animationDelay: '1s' }}>
+              <div className="text-center group">
+                <div className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-yellow-200 to-yellow-500 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform">
+                  {totalUsers.toLocaleString()}+
+                </div>
+                <div className="text-gray-300 text-sm uppercase tracking-wider font-semibold">Guild Members</div>
               </div>
-              <div className="text-center">
-                <div className="text-4xl font-extrabold text-yellow-400 mb-2">{totalVotes.toLocaleString()}+</div>
-                <div className="text-gray-400 text-sm uppercase tracking-wider">Democratic Votes</div>
+              <div className="hidden sm:block w-px h-16 bg-gradient-to-b from-transparent via-yellow-400/30 to-transparent self-center"></div>
+              <div className="text-center group">
+                <div className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-yellow-200 to-yellow-500 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform">
+                  {totalVotes.toLocaleString()}+
+                </div>
+                <div className="text-gray-300 text-sm uppercase tracking-wider font-semibold">Democratic Votes</div>
               </div>
-              <div className="text-center">
-                <div className="text-4xl font-extrabold text-yellow-400 mb-2">50+</div>
-                <div className="text-gray-400 text-sm uppercase tracking-wider">Community Drops</div>
+              <div className="hidden sm:block w-px h-16 bg-gradient-to-b from-transparent via-yellow-400/30 to-transparent self-center"></div>
+              <div className="text-center group">
+                <div className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-yellow-200 to-yellow-500 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform">
+                  50+
+                </div>
+                <div className="text-gray-300 text-sm uppercase tracking-wider font-semibold">Community Drops</div>
               </div>
             </div>
           </div>
           
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <div className="w-6 h-10 border-2 border-yellow-400/50 rounded-full flex justify-center">
-              <div className="w-1 h-3 bg-yellow-400 rounded-full mt-2 animate-pulse"></div>
+          {/* Scroll Indicator - positioned at section border */}
+          <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer z-10" onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}>
+            <div className="flex flex-col items-center gap-2">
+              <div className="text-yellow-400/70 text-sm font-semibold">Explore</div>
+              <div className="w-6 h-10 border-2 border-yellow-400/50 rounded-full flex justify-center items-start">
+                <div className="w-1 h-3 bg-yellow-400 rounded-full mt-2 animate-pulse"></div>
+              </div>
             </div>
           </div>
         </section>
@@ -455,6 +523,117 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Testimonials & Social Proof Section */}
+        <section className="relative py-20 px-4 sm:px-6 bg-gradient-to-b from-transparent via-zinc-900/30 to-transparent border-y border-yellow-400/10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-14">
+              <h2 className="text-3xl sm:text-4xl font-bold text-yellow-400 mb-4">What Our Guild Members Say</h2>
+              <p className="text-lg text-zinc-300 max-w-2xl mx-auto">Real experiences from members who've discovered the power of collective commerce.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Testimonial 1 */}
+              <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-800/40 border border-yellow-400/20 rounded-2xl p-8 hover:border-yellow-400/40 transition-all hover:scale-105">
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-black font-bold text-xl">
+                    J
+                  </div>
+                  <div className="ml-4">
+                    <h4 className="text-white font-bold">Jessica M.</h4>
+                    <div className="text-yellow-400 text-sm">Guild Member</div>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <div className="text-yellow-400 text-2xl">"</div>
+                  <p className="text-zinc-300 leading-relaxed italic">
+                    I saved over $200 on my first guild drop! It's amazing to finally have a say in what products are offered instead of just accepting whatever stores decide to sell.
+                  </p>
+                  <div className="text-yellow-400 text-2xl text-right">"</div>
+                </div>
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-yellow-400">⭐</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Testimonial 2 */}
+              <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-800/40 border border-yellow-400/20 rounded-2xl p-8 hover:border-yellow-400/40 transition-all hover:scale-105">
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                    M
+                  </div>
+                  <div className="ml-4">
+                    <h4 className="text-white font-bold">Marcus T.</h4>
+                    <div className="text-yellow-400 text-sm">Guild Elite</div>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <div className="text-yellow-400 text-2xl">"</div>
+                  <p className="text-zinc-300 leading-relaxed italic">
+                    This is the future of shopping. Voting on products before they're sourced means I actually want everything in the catalog. No more browsing through junk I'll never buy.
+                  </p>
+                  <div className="text-yellow-400 text-2xl text-right">"</div>
+                </div>
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-yellow-400">⭐</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Testimonial 3 */}
+              <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-800/40 border border-yellow-400/20 rounded-2xl p-8 hover:border-yellow-400/40 transition-all hover:scale-105">
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                    S
+                  </div>
+                  <div className="ml-4">
+                    <h4 className="text-white font-bold">Sarah K.</h4>
+                    <div className="text-yellow-400 text-sm">Guild Member</div>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <div className="text-yellow-400 text-2xl">"</div>
+                  <p className="text-zinc-300 leading-relaxed italic">
+                    The tier system is genius. The more I participate, the more voting power I get. It makes me feel like I'm actually building something with the community.
+                  </p>
+                  <div className="text-yellow-400 text-2xl text-right">"</div>
+                </div>
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-yellow-400">⭐</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              <div>
+                <div className="text-4xl mb-2">✅</div>
+                <div className="text-yellow-400 font-bold text-2xl mb-1">100%</div>
+                <div className="text-zinc-400 text-sm">Secure Checkout</div>
+              </div>
+              <div>
+                <div className="text-4xl mb-2">🚚</div>
+                <div className="text-yellow-400 font-bold text-2xl mb-1">Free</div>
+                <div className="text-zinc-400 text-sm">Guild Shipping</div>
+              </div>
+              <div>
+                <div className="text-4xl mb-2">💬</div>
+                <div className="text-yellow-400 font-bold text-2xl mb-1">24/7</div>
+                <div className="text-zinc-400 text-sm">Member Support</div>
+              </div>
+              <div>
+                <div className="text-4xl mb-2">🛡️</div>
+                <div className="text-yellow-400 font-bold text-2xl mb-1">30 Day</div>
+                <div className="text-zinc-400 text-sm">Guild Guarantee</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Membership Tiers Section */}
         <section className="relative py-20 px-4 sm:px-6 border-t border-yellow-400/10">
           <div className="max-w-5xl mx-auto text-center mb-14">
@@ -494,8 +673,8 @@ export default function HomePage() {
             
             {/* Elite Member */}
             <div className="bg-zinc-900 border-2 border-yellow-400 rounded-xl p-8 flex flex-col items-center shadow-2xl relative">
-              <div className="mb-4"><Image src="/Icons/staffpicks.png" alt="Guild Elite" width={56} height={56} /></div>
-              <h3 className="text-xl font-bold text-yellow-400 mb-1">Guild Elite</h3>
+              <div className="mb-4"><Image src="/Icons/staffpicks.png" alt="MIGISTUS Elite" width={56} height={56} /></div>
+              <h3 className="text-xl font-bold text-yellow-400 mb-1">MIGISTUS Elite</h3>
               <div className="text-2xl font-bold text-yellow-400 mb-2">$19.99/mo</div>
               <ul className="text-yellow-200 text-base mb-6 space-y-2 text-left">
                 <li>✓ All Member benefits</li>
@@ -520,11 +699,50 @@ export default function HomePage() {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
+        @keyframes spin-reverse {
+          from { transform: rotate(360deg); }
+          to { transform: rotate(0deg); }
+        }
+        @keyframes float-particle {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+          25% { transform: translate(10px, -15px) scale(1.2); opacity: 0.6; }
+          50% { transform: translate(-10px, -25px) scale(0.8); opacity: 0.4; }
+          75% { transform: translate(15px, -10px) scale(1.1); opacity: 0.5; }
+        }
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.6; transform: scale(1); }
+          50% { opacity: 0.9; transform: scale(1.05); }
+        }
         .animate-float {
           animation: float 6s ease-in-out infinite;
         }
         .animate-spin-slow {
           animation: spin-slow 20s linear infinite;
+        }
+        .animate-spin-reverse {
+          animation: spin-reverse 15s linear infinite;
+        }
+        .animate-float-particle {
+          animation: float-particle linear infinite;
+        }
+        .animate-fade-in {
+          animation: fade-in 1s ease-out forwards;
+          opacity: 0;
+        }
+        .animate-fade-in-up {
+          animation: fade-in-up 1s ease-out forwards;
+          opacity: 0;
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 4s ease-in-out infinite;
         }
         .line-clamp-2 {
           display: -webkit-box;
@@ -537,7 +755,7 @@ export default function HomePage() {
           font-weight: 900;
           letter-spacing: 0.04em;
           text-transform: none;
-          text-shadow: 0 2px 10px #00000011, 0 0 4px #b0b0b044, 0 0 6px #e0e0e015;
+          text-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 40px rgba(255,215,0,0.3);
         }
         .playfair-heading-light {
           font-family: 'Playfair Display', serif !important;
@@ -545,7 +763,7 @@ export default function HomePage() {
           letter-spacing: 0.04em;
           text-transform: none;
           opacity: 0.92;
-          text-shadow: 0 1px 8px #00000011, 0 0 4px #b0b0b066, 0 0 8px #e0e0e022;
+          text-shadow: 0 2px 15px rgba(0,0,0,0.4), 0 0 30px rgba(255,215,0,0.2);
         }
       `}</style>
     </>

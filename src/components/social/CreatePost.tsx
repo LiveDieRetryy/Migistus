@@ -203,15 +203,43 @@ export default function CreatePost({ onPostCreated, placeholder = "What's on you
                 </div>
 
                 {/* Visibility Selector */}
-                <select
-                  value={visibility}
-                  onChange={(e) => setVisibility(e.target.value as any)}
-                  className="px-3 py-1 bg-zinc-700 border border-zinc-600 rounded-lg text-white text-sm focus:border-yellow-400 focus:outline-none"
-                >
-                  <option value="public">🌍 Public</option>
-                  <option value="followers">👥 Followers</option>
-                  <option value="private">🔒 Private</option>
-                </select>
+                <div className="relative group">
+                  <select
+                    value={visibility}
+                    onChange={(e) => setVisibility(e.target.value as any)}
+                    className="px-3 py-1 bg-zinc-700 border border-zinc-600 rounded-lg text-white text-sm focus:border-yellow-400 focus:outline-none cursor-pointer"
+                    title="Choose who can see this post"
+                  >
+                    <option value="public">🌍 Public</option>
+                    <option value="followers">👥 Followers Only</option>
+                    <option value="private">🔒 Private</option>
+                  </select>
+                  
+                  {/* Tooltip on hover */}
+                  <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-10 w-64">
+                    <div className="bg-zinc-800 border border-zinc-600 rounded-lg p-3 shadow-xl text-xs">
+                      <div className="space-y-2">
+                        <div>
+                          <span className="font-semibold text-white">🌍 Public:</span>
+                          <span className="text-gray-300"> Visible to everyone in Worldwide Guild</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-white">👥 Followers:</span>
+                          <span className="text-gray-300"> Only your followers can see this</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-white">🔒 Private:</span>
+                          <span className="text-gray-300"> Only you can see this</span>
+                        </div>
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-zinc-600 text-gray-400">
+                        Current: <span className="text-yellow-400 font-semibold">
+                          {visibility === 'public' ? 'Public' : visibility === 'followers' ? 'Followers Only' : 'Private'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Character Count & Submit */}

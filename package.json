@@ -25,6 +25,7 @@
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "cookie": "^1.1.1",
     "grapesjs": "^0.22.8",
     "lucide-react": "^0.511.0",
     "multer": "^2.0.1",

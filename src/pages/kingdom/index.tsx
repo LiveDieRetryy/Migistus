@@ -167,105 +167,161 @@ export default function KingsDomainPage() {
         <title>The King's Domain - MIGISTUS Admin</title>
       </Head>
 
-      {/* Header Section */}
-      <div className="mb-8">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-yellow-400 mb-2">
-              🛡️ The King's Domain
-            </h1>
-            <p className="text-zinc-400 text-lg">Real-time admin control center</p>
-            <div className="flex items-center space-x-6 mt-3 text-sm">
-              <span className="text-zinc-400">
-                <span className="text-green-400 font-medium">{stats.users.total}</span> users
-              </span>
-              <span className="text-zinc-400">
-                <span className="text-blue-400 font-medium">{stats.products.live}</span> live products
-              </span>
-              <span className="text-zinc-400">
-                <span className="text-purple-400 font-medium">{stats.voting.activePolls}</span> active polls
-              </span>
-            </div>
-          </div>
-          <div className="mt-4 lg:mt-0 text-right">
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={loadDashboardData}
-                disabled={refreshing}
-                className={`inline-flex items-center px-3 py-1 rounded-lg bg-zinc-800 border border-zinc-600 hover:border-zinc-500 transition ${refreshing ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <span className={`text-zinc-400 text-sm mr-2 ${refreshing ? 'animate-spin' : ''}`}>🔄</span>
-                <span className="text-zinc-300 text-sm">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
-              </button>
-              <div className={`inline-flex items-center px-3 py-1 rounded-full border ${refreshing 
-                ? 'bg-yellow-900/20 border-yellow-500/30' 
-                : 'bg-green-900/20 border-green-500/30'
-              }`}>
-                <div className={`w-2 h-2 rounded-full mr-2 ${refreshing 
-                  ? 'bg-yellow-400 animate-bounce' 
-                  : 'bg-green-400 animate-pulse'
-                }`}></div>
-                <span className={`text-sm font-medium ${refreshing 
-                  ? 'text-yellow-400' 
-                  : 'text-green-400'
-                }`}>
-                  {refreshing ? 'Updating...' : 'Live Data'}
-                </span>
+      {/* Enhanced Glassmorphic Header */}
+      <div className="mb-8 bg-gradient-to-r from-zinc-900/80 via-zinc-800/80 to-zinc-900/80 backdrop-blur-xl rounded-3xl p-8 border-2 border-yellow-500/30 shadow-2xl shadow-black/50 relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 via-transparent to-yellow-500/5 animate-pulse"></div>
+        
+        <div className="relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-500/30 animate-pulse">
+                  <span className="text-3xl">👑</span>
+                </div>
+                <div>
+                  <h1 className="text-4xl lg:text-5xl font-black bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500 bg-clip-text text-transparent">
+                    The King's Domain
+                  </h1>
+                  <p className="text-gray-300 text-lg font-semibold">Real-time Command Center</p>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-4 mt-4">
+                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500/20 to-green-600/20 border border-green-500/40 rounded-xl">
+                  <span className="text-green-400 text-2xl">👥</span>
+                  <div>
+                    <div className="text-2xl font-black text-white">{stats.users.total.toLocaleString()}</div>
+                    <div className="text-green-400 text-xs font-bold">Total Users</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/20 to-blue-600/20 border border-blue-500/40 rounded-xl">
+                  <span className="text-blue-400 text-2xl">🔥</span>
+                  <div>
+                    <div className="text-2xl font-black text-white">{stats.products.live}</div>
+                    <div className="text-blue-400 text-xs font-bold">Live Products</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-purple-600/20 border border-purple-500/40 rounded-xl">
+                  <span className="text-purple-400 text-2xl">🗳️</span>
+                  <div>
+                    <div className="text-2xl font-black text-white">{stats.voting.activePolls}</div>
+                    <div className="text-purple-400 text-xs font-bold">Active Polls</div>
+                  </div>
+                </div>
               </div>
             </div>
-            <p className="text-zinc-500 text-xs mt-1">Last updated: {lastUpdate.toLocaleTimeString()}</p>
+            
+            <div className="mt-6 lg:mt-0">
+              <div className="flex flex-col items-end gap-3">
+                <button
+                  onClick={loadDashboardData}
+                  disabled={refreshing}
+                  className={`flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-black rounded-xl shadow-lg shadow-yellow-500/30 transition-all duration-300 ${refreshing ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+                >
+                  <span className={`text-xl ${refreshing ? 'animate-spin' : ''}`}>🔄</span>
+                  <span>{refreshing ? 'Refreshing...' : 'Refresh Data'}</span>
+                </button>
+                
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 ${refreshing 
+                  ? 'bg-yellow-500/10 border-yellow-500/40' 
+                  : 'bg-green-500/10 border-green-500/40'
+                }`}>
+                  <div className={`w-3 h-3 rounded-full ${refreshing 
+                    ? 'bg-yellow-400 animate-bounce' 
+                    : 'bg-green-400 animate-pulse'
+                  } shadow-lg ${refreshing ? 'shadow-yellow-400/50' : 'shadow-green-400/50'}`}></div>
+                  <span className={`text-sm font-black ${refreshing 
+                    ? 'text-yellow-400' 
+                    : 'text-green-400'
+                  }`}>
+                    {refreshing ? 'Syncing...' : 'Live Data'}
+                  </span>
+                </div>
+                
+                <p className="text-gray-400 text-xs font-semibold">
+                  Last updated: <span className="text-yellow-400">{lastUpdate.toLocaleTimeString()}</span>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Real-time Stats Grid */}
+      {/* Enhanced Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Total Users */}
-        <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/10 border border-blue-500/30 rounded-xl p-6 hover:border-blue-400/50 transition-all">
+        {/* Total Users Card */}
+        <div className="group bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 backdrop-blur-xl border-2 border-blue-500/30 rounded-2xl p-6 hover:border-blue-400/60 transition-all duration-300 shadow-xl hover:shadow-blue-500/20 hover:scale-105">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-blue-500/20 rounded-lg">
-              <span className="text-2xl">👥</span>
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
+              <span className="text-3xl">👥</span>
             </div>
-            <span className="text-xs text-blue-400 font-medium">+{stats.users.newToday} today</span>
+            <div className="px-3 py-1 bg-blue-500/20 border border-blue-500/40 rounded-lg">
+              <span className="text-blue-400 font-black text-sm">+{stats.users.newToday} today</span>
+            </div>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">{stats.users.total.toLocaleString()}</div>
-          <div className="text-blue-400 text-sm font-medium">Total Users</div>
+          <div className="text-4xl font-black text-white mb-2">{stats.users.total.toLocaleString()}</div>
+          <div className="text-blue-400 text-sm font-bold mb-3">Total Users</div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-400 font-semibold">{stats.users.active} active</span>
+            <span className="text-green-400 font-bold">+{Math.round((stats.users.newToday / stats.users.total) * 100)}%</span>
+          </div>
         </div>
 
-        {/* Live Products */}
-        <div className="bg-gradient-to-br from-green-900/20 to-green-800/10 border border-green-500/30 rounded-xl p-6 hover:border-green-400/50 transition-all">
+        {/* Live Products Card */}
+        <div className="group bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 backdrop-blur-xl border-2 border-green-500/30 rounded-2xl p-6 hover:border-green-400/60 transition-all duration-300 shadow-xl hover:shadow-green-500/20 hover:scale-105">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-green-500/20 rounded-lg">
-              <span className="text-2xl">🔥</span>
+            <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/30 group-hover:scale-110 transition-transform">
+              <span className="text-3xl">🔥</span>
             </div>
-            <span className="text-xs text-green-400 font-medium">{stats.liveDrops.participants} active</span>
+            <div className="px-3 py-1 bg-green-500/20 border border-green-500/40 rounded-lg">
+              <span className="text-green-400 font-black text-sm">{stats.liveDrops.participants} users</span>
+            </div>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">{stats.products.live}</div>
-          <div className="text-green-400 text-sm font-medium">Live Products</div>
+          <div className="text-4xl font-black text-white mb-2">{stats.products.live}</div>
+          <div className="text-green-400 text-sm font-bold mb-3">Live Products</div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-400 font-semibold">{stats.products.comingSoon} coming soon</span>
+            <span className="text-yellow-400 font-bold">{stats.products.staffPicks} picked</span>
+          </div>
         </div>
 
-        {/* Active Polls */}
-        <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border border-purple-500/30 rounded-xl p-6 hover:border-purple-400/50 transition-all">
+        {/* Active Polls Card */}
+        <div className="group bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 backdrop-blur-xl border-2 border-purple-500/30 rounded-2xl p-6 hover:border-purple-400/60 transition-all duration-300 shadow-xl hover:shadow-purple-500/20 hover:scale-105">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-purple-500/20 rounded-lg">
-              <span className="text-2xl">🗳️</span>
+            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform">
+              <span className="text-3xl">🗳️</span>
             </div>
-            <span className="text-xs text-purple-400 font-medium">{stats.voting.totalVotes} votes</span>
+            <div className="px-3 py-1 bg-purple-500/20 border border-purple-500/40 rounded-lg">
+              <span className="text-purple-400 font-black text-sm">{stats.voting.totalVotes} votes</span>
+            </div>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">{stats.voting.activePolls}</div>
-          <div className="text-purple-400 text-sm font-medium">Active Polls</div>
+          <div className="text-4xl font-black text-white mb-2">{stats.voting.activePolls}</div>
+          <div className="text-purple-400 text-sm font-bold mb-3">Active Polls</div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-400 font-semibold">{stats.voting.pendingApproval} pending</span>
+            <span className="text-green-400 font-bold">Live</span>
+          </div>
         </div>
 
-        {/* Revenue/Orders */}
-        <div className="bg-gradient-to-br from-yellow-900/20 to-yellow-800/10 border border-yellow-500/30 rounded-xl p-6 hover:border-yellow-400/50 transition-all">
+        {/* Campaigns Card */}
+        <div className="group bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-6 hover:border-yellow-400/60 transition-all duration-300 shadow-xl hover:shadow-yellow-500/20 hover:scale-105">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-yellow-500/20 rounded-lg">
-              <span className="text-2xl">💰</span>
+            <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg shadow-yellow-500/30 group-hover:scale-110 transition-transform">
+              <span className="text-3xl">💰</span>
             </div>
-            <span className="text-xs text-yellow-400 font-medium">campaigns</span>
+            <div className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/40 rounded-lg">
+              <span className="text-yellow-400 font-black text-sm">{stats.campaigns.scheduled} queued</span>
+            </div>
           </div>
-          <div className="text-3xl font-bold text-white mb-1">{stats.campaigns.sent}</div>
-          <div className="text-yellow-400 text-sm font-medium">Campaigns Sent</div>
+          <div className="text-4xl font-black text-white mb-2">{stats.campaigns.sent}</div>
+          <div className="text-yellow-400 text-sm font-bold mb-3">Campaigns Sent</div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-400 font-semibold">{stats.campaigns.drafts} drafts</span>
+            <span className="text-blue-400 font-bold">{stats.users.optedInMarketing} opted-in</span>
+          </div>
         </div>
       </div>
 
@@ -273,11 +329,17 @@ export default function KingsDomainPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Left Column - Live Product Tracking */}
-        <div className="lg:col-span-2">
-          <div className="bg-zinc-900/50 border border-zinc-700 rounded-xl p-6 mb-6">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Live Product Tracking */}
+          <div className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-6 shadow-xl">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">🎯 Live Product Tracking</h2>
-              <Link href="/kingdom/live-drops" className="text-yellow-400 hover:text-yellow-300 text-sm font-medium">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-xl">🎯</span>
+                </div>
+                <h2 className="text-2xl font-black text-yellow-400">Live Product Tracking</h2>
+              </div>
+              <Link href="/kingdom/live-drops" className="px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 hover:border-yellow-500/60 rounded-xl text-yellow-400 font-bold text-sm transition-all hover:scale-105">
                 View All →
               </Link>
             </div>
@@ -285,72 +347,101 @@ export default function KingsDomainPage() {
             {liveProducts.length > 0 ? (
               <div className="space-y-4">
                 {liveProducts.map((product) => (
-                  <div key={product.id} className="bg-zinc-800/50 border border-zinc-600 rounded-lg p-4">
+                  <div key={product.id} className="bg-zinc-700/50 hover:bg-zinc-700/70 border-2 border-zinc-600 hover:border-yellow-500/40 rounded-xl p-5 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-black text-white text-lg">{product.name}</h3>
+                      <span className="px-4 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs rounded-lg font-black shadow-lg shadow-green-500/30">
+                        ● {product.status.toUpperCase()}
+                      </span>
+                    </div>
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-medium text-white">{product.name}</h3>
-                      <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full font-medium">
-                        {product.status}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">👥</span>
+                        <span className="text-white font-bold text-lg">
+                          {product.participants}
+                          <span className="text-gray-400">/{product.goal}</span>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 px-3 py-1 bg-orange-500/20 border border-orange-500/40 rounded-lg">
+                        <span className="text-lg">⏱️</span>
+                        <span className="text-orange-400 font-black text-sm">{product.timeLeft}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-zinc-400">
-                        {product.participants}/{product.goal} participants
-                      </span>
-                      <span className="text-orange-400 font-medium">⏱️ {product.timeLeft}</span>
-                    </div>
-                    <div className="mt-2 bg-zinc-700 rounded-full h-2">
+                    <div className="relative bg-zinc-800 rounded-full h-3 overflow-hidden">
                       <div 
-                        className="bg-gradient-to-r from-green-500 to-yellow-400 h-2 rounded-full transition-all duration-500"
+                        className="absolute inset-0 bg-gradient-to-r from-green-500 via-yellow-400 to-green-500 h-3 rounded-full transition-all duration-500 shadow-lg"
                         style={{ width: `${Math.min((product.participants! / product.goal!) * 100, 100)}%` }}
-                      ></div>
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-right">
+                      <span className="text-xs font-bold text-gray-400">
+                        {Math.round((product.participants! / product.goal!) * 100)}% Complete
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-zinc-400">
-                <span className="text-4xl mb-4 block">📦</span>
-                <p>No live products currently active</p>
+              <div className="text-center py-16 bg-zinc-800/30 rounded-xl border-2 border-dashed border-zinc-600">
+                <span className="text-6xl mb-4 block animate-bounce">📦</span>
+                <p className="text-gray-400 font-semibold text-lg">No live products currently active</p>
+                <p className="text-gray-500 text-sm mt-2">Products will appear here when they go live</p>
               </div>
             )}
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-zinc-900/50 border border-zinc-700 rounded-xl p-6">
-            <h2 className="text-xl font-semibold text-white mb-6">⚡ Quick Actions</h2>
+          <div className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-6 shadow-xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-xl">⚡</span>
+              </div>
+              <h2 className="text-2xl font-black text-yellow-400">Quick Actions</h2>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Link href="/kingdom/products" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg text-center transition font-medium">
-                Add Product
+              <Link href="/kingdom/products" className="group flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white px-4 py-6 rounded-xl text-center transition-all duration-300 font-black shadow-lg hover:shadow-blue-500/30 hover:scale-105">
+                <span className="text-3xl group-hover:scale-110 transition-transform">📦</span>
+                <span className="text-sm">Add Product</span>
               </Link>
-              <Link href="/kingdom/voting" className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg text-center transition font-medium">
-                Create Poll
+              <Link href="/kingdom/voting" className="group flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white px-4 py-6 rounded-xl text-center transition-all duration-300 font-black shadow-lg hover:shadow-purple-500/30 hover:scale-105">
+                <span className="text-3xl group-hover:scale-110 transition-transform">🗳️</span>
+                <span className="text-sm">Create Poll</span>
               </Link>
-              <Link href="/kingdom/marketing" className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg text-center transition font-medium">
-                Send Campaign
+              <Link href="/kingdom/marketing" className="group flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white px-4 py-6 rounded-xl text-center transition-all duration-300 font-black shadow-lg hover:shadow-green-500/30 hover:scale-105">
+                <span className="text-3xl group-hover:scale-110 transition-transform">📧</span>
+                <span className="text-sm">Send Campaign</span>
               </Link>
-              <Link href="/kingdom/users" className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-3 rounded-lg text-center transition font-medium">
-                Manage Users
+              <Link href="/kingdom/users" className="group flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white px-4 py-6 rounded-xl text-center transition-all duration-300 font-black shadow-lg hover:shadow-orange-500/30 hover:scale-105">
+                <span className="text-3xl group-hover:scale-110 transition-transform">👥</span>
+                <span className="text-sm">Manage Users</span>
               </Link>
             </div>
           </div>
         </div>
 
         {/* Right Column - Activity Feed & Admin Modules */}
-        <div>
+        <div className="space-y-6">
           {/* Recent Activity */}
-          <div className="bg-zinc-900/50 border border-zinc-700 rounded-xl p-6 mb-6">
-            <h2 className="text-xl font-semibold text-white mb-6">📈 Recent Activity</h2>
+          <div className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-6 shadow-xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-xl">📈</span>
+              </div>
+              <h2 className="text-2xl font-black text-yellow-400">Recent Activity</h2>
+            </div>
             <div className="space-y-3">
               {stats.recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-start space-x-3 p-3 bg-zinc-800/30 rounded-lg">
-                  <div className={`w-2 h-2 rounded-full mt-2 ${
-                    activity.severity === 'success' ? 'bg-green-400' :
-                    activity.severity === 'warning' ? 'bg-yellow-400' :
-                    activity.severity === 'error' ? 'bg-red-400' : 'bg-blue-400'
-                  }`}></div>
+                <div key={index} className="group flex items-start gap-3 p-4 bg-zinc-700/30 hover:bg-zinc-700/50 rounded-xl border border-zinc-600 hover:border-yellow-500/40 transition-all duration-300">
+                  <div className={`w-3 h-3 rounded-full mt-1.5 flex-shrink-0 shadow-lg ${
+                    activity.severity === 'success' ? 'bg-green-400 shadow-green-400/50' :
+                    activity.severity === 'warning' ? 'bg-yellow-400 shadow-yellow-400/50' :
+                    activity.severity === 'error' ? 'bg-red-400 shadow-red-400/50' : 'bg-blue-400 shadow-blue-400/50'
+                  } ${activity.severity === 'success' ? 'animate-pulse' : ''}`}></div>
                   <div className="flex-1">
-                    <p className="text-white text-sm">{activity.message}</p>
-                    <p className="text-zinc-400 text-xs">{activity.timestamp}</p>
+                    <p className="text-white text-sm font-semibold">{activity.message}</p>
+                    <p className="text-gray-400 text-xs mt-1 font-medium">{activity.timestamp}</p>
                   </div>
                 </div>
               ))}
@@ -358,40 +449,53 @@ export default function KingsDomainPage() {
           </div>
 
           {/* Admin Modules */}
-          <div className="bg-zinc-900/50 border border-zinc-700 rounded-xl p-6">
-            <h2 className="text-xl font-semibold text-white mb-6">🎛️ Admin Modules</h2>
+          <div className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-6 shadow-xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-xl">🎛️</span>
+              </div>
+              <h2 className="text-2xl font-black text-yellow-400">Admin Modules</h2>
+            </div>
             <div className="space-y-3">
-              <Link href="/kingdom/analytics" className="flex items-center p-3 bg-zinc-800/50 hover:bg-zinc-700/50 rounded-lg transition">
-                <span className="text-2xl mr-3">📊</span>
-                <div>
-                  <div className="text-white font-medium">Analytics</div>
-                  <div className="text-zinc-400 text-xs">Performance insights</div>
+              <Link href="/kingdom/analytics" className="group flex items-center gap-4 p-4 bg-zinc-700/30 hover:bg-zinc-700/50 rounded-xl border-2 border-zinc-600 hover:border-blue-500/40 transition-all duration-300 hover:scale-105">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <span className="text-2xl">📊</span>
                 </div>
+                <div className="flex-1">
+                  <div className="text-white font-black">Analytics</div>
+                  <div className="text-gray-400 text-xs font-semibold">Performance insights</div>
+                </div>
+                <span className="text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
               </Link>
-              <Link href="/kingdom/content" className="flex items-center p-3 bg-zinc-800/50 hover:bg-zinc-700/50 rounded-lg transition">
-                <span className="text-2xl mr-3">🎨</span>
-                <div>
-                  <div className="text-white font-medium">Content</div>
-                  <div className="text-zinc-400 text-xs">Manage site content</div>
+              
+              <Link href="/kingdom/content" className="group flex items-center gap-4 p-4 bg-zinc-700/30 hover:bg-zinc-700/50 rounded-xl border-2 border-zinc-600 hover:border-purple-500/40 transition-all duration-300 hover:scale-105">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <span className="text-2xl">🎨</span>
                 </div>
+                <div className="flex-1">
+                  <div className="text-white font-black">Content</div>
+                  <div className="text-gray-400 text-xs font-semibold">Manage site content</div>
+                </div>
+                <span className="text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
               </Link>
-              <Link href="/kingdom/settings" className="flex items-center p-3 bg-zinc-800/50 hover:bg-zinc-700/50 rounded-lg transition">
-                <span className="text-2xl mr-3">⚙️</span>
-                <div>
-                  <div className="text-white font-medium">Settings</div>
-                  <div className="text-zinc-400 text-xs">System configuration</div>
+              
+              <Link href="/kingdom/settings" className="group flex items-center gap-4 p-4 bg-zinc-700/30 hover:bg-zinc-700/50 rounded-xl border-2 border-zinc-600 hover:border-green-500/40 transition-all duration-300 hover:scale-105">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <span className="text-2xl">⚙️</span>
                 </div>
+                <div className="flex-1">
+                  <div className="text-white font-black">Settings</div>
+                  <div className="text-gray-400 text-xs font-semibold">System configuration</div>
+                </div>
+                <span className="text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
               </Link>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="text-center text-zinc-600 mt-12 py-6 border-t border-zinc-800">
-        <p className="font-medium">🏰 The King's Domain</p>
-        <p className="text-xs mt-1">© 2025 MIGISTUS · Sovereign Admin Control</p>
-      </footer>
     </DashboardLayout>
   );
 }
+
+// Disable footer for all Kingdom pages
+(KingsDomainPage as any).showFooter = false;

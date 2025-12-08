@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, Users, TrendingUp, MessageCircle, Heart, Share2, MoreHorizontal, UserPlus, Sparkles, Edit3, Send, ChevronDown } from "lucide-react";
+import { Search, Users, TrendingUp, MessageCircle, Heart, Share2, MoreHorizontal, UserPlus, Sparkles, Edit3, Send, ChevronDown, Zap, Globe, Shield, Award, Package } from "lucide-react";
 import MainNavbar from "@/components/nav/MainNavbar";
 import { useAuth } from "@/context/AuthContext";
 import { UserStorage3 as UserStorage } from "@/utils/userStorage";
@@ -54,6 +55,7 @@ interface Post {
   type: 'vote' | 'pledge' | 'comment' | 'general';
   productName?: string;
   isLiked?: boolean;
+  visibility?: 'public' | 'followers' | 'private';
 }
 
 interface Activity {
@@ -63,17 +65,85 @@ interface Activity {
   [key: string]: any;
 }
 
-export default function CommunityPage() {  const { user, isAuthenticated } = useAuth();
-  const [activeTab, setActiveTab] = useState<'feed' | 'discover' | 'members'>('feed');
+export default function CommunityPage() {  
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
+  const [activeTab, setActiveTab] = useState<'feed' | 'members' | 'suppliers'>('feed');
   const [feedFilter, setFeedFilter] = useState<'personal' | 'local' | 'worldwide'>('personal');
+
+  // Check for tab query parameter on mount
+  useEffect(() => {
+    if (router.query.tab === 'suppliers') {
+      setActiveTab('suppliers');
+    } else if (router.query.tab === 'members') {
+      setActiveTab('members');
+    } else if (router.query.tab === 'feed') {
+      setActiveTab('feed');
+    }
+  }, [router.query.tab]);
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [newUsers, setNewUsers] = useState<User[]>([]);
-  const [allMembers, setAllMembers] = useState<User[]>([]);  const [searchTerm, setSearchTerm] = useState('');
+  const [allMembers, setAllMembers] = useState<User[]>([]);
+  const [suppliers, setSuppliers] = useState<User[]>([]);  const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'active' | 'name'>('newest');
   const [loading, setLoading] = useState(true);  const [following, setFollowing] = useState<number[]>([]);  const [newPostContent, setNewPostContent] = useState('');
   const [isPosting, setIsPosting] = useState(false);
   const [isGuildModalOpen, setIsGuildModalOpen] = useState(false);
-  const [isPostModalOpen, setIsPostModalOpen] = useState(false);  useEffect(() => {
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  
+  // Live stats tracking
+  const [liveStats, setLiveStats] = useState({
+    countries: 0,
+    totalInteractions: 0
+  });
+
+  // Load live stats from backend
+  useEffect(() => {
+    const loadLiveStats = async () => {
+      try {
+        // Fetch users for country count
+        const usersResponse = await fetch('/api/users');
+        const usersData = await usersResponse.json();
+        const users = usersData.users || [];
+        
+        // Count unique countries
+        const countries = new Set(
+          users
+            .filter((u: any) => !u.banned)
+            .map((u: any) => u.country || u.location?.country)
+            .filter((c: string) => c && c.trim() !== '')
+        );
+        
+        // Fetch voting data for interactions
+        const votingResponse = await fetch('/data/voting.json');
+        const votingData = await votingResponse.json();
+        const totalVotes = votingData.products?.reduce((sum: number, p: any) => sum + (p.votes || 0), 0) || 0;
+        
+        // Fetch pledges for more interactions
+        const pledgesResponse = await fetch('/data/pledges.json');
+        const pledgesData = await pledgesResponse.json();
+        const totalPledges = pledgesData.pledges?.length || 0;
+        
+        // Calculate total interactions (votes + pledges + posts + comments)
+        const totalInteractions = totalVotes + totalPledges + posts.length;
+        
+        setLiveStats({
+          countries: countries.size,
+          totalInteractions
+        });
+      } catch (error) {
+        console.error('Failed to load live stats:', error);
+      }
+    };
+    
+    loadLiveStats();
+    const interval = setInterval(loadLiveStats, 30000); // Update every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, [posts.length]);
+
+  useEffect(() => {
     loadCommunityData();
   }, [user]);  // Listen for real-time post updates from profile pages
   useEffect(() => {
@@ -99,6 +169,8 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
       const customEvent = event as CustomEvent;
       const { followerId, followingId, action } = customEvent.detail;
       
+      console.log('🔔 Community page received follower update:', customEvent.detail);
+      
       // If current user followed/unfollowed someone, update following list
       if (followerId === user.id) {
         const updatedFollowingList = UserStorage.getFollowingList(user.id) || [];
@@ -122,6 +194,111 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
           setPosts(refreshedPosts);
         }
       }
+      
+      // Update local state immediately with UserStorage data
+      const updateMemberStats = (members: any[]) => {
+        return members.map(member => {
+          // Update stats for both the follower and the person being followed
+          if (member.id === followerId || member.id === followingId) {
+            return {
+              ...member,
+              stats: {
+                ...member.stats,
+                followers: UserStorage.getUserFollowers(member.id) || 0,
+                following: UserStorage.getUserFollowing(member.id) || 0,
+                totalVotes: member.stats?.totalVotes || 0,
+                totalPledges: member.stats?.totalPledges || 0,
+                dropsJoined: member.stats?.dropsJoined || 0
+              }
+            };
+          }
+          return member;
+        });
+      };
+      
+      setNewUsers(prevUsers => updateMemberStats(prevUsers));
+      setAllMembers(prevMembers => updateMemberStats(prevMembers));
+      
+      // Fetch updated user data from API to get accurate follower counts
+      try {
+        // Small delay to ensure API has finished updating the database
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const response = await fetch('/api/users');
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.users && Array.isArray(data.users)) {
+            // Update newUsers with fresh data from USERSTORAGE (source of truth)
+            setNewUsers(prevUsers => 
+              prevUsers.map(member => {
+                const updatedUser = data.users.find((u: any) => u.id === member.id);
+                if (updatedUser) {
+                  return {
+                    ...member,
+                    stats: {
+                      // Use UserStorage for followers/following (same as profile page)
+                      followers: UserStorage.getUserFollowers(updatedUser.id) || 0,
+                      following: UserStorage.getUserFollowing(updatedUser.id) || 0,
+                      // Use API for other stats
+                      totalVotes: updatedUser.totalVotes || 0,
+                      totalPledges: updatedUser.totalPledges || 0,
+                      dropsJoined: updatedUser.dropsJoined || 0
+                    }
+                  };
+                }
+                return member;
+              })
+            );
+            
+            // Update allMembers with fresh data from USERSTORAGE (source of truth)
+            setAllMembers(prevMembers => 
+              prevMembers.map(member => {
+                const updatedUser = data.users.find((u: any) => u.id === member.id);
+                if (updatedUser) {
+                  return {
+                    ...member,
+                    stats: {
+                      // Use UserStorage for followers/following (same as profile page)
+                      followers: UserStorage.getUserFollowers(updatedUser.id) || 0,
+                      following: UserStorage.getUserFollowing(updatedUser.id) || 0,
+                      // Use API for other stats
+                      totalVotes: updatedUser.totalVotes || 0,
+                      totalPledges: updatedUser.totalPledges || 0,
+                      dropsJoined: updatedUser.dropsJoined || 0
+                    }
+                  };
+                }
+                return member;
+              })
+            );
+            
+            // Update suppliers list as well
+            setSuppliers(prevSuppliers => 
+              prevSuppliers.map(supplier => {
+                const updatedUser = data.users.find((u: any) => u.id === supplier.id);
+                if (updatedUser) {
+                  return {
+                    ...supplier,
+                    stats: {
+                      followers: UserStorage.getUserFollowers(updatedUser.id) || 0,
+                      following: UserStorage.getUserFollowing(updatedUser.id) || 0,
+                      totalVotes: updatedUser.totalVotes || 0,
+                      totalPledges: updatedUser.totalPledges || 0,
+                      dropsJoined: updatedUser.dropsJoined || 0
+                    }
+                  };
+                }
+                return supplier;
+              })
+            );
+            
+            console.log(`✅ Refreshed follower counts from UserStorage after ${action}`);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to refresh follower counts:', error);
+      }
     };    // Listen for follower update events
     window.addEventListener('followerUpdate', handleFollowerUpdate);
     
@@ -129,6 +306,67 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
       window.removeEventListener('followerUpdate', handleFollowerUpdate);
     };
   }, [user, loading, feedFilter]);
+
+  // Listen for new user registrations to update member list
+  useEffect(() => {
+    const handleNewUserRegistration = async (event: Event) => {
+      console.log('🔔 Community page received new user registration event');
+      
+      // Reload all members from API to include newly registered user
+      try {
+        const response = await fetch('/api/users');
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`✅ Reloaded ${data.users?.length || 0} users after new registration`);
+          
+          if (data.users && Array.isArray(data.users) && data.users.length > 0) {
+            const apiMembers: User[] = data.users
+              .filter((u: any) => !u.banned)
+              .map((u: any) => {
+                const userStorageFollowers = UserStorage.getUserFollowers(u.id) || 0;
+                const userStorageFollowing = UserStorage.getUserFollowing(u.id) || 0;
+                
+                return {
+                  id: u.id,
+                  username: u.username,
+                  email: u.email,
+                  tier: u.tier || "New Member",
+                  avatar: u.avatar || null,
+                  bio: u.bio || "",
+                  joinedDate: u.joinDate || u.createdAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+                  stats: {
+                    followers: userStorageFollowers,
+                    following: userStorageFollowing,
+                    totalVotes: u.totalVotes || 0,
+                    totalPledges: u.totalPledges || 0,
+                    dropsJoined: u.dropsJoined || 0
+                  }
+                };
+              });
+            
+            console.log(`✅ Updated member list with ${apiMembers.length} members`);
+            setAllMembers(apiMembers);
+            
+            // Update suppliers list
+            const supplierMembers = apiMembers.filter(m => m.tier === 'Supplier');
+            setSuppliers(supplierMembers);
+            
+            // Also update new users list
+            const recentUsers = getNewUsers();
+            setNewUsers(recentUsers);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error reloading members after registration:', error);
+      }
+    };
+
+    window.addEventListener('newUserRegistered', handleNewUserRegistration);
+    
+    return () => {
+      window.removeEventListener('newUserRegistered', handleNewUserRegistration);
+    };
+  }, []);
 
   // Periodic refresh to catch any missed updates
   useEffect(() => {
@@ -174,6 +412,68 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('mousedown', handleClickOutside);
     };  }, [isGuildModalOpen, isPostModalOpen]);
+
+  // Helper function to load suppliers from suppliers.json
+  const loadSuppliersFromJson = async (apiMembers: User[]): Promise<User[]> => {
+    try {
+      const suppliersResponse = await fetch('/data/suppliers.json');
+      if (suppliersResponse.ok) {
+        const suppliersData = await suppliersResponse.json();
+        console.log(`📦 Loaded ${suppliersData.length} suppliers from suppliers.json`);
+        
+        // Convert supplier data to User format
+        const supplierAccounts: User[] = suppliersData
+          .filter((s: any) => s.status === 'active')
+          .map((s: any) => {
+            // Check if this supplier already exists as a user account
+            const existingUser = apiMembers.find(m => m.email === s.email || m.username === s.name);
+            
+            if (existingUser) {
+              // Update existing user with supplier info
+              return {
+                ...existingUser,
+                tier: 'Supplier',
+                bio: `${s.companyName} - Supplier since ${new Date(s.joinedDate).getFullYear()}. Specializing in ${s.productCategories.join(', ')}.`,
+                location: {
+                  country: s.address?.split(',').pop()?.trim() || 'Unknown'
+                }
+              };
+            } else {
+              // Create new supplier entry
+              const supplierId = parseInt(s.id) || Date.now();
+              const userStorageFollowers = UserStorage.getUserFollowers(supplierId) || 0;
+              const userStorageFollowing = UserStorage.getUserFollowing(supplierId) || 0;
+              
+              return {
+                id: supplierId,
+                username: s.name || s.companyName,
+                email: s.email,
+                tier: 'Supplier',
+                avatar: null,
+                bio: `${s.companyName} - Supplier since ${new Date(s.joinedDate).getFullYear()}. Specializing in ${s.productCategories.join(', ')}.`,
+                joinedDate: s.joinedDate,
+                country: s.address?.split(',').pop()?.trim(),
+                location: {
+                  country: s.address?.split(',').pop()?.trim() || 'Unknown'
+                },
+                stats: {
+                  followers: userStorageFollowers,
+                  following: userStorageFollowing,
+                  totalVotes: 0,
+                  totalPledges: 0,
+                  dropsJoined: s.totalProducts || 0
+                }
+              };
+            }
+          });
+        
+        return supplierAccounts;
+      }
+    } catch (error) {
+      console.error('Error loading suppliers.json:', error);
+    }
+    return [];
+  };
 
   const loadCommunityData = async () => {
     try {
@@ -224,9 +524,154 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
       const recentUsers = getNewUsers();
       setNewUsers(recentUsers);
 
-      // Load all community members
-      const members = getAllCommunityMembers();
-      setAllMembers(members);
+      // Load all community members - FETCH FROM API FIRST
+      try {
+        console.log('📡 Fetching members from API...');
+        const response = await fetch('/api/users');
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`✅ API returned ${data.users?.length || 0} users`);
+          
+          if (data.users && Array.isArray(data.users) && data.users.length > 0) {
+            // Convert API users to User format (display data only, no auto-creation)
+            const apiMembers: User[] = data.users
+              .filter((u: any) => !u.banned) // Filter out banned users
+              .map((u: any) => {
+                // Use UserStorage as the SOURCE OF TRUTH for follower counts (same as profile page)
+                const userStorageFollowers = UserStorage.getUserFollowers(u.id) || 0;
+                const userStorageFollowing = UserStorage.getUserFollowing(u.id) || 0;
+                
+                return {
+                  id: u.id,
+                  username: u.username,
+                  email: u.email,
+                  tier: u.tier || "New Member",
+                  avatar: u.avatar || null,
+                  bio: u.bio || "",
+                  joinedDate: u.joinDate || u.createdAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+                  stats: {
+                    // Use UserStorage for followers/following (same source as profile page)
+                    followers: userStorageFollowers,
+                    following: userStorageFollowing,
+                    // Use API for other stats
+                    totalVotes: u.totalVotes || 0,
+                    totalPledges: u.totalPledges || 0,
+                    dropsJoined: u.dropsJoined || 0
+                  }
+                };
+              });
+            
+            console.log(`✅ Converted ${apiMembers.length} API users to members (using UserStorage for follower counts)`);
+            setAllMembers(apiMembers);
+            
+            // Load suppliers - combine API users with 'Supplier' tier and suppliers.json
+            const supplierMembers = apiMembers.filter(m => m.tier === 'Supplier');
+            console.log(`📦 Found ${supplierMembers.length} supplier users from regular members`);
+            
+            // Load additional suppliers from suppliers.json
+            const jsonSuppliers = await loadSuppliersFromJson(apiMembers);
+            
+            // Merge suppliers, avoiding duplicates by email and ID
+            const allSuppliers = [...supplierMembers];
+            const existingEmails = new Set(supplierMembers.map(s => s.email.toLowerCase()));
+            const existingIds = new Set(supplierMembers.map(s => s.id));
+            
+            jsonSuppliers.forEach(supplier => {
+              const emailExists = existingEmails.has(supplier.email.toLowerCase());
+              const idExists = existingIds.has(supplier.id);
+              
+              if (!emailExists && !idExists) {
+                allSuppliers.push(supplier);
+                existingEmails.add(supplier.email.toLowerCase());
+                existingIds.add(supplier.id);
+              } else if (emailExists || idExists) {
+                // Update existing supplier with more complete data from JSON
+                const index = allSuppliers.findIndex(s => 
+                  s.email.toLowerCase() === supplier.email.toLowerCase() || s.id === supplier.id
+                );
+                if (index !== -1) {
+                  allSuppliers[index] = {
+                    ...allSuppliers[index],
+                    ...supplier,
+                    stats: {
+                      followers: supplier.stats?.followers ?? allSuppliers[index].stats?.followers ?? 0,
+                      following: supplier.stats?.following ?? allSuppliers[index].stats?.following ?? 0,
+                      totalVotes: supplier.stats?.totalVotes ?? allSuppliers[index].stats?.totalVotes ?? 0,
+                      totalPledges: supplier.stats?.totalPledges ?? allSuppliers[index].stats?.totalPledges ?? 0,
+                      dropsJoined: supplier.stats?.dropsJoined ?? allSuppliers[index].stats?.dropsJoined ?? 0
+                    }
+                  };
+                }
+              }
+            });
+            
+            console.log(`✅ Total suppliers after merge: ${allSuppliers.length}`);
+            setSuppliers(allSuppliers);
+          } else {
+            // Fallback to localStorage
+            console.log('⚠️ No users in API, falling back to localStorage');
+            const members = getAllCommunityMembers();
+            setAllMembers(members);
+            
+            // Load suppliers from both localStorage and JSON
+            const supplierMembers = members.filter(m => m.tier === 'Supplier');
+            const jsonSuppliers = await loadSuppliersFromJson(members);
+            
+            const allSuppliers = [...supplierMembers];
+            const existingEmails = new Set(supplierMembers.map(s => s.email.toLowerCase()));
+            const existingIds = new Set(supplierMembers.map(s => s.id));
+            
+            jsonSuppliers.forEach(supplier => {
+              if (!existingEmails.has(supplier.email.toLowerCase()) && !existingIds.has(supplier.id)) {
+                allSuppliers.push(supplier);
+              }
+            });
+            
+            setSuppliers(allSuppliers);
+          }
+        } else {
+          console.warn('⚠️ API request failed, using localStorage');
+          const members = getAllCommunityMembers();
+          setAllMembers(members);
+          
+          // Load suppliers from both localStorage and JSON
+          const supplierMembers = members.filter(m => m.tier === 'Supplier');
+          const jsonSuppliers = await loadSuppliersFromJson(members);
+          
+          const allSuppliers = [...supplierMembers];
+          const existingEmails = new Set(supplierMembers.map(s => s.email.toLowerCase()));
+          const existingIds = new Set(supplierMembers.map(s => s.id));
+          
+          jsonSuppliers.forEach(supplier => {
+            if (!existingEmails.has(supplier.email.toLowerCase()) && !existingIds.has(supplier.id)) {
+              allSuppliers.push(supplier);
+            }
+          });
+          
+          setSuppliers(allSuppliers);
+        }
+      } catch (apiError) {
+        console.error('❌ Error fetching from API:', apiError);
+        // Fallback to localStorage
+        const members = getAllCommunityMembers();
+        setAllMembers(members);
+        
+        // Load suppliers from both localStorage and JSON
+        const supplierMembers = members.filter(m => m.tier === 'Supplier');
+        const jsonSuppliers = await loadSuppliersFromJson(members);
+        
+        const allSuppliers = [...supplierMembers];
+        const existingEmails = new Set(supplierMembers.map(s => s.email.toLowerCase()));
+        const existingIds = new Set(supplierMembers.map(s => s.id));
+        
+        jsonSuppliers.forEach(supplier => {
+          if (!existingEmails.has(supplier.email.toLowerCase()) && !existingIds.has(supplier.id)) {
+            allSuppliers.push(supplier);
+          }
+        });
+        
+        setSuppliers(allSuppliers);
+      }
 
     } catch (error) {
       console.error('Error loading community data:', error);
@@ -240,12 +685,29 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
     const livePosts: Post[] = [];
     let targetUsers: number[] = [];
     
+    // Debug: Check what's in localStorage for social posts
+    const allSocialPosts = SocialPostsStorage.getAllPosts();
+    console.log(`💾 Total social posts in storage: ${allSocialPosts.length}`);
+    const userSocialPosts = allSocialPosts.filter(p => p.userId === user.id);
+    console.log(`📝 Your posts in storage: ${userSocialPosts.length}`);
+    if (userSocialPosts.length > 0) {
+      console.log('📋 Your posts details:', userSocialPosts.map(p => ({
+        id: p.id,
+        content: p.content.substring(0, 50),
+        visibility: p.visibility,
+        timestamp: p.timestamp,
+        userId: p.userId
+      })));
+    }
+    console.log(`🎯 Current user ID: ${user.id}`);
+    
     // Determine which users to include based on filter
     switch (feedFilter) {      case 'personal':
         // Include user's own posts, plus posts from people they follow
         const followingUsers = [...following];
         // Ensure no duplicates and current user is always included
         targetUsers = [user.id, ...followingUsers.filter(id => id !== user.id)];
+        console.log(`👥 Personal Guild - Target users: [${targetUsers.join(', ')}]`);
         break;
           case 'local':
         // Include users from the same country
@@ -281,14 +743,37 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
     }    // Generate posts from user activities AND social posts
     targetUsers.forEach(userId => {
       try {
-        const userProfile = UserStorage.getUserProfile(userId);
+        let userProfile = UserStorage.getUserProfile(userId);
+        
+        // CRITICAL: If user profile doesn't exist, create it from API data or session
+        if (!userProfile && userId === user.id) {
+          console.log(`⚠️ No profile found for current user ${userId}, creating from session data...`);
+          userProfile = {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            bio: '',
+            tier: 'New Member',
+            avatar: null,
+            joinedDate: new Date().toISOString().split('T')[0],
+            stats: { totalPledges: 0, totalVotes: 0, dropsJoined: 0, followers: 0, following: 0 }
+          };
+          UserStorage.setUserProfile(user.id, userProfile);
+          console.log(`✅ Created profile for current user: ${user.username}`);
+        }
+        
         if (!userProfile) {
+          console.log(`⚠️ No profile found for user ID ${userId}`);
           return;
         }
 
         // Filter out test accounts from posts
         if (isTestAccount(userProfile)) {
           return;
+        }
+        
+        if (userId === user.id) {
+          console.log(`📝 Loading posts for current user: ${userProfile.username}`);
         }
 
         // 1. Get posts from UserStorage (legacy post activities)
@@ -328,6 +813,14 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
 
         // 2. Get posts from SocialPostsStorage (new social posts from profile)
         const socialPosts = SocialPostsStorage.getUserPosts(userId);
+        
+        if (userId === user.id) {
+          console.log(`📦 SocialPostsStorage for current user: ${socialPosts.length} posts found`);
+          if (socialPosts.length > 0) {
+            console.log('Post titles:', socialPosts.map(p => `"${p.content.substring(0, 30)}..."`));
+          }
+        }
+        
         const recentSocialPosts = socialPosts.filter(socialPost => {
           const postDate = new Date(socialPost.timestamp);
           return postDate >= thirtyDaysAgo;
@@ -344,6 +837,49 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
             return;
           }
 
+          // Apply visibility filtering based on post visibility AND current feed filter
+          const isOwnPost = socialPost.userId === user.id;
+          const isFollowing = UserStorage.isFollowing(user.id, socialPost.userId);
+          const visibility = socialPost.visibility || 'public';
+          
+          // Debug logging for ALL posts to see what's happening
+          console.log(`🔍 Processing post by ${socialPost.username} (ID: ${socialPost.userId}):`, {
+            content: socialPost.content.substring(0, 40),
+            visibility,
+            feedFilter,
+            isOwnPost,
+            isFollowing,
+            currentUserId: user.id
+          });
+          
+          // Determine if post should be shown based on visibility and feed filter
+          let canViewPost = false;
+          
+          if (visibility === 'public') {
+            // Public posts appear in ALL guild types
+            canViewPost = true;
+          } else if (visibility === 'followers') {
+            // Followers-only posts ONLY appear in Personal Guild
+            // And only if: it's your own post OR you follow the author
+            if (feedFilter === 'personal') {
+              canViewPost = isOwnPost || isFollowing;
+              console.log(`👥 Followers-only post check: isOwnPost=${isOwnPost}, isFollowing=${isFollowing}, canView=${canViewPost}`);
+            } else {
+              canViewPost = false; // Don't show in Local/Worldwide guilds
+              console.log(`🚫 Followers-only post hidden in ${feedFilter} guild`);
+            }
+          } else if (visibility === 'private') {
+            // Private posts ONLY appear for the owner, regardless of guild
+            canViewPost = isOwnPost;
+          }
+          
+          if (!canViewPost) {
+            console.log(`❌ Post filtered out - visibility: ${visibility}, feedFilter: ${feedFilter}`);
+            return;
+          }
+          
+          console.log(`✅ Post will be shown in feed`);
+
           const post: Post = {
             id: `social_${socialPost.id}`,
             userId: socialPost.userId,
@@ -356,7 +892,8 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
             comments: socialPost.comments,
             shares: socialPost.shares,
             type: 'general',
-            isLiked: socialPost.likedBy?.includes(user.id) || false
+            isLiked: socialPost.likedBy?.includes(user.id) || false,
+            visibility: socialPost.visibility || 'public'
           };
           
           livePosts.push(post);
@@ -388,6 +925,13 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
     const sortedPosts = livePosts.sort((a, b) => 
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     ).slice(0, 50); // Limit to 50 most recent posts
+    
+    console.log(`📊 Feed Summary: ${sortedPosts.length} posts total`);
+    const ownPosts = sortedPosts.filter(p => p.userId === user.id);
+    console.log(`📝 Your posts in feed: ${ownPosts.length}`);
+    if (ownPosts.length > 0) {
+      console.log('Own posts:', ownPosts.map(p => `"${p.content.substring(0, 30)}..."`));
+    }
     
     return sortedPosts;
   };
@@ -482,9 +1026,15 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
     const username = (profile.username || '').toLowerCase();
     const email = (profile.email || '').toLowerCase();
     
+    // IMPORTANT: Don't filter out the actual admin account (user ID 1)
+    // Only filter test/demo accounts
+    if (profile.id === 1 || profile.id === '1') {
+      return false; // Never filter out the main admin
+    }
+    
     // Filter out accounts with test-related names
     const testPatterns = [
-      'test', 'bot', 'demo', 'sample', 'mock', 'fake', 'admin',
+      'test', 'bot', 'demo', 'sample', 'mock', 'fake',
       'placeholder', 'example', 'dummy', 'temp'
     ];
     
@@ -683,12 +1233,12 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
         return { 
           icon: '👥', 
           name: 'Personal Guild', 
-          description: `Posts from you and ${following.length} people you follow` 
+          description: `Posts from you and ${following.length} ${following.length === 1 ? 'person' : 'people'} you follow` 
         };
       case 'local':
         return { icon: '🌍', name: 'Local Guild', description: 'Posts from members in your country' };
       case 'worldwide':
-        return { icon: '🌐', name: 'Worldwide Guild', description: 'Posts from all community members' };
+        return { icon: '🌐', name: 'Worldwide Guild', description: 'Public posts from all community members' };
     }
   };
 
@@ -753,67 +1303,126 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
   return (
     <>
       <Head>
-        <title>Community - Migistus</title>
-        <meta name="description" content="Connect with the Migistus community" />
+        <title>Community - MIGISTUS | Connect & Discover</title>
+        <meta name="description" content="Join the MIGISTUS community. Connect with fellow members, share experiences, and stay updated with the latest activity." />
       </Head>
 
       <MainNavbar />
 
-      <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black">
-        {/* Header */}
-        <div className="relative overflow-hidden py-16">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-transparent to-purple-500/10"></div>
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="inline-flex items-center gap-3 bg-zinc-800/50 border border-zinc-700 rounded-full px-6 py-2 mb-6">
-              <Users className="w-5 h-5 text-blue-400" />
-              <span className="text-blue-400 font-medium">Community</span>
+      <div className="min-h-screen bg-black">
+        {/* Enhanced Header with Stats - Collapses when any tab is selected */}
+        <div className={`relative overflow-hidden bg-gradient-to-br from-black via-zinc-900 to-black transition-all duration-700 ease-in-out py-8`}>
+          {/* Animated Background Elements */}
+          <div className={`absolute inset-0 transition-opacity duration-700 opacity-0`}>
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          </div>
+          
+          <div className={`relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-700 opacity-0 -translate-y-4 h-0 overflow-hidden`}>
+            <div className="text-center mb-12">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-full px-6 py-2 mb-6 backdrop-blur-sm">
+                <Users className="w-5 h-5 text-blue-400" />
+                <span className="text-blue-400 font-medium">Community Hub</span>
+                <Sparkles className="w-4 h-4 text-purple-400" />
+              </div>
+              
+              {/* Heading */}
+              <h1 className="text-5xl md:text-6xl font-bold mb-6">
+                <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  Connect & Discover
+                </span>
+              </h1>
+              
+              <p className="text-xl text-zinc-300 max-w-3xl mx-auto leading-relaxed mb-8">
+                Join thousands of MIGISTUS members sharing experiences, discovering products, 
+                and building connections in the ultimate group buying community
+              </p>
+
+              {/* Community Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-5xl mx-auto">
+                <div className="bg-zinc-900/60 backdrop-blur-sm border border-blue-500/30 rounded-xl p-4 hover:scale-105 transition-transform">
+                  <div className="flex items-center justify-center mb-2">
+                    <Users className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-blue-400">{allMembers.length}+</div>
+                  <div className="text-xs text-zinc-400">Active Members</div>
+                </div>
+                
+                <div className="bg-zinc-900/60 backdrop-blur-sm border border-purple-500/30 rounded-xl p-4 hover:scale-105 transition-transform">
+                  <div className="flex items-center justify-center mb-2">
+                    <MessageCircle className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-purple-400">{posts.length}+</div>
+                  <div className="text-xs text-zinc-400">Recent Posts</div>
+                </div>
+                
+                <div className="bg-zinc-900/60 backdrop-blur-sm border border-orange-500/30 rounded-xl p-4 hover:scale-105 transition-transform">
+                  <div className="flex items-center justify-center mb-2">
+                    <Package className="w-6 h-6 text-orange-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-orange-400">{suppliers.length}+</div>
+                  <div className="text-xs text-zinc-400">Suppliers</div>
+                </div>
+                
+                <div className="bg-zinc-900/60 backdrop-blur-sm border border-green-500/30 rounded-xl p-4 hover:scale-105 transition-transform">
+                  <div className="flex items-center justify-center mb-2">
+                    <Globe className="w-6 h-6 text-green-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-green-400">{liveStats.countries > 0 ? liveStats.countries : '—'}</div>
+                  <div className="text-xs text-zinc-400">Countries</div>
+                </div>
+                
+                <div className="bg-zinc-900/60 backdrop-blur-sm border border-yellow-500/30 rounded-xl p-4 hover:scale-105 transition-transform">
+                  <div className="flex items-center justify-center mb-2">
+                    <Heart className="w-6 h-6 text-yellow-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-yellow-400">{liveStats.totalInteractions > 0 ? liveStats.totalInteractions.toLocaleString() : '—'}</div>
+                  <div className="text-xs text-zinc-400">Interactions</div>
+                </div>
+              </div>
             </div>
-            
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Connect & Discover
-            </h1>
-            
-            <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
-              Join the conversation, discover new members, and stay updated with community activity
-            </p>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-          <div className="flex space-x-1 bg-zinc-800/30 border border-zinc-700 rounded-xl p-1">
-            <button
-              onClick={() => setActiveTab('feed')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
-                activeTab === 'feed'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-700/50'
-              }`}
-            >
-              <MessageCircle className="w-4 h-4 inline mr-2" />
-              Feed
-            </button>
-            <button
-              onClick={() => setActiveTab('discover')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
-                activeTab === 'discover'
-                  ? 'bg-purple-600 text-white'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-700/50'
-              }`}
-            >
-              <Sparkles className="w-4 h-4 inline mr-2" />
-              Discover
-            </button>            <button
-              onClick={() => setActiveTab('members')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
-                activeTab === 'members'
-                  ? 'bg-green-600 text-white'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-700/50'
-              }`}
-            >
-              <Users className="w-4 h-4 inline mr-2" />
-              Members
-            </button>
+        <div className="sticky top-0 z-30 bg-black/95 backdrop-blur-xl border-b border-zinc-800">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex space-x-2 bg-zinc-900/50 border border-zinc-700 rounded-xl p-1.5">
+              <button
+                onClick={() => setActiveTab('feed')}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-300 ${
+                  activeTab === 'feed'
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                }`}
+              >
+                <MessageCircle className="w-4 h-4 inline mr-2" />
+                Feed
+              </button>
+              <button
+                onClick={() => setActiveTab('members')}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-300 ${
+                  activeTab === 'members'
+                    ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg shadow-green-500/30'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                }`}
+              >
+                <Users className="w-4 h-4 inline mr-2" />
+                Guild Mates
+              </button>
+              <button
+                onClick={() => setActiveTab('suppliers')}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-300 ${
+                  activeTab === 'suppliers'
+                    ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/30'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                }`}
+              >
+                <Package className="w-4 h-4 inline mr-2" />
+                Suppliers
+              </button>
+            </div>
           </div>
         </div>
 
@@ -822,13 +1431,33 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
           {activeTab === 'feed' && (
             <div className="space-y-6">
               {!isAuthenticated ? (
-                <div className="bg-zinc-800/30 border border-zinc-700 rounded-2xl p-8 text-center">
-                  <Users className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">Join the Community</h3>
-                  <p className="text-zinc-400 mb-4">Sign in to see posts from people you follow and share your own activity.</p>
-                  <Link href="/login" className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
+                <div className="bg-gradient-to-br from-zinc-900/90 to-zinc-800/90 border-2 border-blue-500/30 rounded-3xl p-12 text-center backdrop-blur-sm">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Users className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-3">Join Our Community</h3>
+                  <p className="text-zinc-300 mb-6 max-w-md mx-auto leading-relaxed">
+                    Sign in to see posts from people you follow, share your own activity, and engage with the community.
+                  </p>
+                  <Link href="/login" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
+                    <Shield className="w-5 h-5" />
                     Sign In to Continue
+                    <Sparkles className="w-4 h-4" />
                   </Link>
+                  <div className="mt-6 flex items-center justify-center gap-8 text-sm text-zinc-400">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-blue-400" />
+                      <span>Share Posts</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Heart className="w-4 h-4 text-pink-400" />
+                      <span>Like & Comment</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-green-400" />
+                      <span>Follow Members</span>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <>                  {/* Guild Filter and Refresh Controls */}
@@ -904,11 +1533,11 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
                   )}                  {/* Share with Community Button */}
                   <button
                     onClick={() => setIsPostModalOpen(true)}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-4 rounded-2xl font-medium transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl border border-blue-500/20"
+                    className="group w-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white p-6 rounded-2xl font-semibold transition-all duration-300 flex items-center justify-center space-x-3 shadow-xl hover:shadow-2xl border-2 border-blue-500/20 hover:scale-[1.02]"
                   >
-                    <Edit3 className="w-5 h-5" />
-                    <span>Share with the Community</span>
-                    <Sparkles className="w-4 h-4" />
+                    <Edit3 className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                    <span className="text-lg">Share with the Community</span>
+                    <Sparkles className="w-5 h-5 group-hover:scale-125 transition-transform" />
                   </button>
 
                   {loading ? (
@@ -916,26 +1545,30 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
                       <div className="text-zinc-400 mt-4">Loading your feed...</div>
                     </div>                  ) : posts.length === 0 ? (
-                    <div className="bg-zinc-800/30 border border-zinc-700 rounded-2xl p-8 text-center">
-                      <MessageCircle className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-white mb-2">No Posts Yet</h3>
-                      <p className="text-zinc-400 mb-4">
+                    <div className="bg-gradient-to-br from-zinc-900/90 to-zinc-800/90 border-2 border-zinc-700 rounded-3xl p-12 text-center">
+                      <div className="w-20 h-20 bg-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <MessageCircle className="w-10 h-10 text-zinc-500" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-white mb-3">No Posts Yet</h3>
+                      <p className="text-zinc-300 mb-6 max-w-md mx-auto">
                         {feedFilter === 'personal' && "Follow other users or start participating to see activity in your personal feed."}
                         {feedFilter === 'local' && "No recent activity from members in your country. Try expanding to Worldwide Guild."}
                         {feedFilter === 'worldwide' && "No recent community activity found. Be the first to start engaging!"}
                       </p>
-                      <div className="flex gap-3 justify-center">
+                      <div className="flex gap-4 justify-center flex-wrap">
                         <button 
-                          onClick={() => setActiveTab('discover')}
-                          className="inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+                          onClick={() => setActiveTab('members')}
+                          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
                         >
-                          Discover Users
+                          <Users className="w-5 h-5" />
+                          Browse Members
                         </button>
                         {feedFilter !== 'worldwide' && (
                           <button 
                             onClick={() => setFeedFilter('worldwide')}
-                            className="inline-flex items-center px-6 py-3 bg-zinc-600 hover:bg-zinc-700 text-white rounded-lg font-medium transition-colors"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl font-semibold transition-all duration-300"
                           >
+                            <Globe className="w-5 h-5" />
                             Try Worldwide
                           </button>
                         )}
@@ -943,27 +1576,45 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {posts.map((post) => (
-                        <div key={post.id} className="bg-zinc-800/30 border border-zinc-700 rounded-2xl p-6 hover:bg-zinc-700/30 transition-all duration-300">
+                      {posts.map((post) => {
+                        const isAdminPost = post.userId === 1;
+                        const isOwnPost = user && post.userId === user.id;
+                        return (
+                        <div 
+                          key={post.id} 
+                          className={`bg-zinc-800/30 rounded-2xl p-6 hover:bg-zinc-700/30 transition-all duration-300 ${
+                            isAdminPost 
+                              ? 'border-2 border-yellow-500/50 shadow-lg shadow-yellow-500/20' 
+                              : isOwnPost
+                              ? 'border-2 border-blue-500/50 shadow-lg shadow-blue-500/20'
+                              : 'border border-zinc-700'
+                          }`}
+                        >
                           {/* Post Header */}
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center space-x-3">
                               <div className="relative">
-                                <div className="w-12 h-12 bg-zinc-700 rounded-full flex items-center justify-center overflow-hidden">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center overflow-hidden ${
+                                  isAdminPost ? 'bg-gradient-to-br from-yellow-500 to-yellow-600' : 'bg-zinc-700'
+                                }`}>
                                   {post.avatar ? (
                                     <Image src={post.avatar} alt={post.username} width={48} height={48} className="object-cover" />
                                   ) : (
-                                    <span className="text-zinc-400">{getTierEmoji(post.tier)}</span>
+                                    <span className={isAdminPost ? 'text-zinc-900' : 'text-zinc-400'}>{getTierEmoji(post.tier)}</span>
                                   )}
                                 </div>
                                 <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-zinc-800 ${
+                                  isAdminPost ? 'bg-yellow-500' :
                                   post.tier === 'MIGISTUS' ? 'bg-yellow-500' :
                                   post.tier === 'Guild' ? 'bg-purple-500' : 'bg-blue-500'
                                 }`}></div>
                               </div>
                               <div>
                                 <div className="flex items-center space-x-2">
-                                  <h4 className="font-semibold text-white">{post.username}</h4>
+                                  <h4 className={`font-semibold ${isAdminPost ? 'text-yellow-400' : 'text-white'}`}>
+                                    {post.username}
+                                    {isAdminPost && <span className="ml-2 text-xs px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded-full border border-yellow-500/30">ADMIN</span>}
+                                  </h4>
                                   <span className={`text-sm ${getTierColor(post.tier)}`}>
                                     {getTierEmoji(post.tier)} {post.tier}
                                   </span>
@@ -1011,100 +1662,58 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
                             </div>
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </>
               )}
             </div>
-          )}          {/* Discover Tab */}
-          {activeTab === 'discover' && (
-            <div className="space-y-6">
-              <div className="bg-zinc-800/30 border border-zinc-700 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-3">
-                    <Sparkles className="w-6 h-6 text-purple-400" />
-                    <h2 className="text-xl font-bold text-white">New Community Members</h2>
-                  </div>
-                  <Link 
-                    href="/community/members-list"
-                    className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
-                  >
-                    <Users className="w-4 h-4" />
-                    <span>Browse All Members</span>
-                  </Link>
-                </div>
-                
-                {loading ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400 mx-auto"></div>
-                    <div className="text-zinc-400 mt-2">Loading new members...</div>
-                  </div>
-                ) : (
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {newUsers.map((newUser) => (
-                      <div key={newUser.id} className="bg-zinc-700/30 border border-zinc-600 rounded-xl p-4 hover:bg-zinc-600/30 transition-all duration-300">
-                        <div className="text-center mb-4">
-                          <div className="w-16 h-16 bg-zinc-700 rounded-full mx-auto mb-3 flex items-center justify-center overflow-hidden">
-                            {newUser.avatar ? (
-                              <Image src={newUser.avatar} alt={newUser.username} width={64} height={64} className="object-cover" />
-                            ) : (
-                              <span className="text-2xl">{getTierEmoji(newUser.tier)}</span>
-                            )}
-                          </div>
-                          <h3 className="font-semibold text-white">{newUser.username}</h3>
-                          <p className={`text-sm ${getTierColor(newUser.tier)}`}>
-                            {getTierEmoji(newUser.tier)} {newUser.tier}
-                          </p>
-                          {newUser.bio && (
-                            <p className="text-sm text-zinc-400 mt-2 line-clamp-2">{newUser.bio}</p>
-                          )}
-                        </div>
-                        
-                        <div className="flex justify-between text-xs text-zinc-400 mb-4">
-                          <span>{newUser.stats?.followers || 0} followers</span>
-                          <span>{newUser.stats?.totalVotes || 0} votes</span>
-                        </div>
-                          <div className="flex space-x-2">
-                          <FollowButton 
-                            targetUserId={newUser.id} 
-                            targetUsername={newUser.username}
-                            size="sm"
-                          />
-                          <Link 
-                            href={`/community/profile/${newUser.username.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
-                            className="flex-1 px-3 py-2 bg-zinc-600 hover:bg-zinc-500 text-white text-sm rounded-lg font-medium text-center transition-colors"
-                          >
-                            View Profile
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}          {/* Members Tab */}
+          )}
+
+          {/* Members Tab */}
           {activeTab === 'members' && (
             <div className="space-y-6">
-              <div className="bg-zinc-800/30 border border-zinc-700 rounded-2xl p-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <Users className="w-6 h-6 text-green-400" />
-                  <h2 className="text-xl font-bold text-white">Community Members</h2>
-                  <span className="text-sm text-zinc-400">({allMembers.length} members)</span>
+              {/* Welcome Message */}
+              <div className="bg-gradient-to-r from-green-900/20 via-green-800/20 to-emerald-900/20 border border-green-500/30 rounded-2xl p-6 backdrop-blur-sm">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-green-500/10 rounded-xl">
+                    <Users className="w-6 h-6 text-green-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-green-300 mb-2">Find Your Guild Mates</h3>
+                    <p className="text-zinc-300 text-sm leading-relaxed">
+                      Search and connect with all MIGISTUS members. Use filters to find people with similar interests 
+                      and build your community network.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-zinc-900/50 border border-zinc-700 rounded-2xl p-8">
+                <div className="flex items-center space-x-3 mb-8">
+                  <div className="p-2 bg-green-500/10 rounded-lg">
+                    <Users className="w-6 h-6 text-green-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Guild Mates Discovery</h2>
+                    <p className="text-sm text-zinc-400 mt-1">
+                      Browse and connect with community members ({allMembers.length} member{allMembers.length !== 1 ? 's' : ''} found)
+                    </p>
+                  </div>
                 </div>
                 
                 {/* Search and Filter Controls */}
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="flex flex-col md:flex-row gap-4 mb-8">
                   <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400 w-5 h-5" />
+                    <div className="relative group">
+                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-400 group-focus-within:text-green-400 w-5 h-5 transition-colors" />
                       <input
                         type="text"
                         placeholder="Search members by username or bio..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-zinc-700/50 border border-zinc-600 rounded-xl pl-10 pr-4 py-3 text-white placeholder-zinc-400 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
+                        className="w-full bg-zinc-800/50 border border-zinc-600 rounded-xl pl-12 pr-4 py-4 text-white placeholder-zinc-400 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
                       />
                     </div>
                   </div>
@@ -1112,11 +1721,11 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value as 'newest' | 'active' | 'name')}
-                      className="px-4 py-3 bg-zinc-700/50 border border-zinc-600 rounded-xl text-white focus:border-green-500 focus:outline-none"
+                      className="px-5 py-4 bg-zinc-800/50 border border-zinc-600 rounded-xl text-white focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-all cursor-pointer hover:bg-zinc-700/50"
                     >
-                      <option value="newest">Newest Members</option>
-                      <option value="active">Most Active</option>
-                      <option value="name">Alphabetical</option>
+                      <option value="newest">⏰ Newest Members</option>
+                      <option value="active">🔥 Most Active</option>
+                      <option value="name">🔤 Alphabetical</option>
                     </select>
                   </div>
                 </div>
@@ -1128,11 +1737,18 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {allMembers
-                      .filter(member => 
-                        member.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        (member.bio && member.bio.toLowerCase().includes(searchTerm.toLowerCase()))
-                      )
+                    {allMembers.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Users className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+                        <p className="text-zinc-400 text-lg">No members found</p>
+                        <p className="text-zinc-500 text-sm mt-2">Try adjusting your search or check back later</p>
+                      </div>
+                    ) : allMembers
+                      .filter(member => {
+                        const matchesSearch = member.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (member.bio && member.bio.toLowerCase().includes(searchTerm.toLowerCase()));
+                        return matchesSearch;
+                      })
                       .sort((a, b) => {
                         switch (sortBy) {
                           case 'newest':
@@ -1149,32 +1765,49 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
                       })
                       .slice(0, 20) // Show first 20 results
                       .map((member) => (
-                        <div key={member.id} className="flex items-center justify-between p-4 bg-zinc-700/30 border border-zinc-600 rounded-xl hover:bg-zinc-600/30 transition-all duration-300">                          <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 bg-zinc-700 rounded-full flex items-center justify-center overflow-hidden">
-                              <Image 
-                                src={member.avatar || "/Icons/New Member.png"} 
-                                alt={member.username} 
-                                width={48} 
-                                height={48} 
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src = "/Icons/New Member.png";
-                                }}
-                              />
+                        <div key={member.id} className="group flex items-center justify-between p-5 bg-gradient-to-r from-zinc-800/50 to-zinc-900/50 border border-zinc-700 rounded-2xl hover:border-green-500/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-green-500/10">                          <div className="flex items-center space-x-4">
+                            <div className="relative">
+                              <div className="w-14 h-14 bg-zinc-700 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-zinc-600 group-hover:ring-green-500 transition-all">
+                                <Image 
+                                  src={member.avatar || "/Icons/New Member.png"} 
+                                  alt={member.username} 
+                                  width={56} 
+                                  height={56} 
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = "/Icons/New Member.png";
+                                  }}
+                                />
+                              </div>
+                              <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-zinc-800 flex items-center justify-center ${
+                                member.tier === 'MIGISTUS' ? 'bg-yellow-500' :
+                                member.tier === 'Guild' ? 'bg-purple-500' : 'bg-blue-500'
+                              }`}>
+                                <Award className="w-3 h-3 text-white" />
+                              </div>
                             </div>
                             <div>
-                              <h3 className="font-semibold text-white">{member.username}</h3>
-                              <p className={`text-sm ${getTierColor(member.tier)}`}>
+                              <h3 className="font-bold text-white text-lg group-hover:text-green-400 transition-colors">{member.username}</h3>
+                              <p className={`text-sm font-medium ${getTierColor(member.tier)}`}>
                                 {getTierEmoji(member.tier)} {member.tier}
                               </p>
                               {member.bio && (
                                 <p className="text-sm text-zinc-400 mt-1 max-w-md truncate">{member.bio}</p>
                               )}
-                              <div className="flex space-x-4 text-xs text-zinc-400 mt-1">
-                                <span>{member.stats?.followers || 0} followers</span>
-                                <span>{member.stats?.totalVotes || 0} votes</span>
-                                <span>{member.stats?.totalPledges || 0} pledges</span>
+                              <div className="flex space-x-4 text-xs text-zinc-400 mt-2">
+                                <span className="flex items-center gap-1">
+                                  <Users className="w-3 h-3" />
+                                  {member.stats?.followers || 0} followers
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Zap className="w-3 h-3" />
+                                  {member.stats?.totalVotes || 0} votes
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Heart className="w-3 h-3" />
+                                  {member.stats?.totalPledges || 0} pledges
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -1185,7 +1818,7 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
                               size="sm"
                             />                            <Link 
                               href={`/account/profile/${member.username.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
-                              className="px-4 py-2 bg-zinc-600 hover:bg-zinc-500 text-white text-sm rounded-lg font-medium transition-colors"
+                              className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-sm rounded-lg font-medium transition-all duration-300"
                             >
                               View Profile
                             </Link>
@@ -1194,15 +1827,169 @@ export default function CommunityPage() {  const { user, isAuthenticated } = use
                       ))}
                       
                     {allMembers.length === 0 && (
-                      <div className="text-center py-8">
-                        <Users className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
-                        <p className="text-zinc-400">No community members found</p>
+                      <div className="text-center py-12 bg-zinc-800/30 rounded-2xl border border-zinc-700">
+                        <div className="w-16 h-16 bg-zinc-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                          <Users className="w-8 h-8 text-zinc-500" />
+                        </div>
+                        <p className="text-zinc-400 text-lg">No community members found</p>
                       </div>
                     )}
                   </div>
                 )}
               </div>
             </div>          )}
+
+          {/* Suppliers Tab */}
+          {activeTab === 'suppliers' && (
+            <div className="space-y-6">
+              {/* Welcome Message */}
+              <div className="bg-gradient-to-r from-purple-900/20 via-purple-800/20 to-indigo-900/20 border border-purple-500/30 rounded-2xl p-6 backdrop-blur-sm">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-purple-500/10 rounded-xl">
+                    <Package className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-purple-300 mb-2">Connect with Suppliers</h3>
+                    <p className="text-zinc-300 text-sm leading-relaxed">
+                      Follow suppliers to stay updated on their products, new drops, and exclusive offers. 
+                      Build relationships with trusted suppliers in the MIGISTUS marketplace.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-zinc-900/50 border border-zinc-700 rounded-2xl p-8">
+                <div className="flex items-center space-x-3 mb-8">
+                  <div className="p-2 bg-purple-500/10 rounded-lg">
+                    <Package className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Verified Suppliers</h2>
+                    <p className="text-sm text-zinc-400 mt-1">
+                      Discover and follow trusted suppliers ({suppliers.length} supplier{suppliers.length !== 1 ? 's' : ''} available)
+                    </p>
+                  </div>
+                </div>
+
+                {loading ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto"></div>
+                    <p className="text-zinc-400 mt-4">Loading suppliers...</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-6">
+                    {suppliers.length > 0 ? (
+                      suppliers.map((supplier) => {
+                        const profileSlug = supplier.username.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                        
+                        return (
+                          <div
+                            key={supplier.id}
+                            className="group bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 border border-zinc-700 hover:border-purple-500/50 rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/10"
+                          >
+                            <div className="flex flex-col md:flex-row gap-6">
+                              {/* Supplier Avatar and Info */}
+                              <div className="flex items-start gap-4 flex-1">
+                                <div className="relative">
+                                  <div className="w-20 h-20 bg-zinc-700 rounded-xl overflow-hidden ring-2 ring-zinc-600 group-hover:ring-purple-500 transition-all">
+                                    {supplier.avatar ? (
+                                      <Image 
+                                        src={supplier.avatar} 
+                                        alt={supplier.username} 
+                                        width={80} 
+                                        height={80} 
+                                        className="object-cover w-full h-full" 
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-3xl bg-gradient-to-br from-purple-600 to-purple-800">
+                                        📦
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-purple-500 rounded-full border-2 border-zinc-800 flex items-center justify-center">
+                                    <Shield className="w-4 h-4 text-white" />
+                                  </div>
+                                </div>
+
+                                <div className="flex-1">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div>
+                                      <h3 className="font-bold text-white text-xl mb-1 group-hover:text-purple-300 transition-colors">
+                                        {supplier.username}
+                                      </h3>
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-500/20 border border-purple-500/30 rounded-lg text-xs font-medium text-purple-300">
+                                          <Shield className="w-3 h-3" />
+                                          Verified Supplier
+                                        </span>
+                                        {supplier.country && (
+                                          <span className="text-xs text-zinc-500">
+                                            📍 {supplier.country}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {supplier.bio && (
+                                    <p className="text-sm text-zinc-300 mb-4 line-clamp-2">
+                                      {supplier.bio}
+                                    </p>
+                                  )}
+
+                                  {/* Supplier Stats */}
+                                  <div className="flex flex-wrap gap-4 text-sm">
+                                    <div className="flex items-center gap-1.5 text-zinc-400">
+                                      <Users className="w-4 h-4 text-purple-400" />
+                                      <span className="font-medium text-white">{supplier.stats?.followers || 0}</span>
+                                      <span>followers</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-zinc-400">
+                                      <Package className="w-4 h-4 text-purple-400" />
+                                      <span className="font-medium text-white">{supplier.stats?.dropsJoined || 0}</span>
+                                      <span>products</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-zinc-400">
+                                      <TrendingUp className="w-4 h-4 text-purple-400" />
+                                      <span className="font-medium text-white">{supplier.stats?.totalVotes || 0}</span>
+                                      <span>total votes</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Action Buttons */}
+                              <div className="flex md:flex-col gap-2 md:justify-center">
+                                <FollowButton 
+                                  targetUserId={supplier.id}
+                                  targetUsername={supplier.username}
+                                  size="md"
+                                />
+                                <Link 
+                                  href={`/supplier/${profileSlug}`}
+                                  className="flex-1 md:flex-none px-6 py-2.5 bg-zinc-700 hover:bg-zinc-600 text-white text-sm rounded-lg font-medium text-center transition-all duration-300 whitespace-nowrap"
+                                >
+                                  View Supplier
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center py-12 bg-zinc-800/30 rounded-2xl border border-zinc-700">
+                        <div className="w-16 h-16 bg-zinc-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                          <Package className="w-8 h-8 text-zinc-500" />
+                        </div>
+                        <p className="text-zinc-400 text-lg mb-2">No suppliers found</p>
+                        <p className="text-zinc-500 text-sm">Check back soon for verified suppliers</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

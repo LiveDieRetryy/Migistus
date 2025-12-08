@@ -40,8 +40,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   const { username, password } = req.body;
   
+  console.log("🔐 Admin login attempt:", username);
+  
   // First check hardcoded admin credentials
   if (username === ADMIN_USER && password === ADMIN_PASS) {
+    console.log("✅ Hardcoded admin login successful");
     return res.status(200).json({ success: true });
   }
   
@@ -52,16 +55,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     (u.tier === "Admin" || u.username === "Administrator" || u.email === "admin@migistus.com")
   );
   
+  console.log("  - Admin user found:", adminUser ? `${adminUser.username} (${adminUser.email})` : "none");
+  
   if (adminUser && adminUser.password) {
+    console.log("  - Has password, validating...");
     try {
       const valid = await bcrypt.compare(password, adminUser.password);
+      console.log("  - Password valid:", valid);
       if (valid) {
+        console.log("✅ Database admin login successful");
         return res.status(200).json({ success: true });
       }
     } catch (error) {
       console.error("Error comparing password:", error);
     }
+  } else if (adminUser) {
+    console.log("  - Admin user found but no password!");
   }
   
+  console.log("❌ Admin login failed");
   return res.status(401).json({ error: "Invalid admin credentials" });
 }

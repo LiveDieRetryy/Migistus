@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
+import { requireAuth } from '@/lib/session';
 
 const settingsPath = path.join(process.cwd(), 'public', 'data', 'settings.json');
 
@@ -21,41 +22,49 @@ function saveSettings(settings: any) {
 }
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Require authentication
+  const session = requireAuth(req, res);
+  if (!session) {
+    return; // requireAuth already sent the 401 response
+  }
+
   try {
-    const { userId } = req.query;
     const allSettings = getSettings();
+    const userIdStr = session.userId.toString();
 
     if (req.method === 'GET') {
-      if (userId) {
-        const userSettings = allSettings[userId as string] || {
-          notifications: true,
-          emailUpdates: true,
-          privacy: 'public',
-          theme: 'dark'
-        };
-        res.status(200).json(userSettings);
-      } else {
-        res.status(400).json({ error: 'Missing userId' });
-      }
+      const userSettings = allSettings[userIdStr] || {
+        notifications: true,
+        emailUpdates: true,
+        privacy: 'public',
+        theme: 'dark'
+      };
+      return res.status(200).json({
+        success: true,
+        data: userSettings
+      });
     } else if (req.method === 'PUT') {
-      if (userId) {
-        const updatedSettings = req.body;
-        allSettings[userId as string] = {
-          ...allSettings[userId as string],
-          ...updatedSettings,
-          updatedAt: new Date().toISOString()
-        };
-        saveSettings(allSettings);
-        res.status(200).json({ success: true, settings: allSettings[userId as string] });
-      } else {
-        res.status(400).json({ error: 'Missing userId' });
-      }
+      const updatedSettings = req.body;
+      allSettings[userIdStr] = {
+        ...allSettings[userIdStr],
+        ...updatedSettings,
+        updatedAt: new Date().toISOString()
+      };
+      saveSettings(allSettings);
+      return res.status(200).json({ 
+        success: true, 
+        data: allSettings[userIdStr],
+        message: 'Settings updated successfully'
+      });
     } else {
       res.setHeader('Allow', ['GET', 'PUT']);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
+      return res.status(405).end(`Method ${req.method} Not Allowed`);
     }
   } catch (error) {
     console.error('Settings API error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ 
+      success: false,
+      error: 'Internal server error' 
+    });
   }
 }

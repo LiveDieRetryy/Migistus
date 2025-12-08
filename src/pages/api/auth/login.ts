@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
+import { createSession, setSessionCookie } from "@/lib/session";
 
 const USERS_PATH = path.resolve("public/data/users.json");
 
@@ -58,6 +59,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "Missing fields" });
   }
   
+  // Security: reject passwords that are too short
+  if (password.length < 3) {
+    console.log("❌ Password too short (< 3 characters)");
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
+  
   const users = readUsers();
   
   // Debug logging
@@ -88,15 +95,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   // Handle users without passwords (legacy accounts)
   if (!user.password) {
+    console.log("❌ User has no password stored");
     return res.status(401).json({ 
       error: "Account needs password setup. Please contact support or reset your password." 
     });
   }
   
+  console.log("🔐 Validating password...");
+  console.log("  - Stored hash:", user.password.substring(0, 20) + "...");
+  console.log("  - Password length:", password.length);
+  
   const valid = await bcrypt.compare(password, user.password);
+  
+  console.log("  - Password valid:", valid);
+  
   if (!valid) {
+    console.log("❌ Invalid password for user:", user.username);
     return res.status(401).json({ error: "Invalid credentials" });
   }
+  
+  console.log("✅ Password validated successfully for user:", user.username);
+  
+  // Create server-side session
+  const sessionToken = createSession(user.id, user.username, user.email, user.tier || "New Member");
+  setSessionCookie(res, sessionToken);
+  
   // Update login tracking
   users[userIndex] = {
     ...user,

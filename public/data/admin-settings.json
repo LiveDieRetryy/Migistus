@@ -1,29 +1,37 @@
 {
-  "siteName": "MIGISTUS",
-  "siteDescription": "Community-driven group buying platform",
-  "maintenanceMode": false,
-  "registrationEnabled": true,
-  "emailVerificationRequired": false,
-  "autoApproveVotes": true,
-  "autoApproveProducts": false,
-  "defaultUserTier": "New Initiate",
-  "maxVotesPerDay": {
-    "New Initiate": 3,
-    "New Member": 5,
-    "Subscriber": 10,
-    "Premium": 20,
-    "Admin": 100
+  "site": {
+    "siteName": "MIGISTUS",
+    "siteDescription": "The ultimate group buying platform",
+    "maintenanceMode": false,
+    "registrationEnabled": true
   },
-  "voteMultipliers": {
-    "New Initiate": 1,
-    "New Member": 1.2,
-    "Subscriber": 1.5,
-    "Premium": 2,
-    "Admin": 5
+  "voting": {
+    "enabled": true,
+    "maxVotesPerUser": 10,
+    "votingCooldown": 24,
+    "tierMultipliers": {
+      "initiate": 1,
+      "guild": 2,
+      "migistus": 3
+    }
   },
-  "featuredProductsLimit": 6,
-  "staffPicksLimit": 12,
-  "liveDropsEnabled": true,
-  "chatEnabled": true,
-  "moderationEnabled": true
+  "drops": {
+    "enabled": true,
+    "maxActiveDrops": 5,
+    "defaultDuration": 24,
+    "pledgeTimeLimit": 2
+  },
+  "features": {
+    "chatEnabled": true,
+    "marketingEnabled": true,
+    "analyticsEnabled": true,
+    "notificationsEnabled": true
+  },
+  "security": {
+    "maxLoginAttempts": 5,
+    "sessionTimeout": 60,
+    "passwordMinLength": 8,
+    "twoFactorRequired": false
+  },
+  "updatedAt": "2025-12-07T21:12:20.298Z"
 }

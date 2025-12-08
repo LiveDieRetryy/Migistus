@@ -56,34 +56,58 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   if (req.method === "PUT") {
     try {
+      console.log(`📝 PUT request for user ID: ${userId}`);
+      console.log('📦 Update data:', JSON.stringify(req.body, null, 2));
+      
       const users = readUsers();
       const userIndex = users.findIndex((u: any) => u.id === userId);
       
       if (userIndex === -1) {
+        console.error(`❌ User ${userId} not found in database`);
         return res.status(404).json({ error: "User not found" });
       }
       
-      users[userIndex] = { ...users[userIndex], ...req.body };
+      console.log(`🎯 Found user: ${users[userIndex].username} at index ${userIndex}`);
+      
+      // Merge the updates with existing user data
+      users[userIndex] = { 
+        ...users[userIndex], 
+        ...req.body,
+        updatedAt: new Date().toISOString() // Track when user was last updated
+      };
+      
       writeUsers(users);
+      console.log(`✅ User ${users[userIndex].username} updated successfully`);
       
       return res.status(200).json({ success: true, user: users[userIndex] });
     } catch (error) {
-      console.error('Error in user PUT:', error);
-      return res.status(500).json({ error: "Failed to update user" });
+      console.error('❌ Error in user PUT:', error);
+      return res.status(500).json({ 
+        error: "Failed to update user",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   }
 
   if (req.method === "DELETE") {
     try {
+      console.log(`🗑️ DELETE request for user ID: ${userId}`);
       const users = readUsers();
+      console.log(`📊 Total users before delete: ${users.length}`);
+      
       const userToDelete = users.find((u: any) => u.id === userId);
       
       if (!userToDelete) {
+        console.error(`❌ User ${userId} not found in database`);
         return res.status(404).json({ error: "User not found" });
       }
 
+      console.log(`🎯 Found user to delete: ${userToDelete.username} (ID: ${userId})`);
       const filteredUsers = users.filter((u: any) => u.id !== userId);
+      console.log(`📊 Users after filter: ${filteredUsers.length}`);
+      
       writeUsers(filteredUsers);
+      console.log(`✅ User ${userToDelete.username} removed from users.json`);
 
       // Clean up chat messages/reports
       try {
@@ -92,6 +116,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
           const messages = JSON.parse(fs.readFileSync(chatPath, "utf-8"));
           const filteredMessages = messages.filter((msg: any) => msg.userId !== userId);
           fs.writeFileSync(chatPath, JSON.stringify(filteredMessages, null, 2));
+          console.log(`🧹 Cleaned up chat messages for user ${userId}`);
         }
 
         const reportsPath = path.resolve("public/data/reported-chats.json");
@@ -102,12 +127,14 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
             report.reporterId !== userId
           );
           fs.writeFileSync(reportsPath, JSON.stringify(filteredReports, null, 2));
+          console.log(`🧹 Cleaned up reports for user ${userId}`);
         }
       } catch (error) {
-        console.error("Error cleaning up user data files:", error);
+        console.error("⚠️ Error cleaning up user data files:", error);
         // Continue with deletion even if cleanup fails
       }
 
+      console.log(`✅ Successfully deleted user ${userToDelete.username} (ID: ${userId})`);
       return res.status(200).json({
         success: true,
         message: `User ${userToDelete.username} and all associated data has been permanently deleted`,
@@ -115,8 +142,11 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         cleanupPerformed: true
       });
     } catch (error) {
-      console.error('Error in user DELETE:', error);
-      return res.status(500).json({ error: "Failed to delete user" });
+      console.error('❌ Error in user DELETE:', error);
+      return res.status(500).json({ 
+        error: "Failed to delete user",
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   }
 

@@ -236,6 +236,14 @@ export class UserStorage3 {
         });
         localStorage.setItem('migistus_follows', JSON.stringify(followData));
         
+        // Sync with API to update database
+        fetch('/api/followers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ followerId, followingId, action: 'follow' })
+        }).catch(err => console.error('Failed to sync follow with API:', err));
+        
         // Get usernames for better activity descriptions
         const followerProfile = this.getUserProfile(followerId);
         const followingProfile = this.getUserProfile(followingId);
@@ -258,6 +266,9 @@ export class UserStorage3 {
           targetUserId: followerId,
           description: `${followerName} is now following you`
         });
+        
+        // Increment reputation of the person being followed (+1 rep per follower)
+        this.incrementReputation(followingId, 1);
         
         // Trigger live update event
         window.dispatchEvent(new CustomEvent('followerUpdate', {
@@ -283,6 +294,14 @@ export class UserStorage3 {
         followData.splice(followIndex, 1);
         localStorage.setItem('migistus_follows', JSON.stringify(followData));
         
+        // Sync with API to update database
+        fetch('/api/followers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ followerId, followingId, action: 'unfollow' })
+        }).catch(err => console.error('Failed to sync unfollow with API:', err));
+        
         // Get usernames for better activity descriptions
         const followerProfile = this.getUserProfile(followerId);
         const followingProfile = this.getUserProfile(followingId);
@@ -305,6 +324,9 @@ export class UserStorage3 {
           targetUserId: followerId,
           description: `${followerName} unfollowed you`
         });
+        
+        // Decrement reputation of the person being unfollowed (-1 rep per lost follower)
+        this.decrementReputation(followingId, 1);
         
         // Trigger live update event
         window.dispatchEvent(new CustomEvent('followerUpdate', {
@@ -359,20 +381,39 @@ export class UserStorage3 {
   static getUserReputation(userId: number): number {
     const key = `${this.getUserPrefix(userId)}reputation`;
     const data = localStorage.getItem(key);
-    if (data) return parseInt(data);
     
-    // Calculate based on activity
-    const pledges = this.getUserPledges(userId);
-    const votes = this.getUserVotes(userId);
-    const completedPledges = pledges.filter((p: any) => p.status === 'completed').length;
+    // If no data exists, initialize with 0 and save it
+    if (!data) {
+      localStorage.setItem(key, '0');
+      return 0;
+    }
     
-    return Math.min(200, (completedPledges * 10) + (votes.length * 2) + 25);
+    return parseInt(data);
+  }
+
+  static incrementReputation(userId: number, amount: number = 1): void {
+    const current = this.getUserReputation(userId);
+    const key = `${this.getUserPrefix(userId)}reputation`;
+    localStorage.setItem(key, String(current + amount));
+  }
+
+  static decrementReputation(userId: number, amount: number = 1): void {
+    const current = this.getUserReputation(userId);
+    const key = `${this.getUserPrefix(userId)}reputation`;
+    localStorage.setItem(key, String(Math.max(0, current - amount)));
   }
 
   static getUserProfileViews(userId: number): number {
     const key = `${this.getUserPrefix(userId)}profileViews`;
     const data = localStorage.getItem(key);
-    return data ? parseInt(data) : Math.floor(Math.random() * 100) + 10;
+    
+    // If no data exists, initialize with 0 and save it
+    if (!data) {
+      localStorage.setItem(key, '0');
+      return 0;
+    }
+    
+    return parseInt(data);
   }
 
   static incrementProfileViews(userId: number): void {
@@ -384,7 +425,20 @@ export class UserStorage3 {
   static getUserInteractions(userId: number): number {
     const key = `${this.getUserPrefix(userId)}interactions`;
     const data = localStorage.getItem(key);
-    return data ? parseInt(data) : Math.floor(Math.random() * 50) + 5;
+    
+    // If no data exists, initialize with 0 and save it
+    if (!data) {
+      localStorage.setItem(key, '0');
+      return 0;
+    }
+    
+    return parseInt(data);
+  }
+
+  static incrementInteractions(userId: number): void {
+    const current = this.getUserInteractions(userId);
+    const key = `${this.getUserPrefix(userId)}interactions`;
+    localStorage.setItem(key, String(current + 1));
   }
 
   // Enhanced stats calculation

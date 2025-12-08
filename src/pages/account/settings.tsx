@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Head from "next/head";
 import MainNavbar from "@/components/nav/MainNavbar";
 import Link from "next/link";
@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext"; // Updated import
 import { UserStorage3 as UserStorage } from "@/utils/userStorage";
 import { activityTracker } from "@/utils/activityTracker";
+import { Eye, EyeOff } from "lucide-react";
 
 type UserSettings = {
   // Personal Information
@@ -91,7 +92,7 @@ const defaultSettings: UserSettings = {
   currency: 'USD',
   timezone: 'America/New_York',
   theme: 'dark',
-  autoSave: true,
+  autoSave: false,
   addresses: [],
   paymentMethods: [],
   loginHistory: []
@@ -106,8 +107,12 @@ export default function AccountSettingsPage() {
   const [saved, setSaved] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [newAddress, setNewAddress] = useState<any>(null);
   const [newPaymentMethod, setNewPaymentMethod] = useState<any>(null);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -119,6 +124,15 @@ export default function AccountSettingsPage() {
       loadUserSettings();
     }
   }, [user, isAuthenticated, router]);
+
+  // Cleanup auto-save timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, []);
 
   const loadUserSettings = async () => {
     if (!user) return;
@@ -179,12 +193,61 @@ export default function AccountSettingsPage() {
       // Validate based on section
       const validationErrors: Record<string, string> = {};
 
-      if (section === 'security' || !section) {
-        if (settings.newPassword && settings.newPassword !== settings.confirmPassword) {
+      // Handle password change separately
+      if (section === 'security' && settings.newPassword) {
+        if (!settings.currentPassword) {
+          validationErrors.currentPassword = 'Current password is required';
+        }
+        if (settings.newPassword !== settings.confirmPassword) {
           validationErrors.confirmPassword = 'Passwords do not match';
         }
-        if (settings.newPassword && settings.newPassword.length < 8) {
+        if (settings.newPassword.length < 8) {
           validationErrors.newPassword = 'Password must be at least 8 characters';
+        }
+
+        if (Object.keys(validationErrors).length === 0) {
+          // Call dedicated password change API
+          try {
+            const passwordResponse = await fetch('/api/account/change-password', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                currentPassword: settings.currentPassword,
+                newPassword: settings.newPassword
+              })
+            });
+
+            const passwordData = await passwordResponse.json();
+
+            if (!passwordResponse.ok) {
+              setErrors({ currentPassword: passwordData.error || 'Failed to change password' });
+              setSaving(false);
+              return;
+            }
+
+            // Clear password fields on success
+            setSettings(prev => ({
+              ...prev,
+              currentPassword: '',
+              newPassword: '',
+              confirmPassword: ''
+            }));
+            setShowPasswordSection(false);
+            
+            setSaved(true);
+            setTimeout(() => setSaved(false), 3000);
+            setSaving(false);
+            
+            activityTracker.trackAccountMenuAction('password_changed_success', {});
+            return;
+
+          } catch (error) {
+            console.error('Password change error:', error);
+            setErrors({ general: 'Failed to change password. Please try again.' });
+            setSaving(false);
+            return;
+          }
         }
       }
 
@@ -201,11 +264,14 @@ export default function AccountSettingsPage() {
         setErrors(validationErrors);
         setSaving(false);
         return;
-      }      // Save to API
+      }      // Save to API (excluding password fields)
+      const { currentPassword, newPassword, confirmPassword, ...settingsToSave } = settings;
+      
       const response = await fetch(`/api/account/settings?userId=${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
+        credentials: 'include',
+        body: JSON.stringify(settingsToSave)
       });
 
       if (!response.ok) {
@@ -273,9 +339,18 @@ export default function AccountSettingsPage() {
     });
     
     setSettings(prev => ({ ...prev, [key]: value }));
-    if (settings.autoSave) {
-      // Debounce auto-save
-      setTimeout(() => handleSave(), 1000);
+    
+    // Auto-save with proper debouncing (skip password fields)
+    if (settings.autoSave && !['currentPassword', 'newPassword', 'confirmPassword'].includes(key)) {
+      // Clear previous timer
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+      
+      // Set new timer with 3 second delay
+      autoSaveTimerRef.current = setTimeout(() => {
+        handleSave();
+      }, 3000);
     }
   };
 
@@ -584,33 +659,60 @@ export default function AccountSettingsPage() {
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">Current Password</label>
-                          <input
-                            type="password"
-                            value={settings.currentPassword}
-                            onChange={e => updateSetting('currentPassword', e.target.value)}
-                            className="w-full px-4 py-3 bg-zinc-800 border border-yellow-500/30 rounded-lg text-white focus:border-yellow-400 focus:outline-none"
-                          />
+                          <div className="relative">
+                            <input
+                              type={showCurrentPassword ? "text" : "password"}
+                              value={settings.currentPassword}
+                              onChange={e => updateSetting('currentPassword', e.target.value)}
+                              className="w-full px-4 py-3 bg-zinc-800 border border-yellow-500/30 rounded-lg text-white focus:border-yellow-400 focus:outline-none pr-12"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-400"
+                            >
+                              {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                          </div>
                         </div>
                         
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">New Password</label>
-                          <input
-                            type="password"
-                            value={settings.newPassword}
-                            onChange={e => updateSetting('newPassword', e.target.value)}
-                            className="w-full px-4 py-3 bg-zinc-800 border border-yellow-500/30 rounded-lg text-white focus:border-yellow-400 focus:outline-none"
-                          />
+                          <div className="relative">
+                            <input
+                              type={showNewPassword ? "text" : "password"}
+                              value={settings.newPassword}
+                              onChange={e => updateSetting('newPassword', e.target.value)}
+                              className="w-full px-4 py-3 bg-zinc-800 border border-yellow-500/30 rounded-lg text-white focus:border-yellow-400 focus:outline-none pr-12"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowNewPassword(!showNewPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-400"
+                            >
+                              {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                          </div>
                           {errors.newPassword && <div className="text-red-400 text-sm mt-1">{errors.newPassword}</div>}
                         </div>
                         
                         <div>
                           <label className="block text-sm font-medium text-gray-300 mb-2">Confirm New Password</label>
-                          <input
-                            type="password"
-                            value={settings.confirmPassword}
-                            onChange={e => updateSetting('confirmPassword', e.target.value)}
-                            className="w-full px-4 py-3 bg-zinc-800 border border-yellow-500/30 rounded-lg text-white focus:border-yellow-400 focus:outline-none"
-                          />
+                          <div className="relative">
+                            <input
+                              type={showConfirmPassword ? "text" : "password"}
+                              value={settings.confirmPassword}
+                              onChange={e => updateSetting('confirmPassword', e.target.value)}
+                              className="w-full px-4 py-3 bg-zinc-800 border border-yellow-500/30 rounded-lg text-white focus:border-yellow-400 focus:outline-none pr-12"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-yellow-400"
+                            >
+                              {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                          </div>
                           {errors.confirmPassword && <div className="text-red-400 text-sm mt-1">{errors.confirmPassword}</div>}
                         </div>
                         
@@ -916,7 +1018,7 @@ export default function AccountSettingsPage() {
                   <div className="flex items-center justify-between border border-zinc-700 rounded-lg p-4">
                     <div>
                       <div className="text-white font-medium">Auto-save Changes</div>
-                      <div className="text-gray-400 text-sm">Automatically save changes as you type</div>
+                      <div className="text-gray-400 text-sm">Automatically save changes 3 seconds after you stop typing</div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input

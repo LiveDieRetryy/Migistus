@@ -9,9 +9,21 @@ interface User {
   sessionId: string;
 }
 
+interface RegistrationData {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  country: string;
+  state?: string;
+  city?: string;
+  phoneNumber?: string;
+  referralSource?: string;
+  agreeToMarketing?: boolean;
+}
+
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, username?: string) => Promise<boolean>;
+  login: (email: string, password: string, username?: string, registrationData?: RegistrationData) => Promise<boolean>;
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
   isAuthenticated: boolean;
@@ -80,11 +92,106 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, [mounted]);
 
-  const login = async (email: string, password: string, username?: string): Promise<boolean> => {
+  const login = async (email: string, password: string, username?: string, registrationData?: RegistrationData): Promise<boolean> => {
     try {
-      console.log(`Starting login process for: ${email}`);
+      console.log(`Starting ${username ? 'registration' : 'login'} process for: ${email}`);
       
-      // First try API authentication with the database
+      // If this is a registration (username provided), call the register API
+      if (username && registrationData) {
+        try {
+          console.log('📝 Calling registration API...');
+          const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              username,
+              email,
+              password,
+              ...registrationData
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const newUser = data.user;
+            
+            console.log('✅ Registration API successful:', newUser);
+            
+            // Create user profile in localStorage
+            const newProfile = {
+              id: newUser.id,
+              username: newUser.username,
+              email: newUser.email,
+              bio: newUser.bio || "",
+              avatar: newUser.avatar || null,
+              banner: null,
+              tier: newUser.tier || "New Member",
+              guildTokens: newUser.guildCoins || 100,
+              joinedDate: newUser.joinDate || new Date().toISOString().split('T')[0],
+              titles: [],
+              badges: [],
+              links: [],
+              stats: {
+                totalPledges: newUser.totalPledges || 0,
+                totalVotes: newUser.totalVotes || 0,
+                dropsJoined: newUser.dropsJoined || 0,
+                followers: newUser.followers || 0,
+                following: newUser.following || 0
+              },
+              firstName: newUser.firstName,
+              lastName: newUser.lastName,
+              dateOfBirth: registrationData.dateOfBirth,
+              country: newUser.country,
+              state: newUser.state || '',
+              city: newUser.city || '',
+              phoneNumber: registrationData.phoneNumber || '',
+              referralSource: registrationData.referralSource || '',
+              agreeToMarketing: registrationData.agreeToMarketing || false,
+              registrationComplete: true,
+              registeredAt: new Date().toISOString()
+            };
+            UserStorage.setUserProfile(newUser.id, newProfile);
+            
+            const sessionId = generateSessionId();
+            const sessionData = {
+              user: { ...newUser, sessionId: sessionId },
+              createdAt: new Date().toISOString(),
+              sessionId: sessionId
+            };
+
+            localStorage.setItem('userSession', JSON.stringify(sessionData));
+            localStorage.setItem('currentUserId', newUser.id.toString());
+            
+            setUser(newUser);
+            console.log('✅ New user registered and logged in via API');
+            
+            // Initialize activity tracking
+            const { activityTracker } = await import('@/utils/activityTracker');
+            activityTracker.initialize(newUser.id, sessionId);
+            
+            // Initialize sync service
+            if ((window as any).MigistusUserSync) {
+              (window as any).MigistusUserSync.initialize();
+              setTimeout(() => {
+                (window as any).MigistusUserSync.triggerManualSync();
+              }, 1000);
+            }
+            
+            return true;
+          } else {
+            const errorData = await response.json();
+            console.error('❌ Registration API failed:', errorData.error);
+            return false;
+          }
+        } catch (registerError) {
+          console.error('❌ Registration API error:', registerError);
+          return false;
+        }
+      }
+      
+      // For login (no username), try API authentication with the database
       try {
         const response = await fetch('/api/auth/login', {
           method: 'POST',
@@ -99,6 +206,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const authenticatedUser = data.user;
           
           console.log('API authentication successful:', authenticatedUser);
+          
+          // Ensure user profile exists in localStorage
+          const existingProfile = UserStorage.getUserProfile(authenticatedUser.id);
+          if (!existingProfile) {
+            console.log('Creating profile for user:', authenticatedUser.username);
+            const newProfile = {
+              id: authenticatedUser.id,
+              username: authenticatedUser.username,
+              email: authenticatedUser.email,
+              bio: authenticatedUser.bio || "",
+              avatar: authenticatedUser.avatar || null,
+              banner: authenticatedUser.banner || null,
+              tier: authenticatedUser.tier || "New Member",
+              guildTokens: authenticatedUser.guildCoins || 0,
+              joinedDate: authenticatedUser.joinDate || new Date().toISOString().split('T')[0],
+              titles: authenticatedUser.titles || [],
+              badges: authenticatedUser.badges || [],
+              links: authenticatedUser.links || [],
+              stats: {
+                totalPledges: authenticatedUser.totalPledges || 0,
+                totalVotes: authenticatedUser.totalVotes || 0,
+                dropsJoined: authenticatedUser.dropsJoined || 0,
+                followers: authenticatedUser.followers || 0,
+                following: authenticatedUser.following || 0
+              },
+              // Add registration data if this is a new registration
+              ...(registrationData && {
+                firstName: registrationData.firstName,
+                lastName: registrationData.lastName,
+                dateOfBirth: registrationData.dateOfBirth,
+                country: registrationData.country,
+                state: registrationData.state || '',
+                city: registrationData.city || '',
+                phoneNumber: registrationData.phoneNumber || '',
+                referralSource: registrationData.referralSource || '',
+                agreeToMarketing: registrationData.agreeToMarketing || false,
+                registrationComplete: true,
+                registeredAt: new Date().toISOString()
+              })
+            };
+            UserStorage.setUserProfile(authenticatedUser.id, newProfile);
+          }
           
           const sessionId = generateSessionId();
           const sessionData = {
@@ -220,7 +369,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Save user to persistent storage
       saveUserToPersistentStorage(userData);
 
-      // Create fresh profile immediately
+      // Create fresh profile immediately with registration data
       if (finalUsername) {
         const freshProfile = {
           id: uniqueId,
@@ -235,7 +384,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           titles: [],
           badges: [],
           links: [],
-          stats: { totalPledges: 0, totalVotes: 0, dropsJoined: 0, followers: 0, following: 0 }
+          stats: { totalPledges: 0, totalVotes: 0, dropsJoined: 0, followers: 0, following: 0 },
+          // Add registration data if provided
+          ...(registrationData && {
+            firstName: registrationData.firstName,
+            lastName: registrationData.lastName,
+            dateOfBirth: registrationData.dateOfBirth,
+            country: registrationData.country,
+            state: registrationData.state || '',
+            city: registrationData.city || '',
+            phoneNumber: registrationData.phoneNumber || '',
+            referralSource: registrationData.referralSource || '',
+            agreeToMarketing: registrationData.agreeToMarketing || false,
+            registrationComplete: true,
+            registeredAt: new Date().toISOString()
+          })
         };
         
         try {
@@ -376,7 +539,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     if (user) {
       // Track logout before clearing data
       import('@/utils/activityTracker').then(({ activityTracker }) => {
@@ -386,6 +549,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Stop user sync service on logout
       if ((window as any).MigistusUserSync) {
         (window as any).MigistusUserSync.stopAutoSync();
+      }
+      
+      // Call server-side logout to clear session
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+      } catch (error) {
+        console.error('Logout API error:', error);
       }
       
       // Only clear session data, preserve user data and profiles

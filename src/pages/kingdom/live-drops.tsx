@@ -377,3 +377,7 @@ export default function KingdomLiveDrops() {
     </DashboardLayout>
   );
 }
+
+
+// Disable footer for Kingdom pages
+(KingdomLiveDrops as any).showFooter = false;

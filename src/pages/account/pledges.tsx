@@ -46,11 +46,30 @@ export default function PledgesPage() {
     if (!user) return;
     
     try {
-      const response = await fetch(`/api/account/pledges?userId=${user.id}`);
-      const data = await response.json();
-      setPledges(data);
+      const response = await fetch(`/api/account/pledges`, {
+        credentials: 'include' // Send cookies with request
+      });
+      
+      if (response.status === 401) {
+        // Session expired, redirect to login
+        router.push('/');
+        return;
+      }
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        console.error('Failed to load pledges:', result.error);
+        setPledges([]);
+        return;
+      }
+      
+      // API now returns standardized format: { success, data, total }
+      const pledgesArray = Array.isArray(result.data) ? result.data : [];
+      setPledges(pledgesArray);
     } catch (error) {
       console.error('Failed to load pledges:', error);
+      setPledges([]); // Set empty array on error
     } finally {
       setPledgeLoading(false);
     }

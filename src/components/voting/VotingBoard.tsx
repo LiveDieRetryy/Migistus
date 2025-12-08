@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/context/AuthContext";
+import { UserStorage3 as UserStorage } from "@/utils/userStorage";
 import type { Product } from "@/types/product";
 
 export default function VotingBoard() {
@@ -51,6 +52,11 @@ export default function VotingBoard() {
   // Submit a vote for a product
   const handleVote = async (productId: number) => {
     if (!isAuthenticated || !user) return;
+    
+    // Get user tier from UserStorage
+    const userProfile = UserStorage.getUserProfile(user.id);
+    const userTier = userProfile?.tier || "Initiate";
+    
     try {
       await fetch("/api/votes", {
         method: "POST",
@@ -58,7 +64,7 @@ export default function VotingBoard() {
         body: JSON.stringify({
           productId,
           userId: user.id,
-          tier: user.tier || "Initiate",
+          tier: userTier,
           value: 1,
         }),
       });

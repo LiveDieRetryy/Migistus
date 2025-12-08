@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -57,7 +57,7 @@ interface SupplierProfile {
   name: string;
   companyName: string;
   logo: string;
-  bannerImage: string;
+  bannerImage?: string;
   description: string;
   shortBio: string;
   location: {
@@ -142,27 +142,7 @@ export default function SupplierProfilePage() {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
 
-  useEffect(() => {
-    if (slug) {
-      loadSupplierProfile(slug as string);
-      checkFollowStatus();
-      loadUserProfile();
-      checkIfOwnProfile();
-    }
-  }, [slug]);
-
-  const checkIfOwnProfile = () => {
-    if (typeof window !== 'undefined') {
-      const isSupplier = localStorage.getItem('isSupplier') === 'true';
-      const supplierName = localStorage.getItem('supplierName');
-      
-      if (isSupplier && supplierName) {
-        const supplierSlug = supplierName.toLowerCase().replace(/\s+/g, '-');
-        setIsOwnProfile(supplierSlug === slug);
-      }
-    }
-  };
-  const loadSupplierProfile = async (supplierSlug: string) => {
+  const loadSupplierProfile = useCallback(async (supplierSlug: string) => {
     try {
       setLoading(true);
       
@@ -373,7 +353,6 @@ export default function SupplierProfilePage() {
             name: supplierName,
             companyName: supplierName,
             logo: '/Icons/SupplierPlaceHolder.png',
-            bannerImage: '/images/supplier-banner-placeholder.jpg',
             description: `Supplier of high-quality products including ${supplierProducts.map((p: any) => p.name).slice(0, 3).join(', ')}.`,
             shortBio: 'Product supplier on MIGISTUS platform.',
             location: {
@@ -451,7 +430,6 @@ export default function SupplierProfilePage() {
             name: supplierSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
             companyName: supplierSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
             logo: '/Icons/SupplierPlaceHolder.png', 
-            bannerImage: '/images/supplier-banner-placeholder.jpg',
             description: 'Supplier profile not found in our records.',
             shortBio: 'Supplier profile placeholder.',
             location: {
@@ -502,6 +480,28 @@ export default function SupplierProfilePage() {
       console.error('Error loading supplier profile:', error);
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (slug) {
+      loadSupplierProfile(slug as string);
+      checkFollowStatus();
+      loadUserProfile();
+      checkIfOwnProfile();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
+  const checkIfOwnProfile = () => {
+    if (typeof window !== 'undefined') {
+      const isSupplier = localStorage.getItem('isSupplier') === 'true';
+      const supplierName = localStorage.getItem('supplierName');
+      
+      if (isSupplier && supplierName) {
+        const supplierSlug = supplierName.toLowerCase().replace(/\s+/g, '-');
+        setIsOwnProfile(supplierSlug === slug);
+      }
     }
   };
 
@@ -631,62 +631,84 @@ export default function SupplierProfilePage() {
         <meta name="description" content={supplier.description} />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black">        {/* Header Navigation */}
-        <div className="bg-zinc-900/50 border-b border-yellow-500/20 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {isOwnProfile ? (
-                <Link href="/supplier-dashboard" className="flex items-center gap-2 text-yellow-400 hover:text-yellow-300">
-                  <ArrowLeft className="w-4 h-4" />
-                  Back to Dashboard
-                </Link>
-              ) : (
-                <Link href="/suppliers" className="flex items-center gap-2 text-yellow-400 hover:text-yellow-300">
-                  <ArrowLeft className="w-4 h-4" />
-                  Back to Suppliers
-                </Link>
-              )}
-              <div className="flex items-center gap-4">
-                {isOwnProfile && (
-                  <Link
-                    href="/supplier-settings"
-                    className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition"
-                  >
-                    Edit Profile
-                  </Link>
-                )}
-                <button
-                  onClick={handleShare}
-                  className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition"
-                >
-                  <Share2 className="w-4 h-4 text-white" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black">
         {/* Profile Header */}
         <div className="relative">
-          {/* Banner Image */}
-          <div className="h-64 bg-gradient-to-r from-zinc-800 to-zinc-700 relative overflow-hidden">
-            {supplier.bannerImage && (
-              <img
-                src={supplier.bannerImage}
-                alt={`${supplier.name} banner`}
-                className="object-cover w-full h-full"
-              />
+          {/* Banner Image - Taller */}
+          <div className="h-80 relative overflow-hidden bg-gradient-to-br from-zinc-950 via-zinc-900 to-black">
+            {supplier.bannerImage ? (
+              <>
+                <img
+                  src={supplier.bannerImage}
+                  alt={`${supplier.name} banner`}
+                  className="object-cover w-full h-full"
+                />
+                <div className="absolute inset-0 bg-black/30" />
+              </>
+            ) : (
+              // Default placeholder gradient banner with MIGISTUS theme
+              <>
+                <div className="absolute inset-0 bg-gradient-to-br from-zinc-950 via-zinc-900 to-black"></div>
+                
+                {/* Gold accent gradient */}
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 via-yellow-400/10 to-yellow-500/5"></div>
+                
+                {/* Banner Text */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 tracking-widest opacity-30">
+                      MIGISTUS
+                    </h1>
+                    <p className="text-2xl md:text-3xl font-semibold text-yellow-400/20 tracking-wider mt-2">
+                      SUPPLIER
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Diagonal stripe pattern */}
+                <div className="absolute inset-0 opacity-5">
+                  <div className="absolute inset-0" style={{
+                    backgroundImage: `repeating-linear-gradient(
+                      45deg,
+                      transparent,
+                      transparent 35px,
+                      rgba(234, 179, 8, 0.1) 35px,
+                      rgba(234, 179, 8, 0.1) 70px
+                    )`
+                  }}></div>
+                </div>
+              </>
             )}
-            <div className="absolute inset-0 bg-black/30" />
+            
+            {/* Back Button - Top Left */}
+            <div className="absolute top-6 left-6 z-10">
+              {isOwnProfile ? (
+                <Link href="/supplier-dashboard" className="flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-sm border border-yellow-500/30 rounded-full text-yellow-400 hover:text-yellow-300 transition">
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="font-semibold">Dashboard</span>
+                </Link>
+              ) : (
+                <Link href="/community?tab=suppliers" className="flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-sm border border-yellow-500/30 rounded-full text-yellow-400 hover:text-yellow-300 transition">
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="font-semibold">Back</span>
+                </Link>
+              )}
+            </div>
+            
+            {/* Verified badge - Top Right */}
+            <div className="absolute top-6 right-6 flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-sm border border-yellow-500/30 rounded-full z-10">
+              <Shield className="w-5 h-5 text-yellow-400" />
+              <span className="text-white font-semibold">VERIFIED SUPPLIER</span>
+            </div>
           </div>
 
-          {/* Profile Info Overlay */}
-          <div className="relative px-4 sm:px-6 lg:px-8">
+          {/* Profile Info Overlay - Positioned Below Banner */}
+          <div className="relative px-4 sm:px-6 lg:px-8 -mt-16">
             <div className="max-w-7xl mx-auto">
-              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-6 -mt-16 relative z-10">
-                {/* Avatar */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-6 relative z-10">
+                {/* Avatar with glow effect */}
                 <div className="flex-shrink-0">
-                  <div className="w-32 h-32 rounded-xl overflow-hidden border-4 border-zinc-900 bg-zinc-800">
+                  <div className="w-36 h-36 rounded-2xl overflow-hidden border-4 border-zinc-900 bg-zinc-800 shadow-2xl ring-4 ring-yellow-500/20">
                     <img
                       src={getSupplierAvatar(supplier.logo)}
                       alt={`${supplier.name} logo`}
@@ -695,63 +717,59 @@ export default function SupplierProfilePage() {
                   </div>
                 </div>
 
-                {/* Basic Info */}
+                {/* Basic Info - Modern Layout */}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <h1 className="text-3xl font-bold text-white">{supplier.name}</h1>
+                    <div className="bg-zinc-900/60 backdrop-blur-md rounded-xl p-6 flex-1 border border-zinc-800">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h1 className="text-4xl font-bold text-white">{supplier.name}</h1>
                         {supplier.verified && (
-                          <Award className="w-6 h-6 text-blue-400" />
+                          <div className="flex items-center gap-1 px-3 py-1 bg-yellow-500/10 border border-yellow-500/30 rounded-full">
+                            <Award className="w-4 h-4 text-yellow-400" />
+                            <span className="text-xs font-semibold text-yellow-400">VERIFIED</span>
+                          </div>
                         )}
                       </div>
-                      <p className="text-zinc-300 text-lg mb-2">{supplier.shortBio}</p>
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-400">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          {supplier.location.displayLocation}
+                      <p className="text-zinc-300 text-lg mb-4">{supplier.shortBio}</p>
+                      <div className="flex flex-wrap items-center gap-6 text-sm text-zinc-400">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-yellow-400" />
+                          <span>{supplier.location.displayLocation}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          Member since {supplier.memberSince}
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-yellow-400" />
+                          <span>Joined {supplier.memberSince}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                          {supplier.lastActive}
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                          <span className="text-green-400">{supplier.lastActive}</span>
                         </div>
                       </div>
-                    </div>                    {/* Action Buttons */}
+                    </div>
+
+                    {/* Action Buttons - Modern Style */}
                     <div className="flex items-center gap-3">
                       {!isOwnProfile && (
                         <>
                           <button
                             onClick={handleFollow}
-                            className={`px-6 py-2 rounded-lg font-medium transition flex items-center gap-2 ${
+                            className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg ${
                               isFollowing
-                                ? 'bg-zinc-700 hover:bg-zinc-600 text-white'
-                                : 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black'
+                                ? 'bg-zinc-800 hover:bg-zinc-700 text-white border-2 border-zinc-700'
+                                : 'bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black shadow-yellow-500/50'
                             }`}
                           >
-                            {isFollowing ? (
-                              <>
-                                <Users className="w-4 h-4" />
-                                Unfollow
-                              </>
-                            ) : (
-                              <>
-                                <Users className="w-4 h-4" />
-                                Follow
-                              </>
-                            )}
+                            <Users className="w-5 h-5" />
+                            {isFollowing ? 'Following' : 'Follow'}
                           </button>
-                          <button className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition">
-                            <MessageCircle className="w-4 h-4" />
+                          <button className="px-4 py-3 bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700 text-white rounded-xl transition-all duration-300 shadow-lg">
+                            <MessageCircle className="w-5 h-5" />
                           </button>
                         </>
                       )}
                       {isOwnProfile && (
-                        <div className="text-zinc-400 text-sm">
-                          This is your profile
+                        <div className="px-6 py-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+                          <span className="text-yellow-400 font-medium">Your Profile</span>
                         </div>
                       )}
                     </div>
@@ -759,53 +777,76 @@ export default function SupplierProfilePage() {
                 </div>
               </div>
 
-              {/* Stats Row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 mt-8 mb-8">
-                <div className="bg-zinc-800/30 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-yellow-400">{supplier.stats.followers.toLocaleString()}</div>
-                  <div className="text-sm text-zinc-400">Followers</div>
+              {/* Stats Row - Modern Cards with Hover Effects */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mt-8 mb-8">
+                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
+                  <div className="flex items-center justify-center mb-2">
+                    <Users className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <div className="text-3xl font-bold text-yellow-400 mb-1">{supplier.stats.followers.toLocaleString()}</div>
+                  <div className="text-xs text-zinc-400 font-medium">Followers</div>
                 </div>
-                <div className="bg-zinc-800/30 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-yellow-400">{supplier.stats.totalProducts}</div>
-                  <div className="text-sm text-zinc-400">Products</div>
+                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
+                  <div className="flex items-center justify-center mb-2">
+                    <Package className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <div className="text-3xl font-bold text-yellow-400 mb-1">{supplier.stats.totalProducts}</div>
+                  <div className="text-xs text-zinc-400 font-medium">Products</div>
                 </div>
-                <div className="bg-zinc-800/30 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-yellow-400">{supplier.stats.avgRating.toFixed(1)}</div>
-                  <div className="text-sm text-zinc-400">Avg Rating</div>
+                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
+                  <div className="flex items-center justify-center mb-2">
+                    <Star className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <div className="text-3xl font-bold text-yellow-400 mb-1">{supplier.stats.avgRating.toFixed(1)}</div>
+                  <div className="text-xs text-zinc-400 font-medium">Rating</div>
                 </div>
-                <div className="bg-zinc-800/30 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-yellow-400">{supplier.stats.totalSales.toLocaleString()}</div>
-                  <div className="text-sm text-zinc-400">Sales</div>
+                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
+                  <div className="flex items-center justify-center mb-2">
+                    <ShoppingBag className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <div className="text-3xl font-bold text-yellow-400 mb-1">{supplier.stats.totalSales.toLocaleString()}</div>
+                  <div className="text-xs text-zinc-400 font-medium">Sales</div>
                 </div>
-                <div className="bg-zinc-800/30 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-yellow-400">{supplier.socialMetrics.posts}</div>
-                  <div className="text-sm text-zinc-400">Posts</div>
+                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
+                  <div className="flex items-center justify-center mb-2">
+                    <Heart className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <div className="text-3xl font-bold text-yellow-400 mb-1">{supplier.socialMetrics.posts}</div>
+                  <div className="text-xs text-zinc-400 font-medium">Posts</div>
                 </div>
-                <div className="bg-zinc-800/30 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-yellow-400">{supplier.socialMetrics.engagement}%</div>
-                  <div className="text-sm text-zinc-400">Engagement</div>
+                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
+                  <div className="flex items-center justify-center mb-2">
+                    <TrendingUp className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <div className="text-3xl font-bold text-yellow-400 mb-1">{supplier.socialMetrics.engagement}%</div>
+                  <div className="text-xs text-zinc-400 font-medium">Engagement</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="border-b border-zinc-700">
+        {/* Tab Navigation - Modern Style */}
+        <div className="sticky top-0 z-30 bg-zinc-950/95 backdrop-blur-lg border-b border-zinc-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav className="flex space-x-8">
+            <nav className="flex space-x-1">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`py-4 px-2 border-b-2 font-medium text-sm transition ${
+                  className={`py-4 px-6 font-semibold text-sm transition-all duration-300 relative ${
                     activeTab === tab.id
-                      ? 'border-yellow-500 text-yellow-400'
-                      : 'border-transparent text-zinc-400 hover:text-zinc-300 hover:border-zinc-600'
+                      ? 'text-yellow-400'
+                      : 'text-zinc-400 hover:text-zinc-300'
                   }`}
                 >
-                  <span className="mr-2">{tab.icon}</span>
-                  {tab.name}
+                  <span className="flex items-center gap-2">
+                    <span>{tab.icon}</span>
+                    <span>{tab.name}</span>
+                  </span>
+                  {activeTab === tab.id && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-yellow-400 to-yellow-500"></div>
+                  )}
                 </button>
               ))}
             </nav>

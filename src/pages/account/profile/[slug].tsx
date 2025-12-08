@@ -11,6 +11,7 @@ import FollowersModal from '@/components/FollowersModal';
 import CreatePost from '@/components/social/CreatePost';
 import PostCard from '@/components/social/PostCard';
 import { SocialPostsStorage, SocialPost } from '@/utils/socialPostsStorage';
+import { Shield, Award, Star, TrendingUp, Users as UsersIcon, Heart, MessageCircle, Share2, Zap, Eye, Target, Clock, Activity } from "lucide-react";
 
 interface UserProfile {
   id: number;
@@ -105,18 +106,37 @@ export default function UserProfilePage() {
     // Update immediately
     updateLiveStats();
     
+    // Listen for real-time follower updates
+    const handleFollowerUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { followerId, followingId } = customEvent.detail;
+      
+      // Update stats if this profile was involved in the follow/unfollow
+      if (followerId === profile.id || followingId === profile.id) {
+        console.log('🔔 Profile received follower update:', customEvent.detail);
+        updateLiveStats();
+      }
+    };
+    
+    window.addEventListener('followerUpdate', handleFollowerUpdate);
+    
     // Update every 10 seconds
     const interval = setInterval(updateLiveStats, 10000);
-    return () => clearInterval(interval);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('followerUpdate', handleFollowerUpdate);
+    };
   }, [profile]);
 
   useEffect(() => {
     if (!slug) return;
     
-    const loadProfile = () => {
+    const loadProfile = async () => {
       setLoading(true);
+      let foundProfile = null;
       
-      // Search all user profiles for matching slug
+      // 1. First, search localStorage for matching slug (user-created profiles)
       const allKeys = Object.keys(localStorage).filter(
         (key) => key.startsWith("user_") && key.endsWith("_profile")
       );
@@ -133,30 +153,90 @@ export default function UserProfilePage() {
             .replace(/^-|-$/g, "");
             
           if (usernameSlug === slug) {
-            // Enhance profile with calculated stats
-            const stats = UserStorage.calculateUserStats(userProfile.id);
-            const walletBalance = UserStorage.getUserWalletBalance(userProfile.id);
-            const guildCoins = UserStorage.getUserGuildCoins(userProfile.id);
-            
-            const enhancedProfile = {
-              ...userProfile,
-              stats,
-              walletBalance,
-              guildCoins
-            };
-            
-            setProfile(enhancedProfile);
-            setIsOwnProfile(currentUser?.id === userProfile.id);
-            setEditForm(enhancedProfile);
-            
-            // Increment profile views (only for non-own profiles)
-            if (currentUser?.id !== userProfile.id) {
-              UserStorage.incrementProfileViews(userProfile.id);
-            }
+            foundProfile = userProfile;
             break;
           }
         } catch (error) {
           console.error("Error parsing profile:", error);
+        }
+      }
+      
+      // 2. If not found in localStorage, check API database
+      if (!foundProfile) {
+        try {
+          console.log(`🔍 Profile not in localStorage, checking API for slug: ${slug}`);
+          const response = await fetch('/api/users');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.users && Array.isArray(data.users)) {
+              const user = data.users.find((u: any) => {
+                const userSlug = u.username
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]/g, "-")
+                  .replace(/-+/g, "-")
+                  .replace(/^-|-$/g, "");
+                return userSlug === slug;
+              });
+              
+              if (user) {
+                console.log(`✅ Found user in API database: ${user.username}`);
+                // Build profile from API data
+                foundProfile = {
+                  id: user.id,
+                  username: user.username,
+                  email: user.email,
+                  bio: user.bio || "",
+                  avatar: user.avatar || null,
+                  banner: user.banner || null,
+                  tier: user.tier || "New Member",
+                  guildTokens: user.guildCoins || user.guildTokens || 0,
+                  joinedDate: user.joinDate || user.createdAt?.split('T')[0] || new Date().toISOString().split('T')[0],
+                  titles: user.titles || [],
+                  badges: user.badges || [],
+                  links: user.links || [],
+                  stats: {
+                    totalPledges: user.totalPledges || 0,
+                    totalVotes: user.totalVotes || 0,
+                    dropsJoined: user.dropsJoined || 0,
+                    followers: user.followers || 0,
+                    following: user.following || 0
+                  }
+                };
+              }
+            }
+          }
+        } catch (apiError) {
+          console.error('❌ Error fetching from API:', apiError);
+        }
+      }
+      
+      // 3. If profile found (from either source), enhance and display it
+      if (foundProfile) {
+        // Enhance profile with calculated stats FROM USERSTORAGE (source of truth)
+        const stats = UserStorage.calculateUserStats(foundProfile.id);
+        const walletBalance = UserStorage.getUserWalletBalance(foundProfile.id);
+        const guildCoins = UserStorage.getUserGuildCoins(foundProfile.id);
+        
+        console.log(`📊 Profile stats for ${foundProfile.username}:`, {
+          followers: stats.followers,
+          following: stats.following,
+          source: 'UserStorage.calculateUserStats'
+        });
+        
+        const enhancedProfile = {
+          ...foundProfile,
+          stats,  // This OVERWRITES any API stats with localStorage data
+          walletBalance,
+          guildCoins
+        };
+        
+        setProfile(enhancedProfile);
+        setIsOwnProfile(currentUser?.id === foundProfile.id);
+        setEditForm(enhancedProfile);
+        
+        // Increment profile views (only for non-own profiles)
+        if (currentUser?.id !== foundProfile.id) {
+          UserStorage.incrementProfileViews(foundProfile.id);
         }
       }
       
@@ -317,36 +397,42 @@ export default function UserProfilePage() {
       </Head>
       <MainNavbar />
 
-      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white">
-        {/* Enhanced Banner Section */}
-        <div className="relative h-72 bg-gradient-to-r from-zinc-800 via-zinc-700 to-zinc-800 overflow-hidden">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-yellow-400/20 to-purple-400/20"></div>
-            <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-400/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-10 right-10 w-40 h-40 bg-purple-400/10 rounded-full blur-3xl"></div>
+      <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white">
+        {/* Enhanced Banner Section with Gradient Overlay */}
+        <div className="relative h-80 bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 overflow-hidden">
+          {/* Animated Background Elements */}
+          <div className="absolute inset-0">
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+            <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
           </div>
           
           {/* Custom Banner or Placeholder */}
-          <Image
-            src={(isEditing ? editForm.banner : profile?.banner) || "/Icons/BannerPlaceholder.png"}
-            alt="Profile Banner"
-            fill
-            className="object-cover"
-            priority
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = "/Icons/BannerPlaceholder.png";
-            }}
-          />
+          <div className="absolute inset-0">
+            <Image
+              src={(isEditing ? editForm.banner : profile?.banner) || "/Icons/BannerPlaceholder.png"}
+              alt="Profile Banner"
+              fill
+              className="object-cover"
+              priority
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/Icons/BannerPlaceholder.png";
+              }}
+            />
+          </div>
           
-          {/* Banner Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+          {/* Enhanced Banner Overlay with Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30"></div>
           
           {/* Banner Edit Button */}
           {isOwnProfile && isEditing && (
-            <label className="absolute top-6 right-6 bg-zinc-900/90 hover:bg-zinc-800/90 backdrop-blur-sm px-4 py-2 rounded-lg cursor-pointer transition-all border border-yellow-400/30 hover:border-yellow-400/60">
-              <span className="text-yellow-400 font-semibold">📷 Change Banner</span>
+            <label className="absolute top-6 right-6 bg-zinc-900/90 hover:bg-zinc-800/90 backdrop-blur-sm px-5 py-3 rounded-xl cursor-pointer transition-all border-2 border-yellow-400/30 hover:border-yellow-400/60 shadow-lg hover:shadow-yellow-400/20 group">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-yellow-400 group-hover:scale-110 transition-transform" />
+                <span className="text-yellow-400 font-semibold">Change Banner</span>
+              </div>
               <input
                 type="file"
                 accept="image/*"
@@ -357,25 +443,40 @@ export default function UserProfilePage() {
           )}
           
           {/* Live Status Indicator */}
-          <div className="absolute top-6 left-6 flex items-center gap-2 bg-zinc-900/90 backdrop-blur-sm px-3 py-2 rounded-lg border border-green-400/30">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-green-400 text-sm font-medium">Live Tracking</span>
+          <div className="absolute top-6 left-6 flex items-center gap-3 bg-gradient-to-r from-green-900/90 to-emerald-900/90 backdrop-blur-sm px-4 py-2.5 rounded-xl border border-green-400/40 shadow-lg">
+            <div className="relative">
+              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+              <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
+            </div>
+            <span className="text-green-300 text-sm font-semibold">Live Profile</span>
+          </div>
+
+          {/* Profile Stats Badge */}
+          <div className="absolute bottom-6 left-6 flex items-center gap-3">
+            <div className="bg-zinc-900/90 backdrop-blur-sm px-4 py-2 rounded-xl border border-blue-400/40 flex items-center gap-2">
+              <Eye className="w-4 h-4 text-blue-400" />
+              <span className="text-blue-300 text-sm font-medium">{liveStats.profileViews} views</span>
+            </div>
+            <div className="bg-zinc-900/90 backdrop-blur-sm px-4 py-2 rounded-xl border border-purple-400/40 flex items-center gap-2">
+              <Zap className="w-4 h-4 text-purple-400" />
+              <span className="text-purple-300 text-sm font-medium">{liveStats.reputation} reputation</span>
+            </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 -mt-24 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 -mt-32 relative z-10">
           {/* Enhanced Profile Header */}
-          <div className="bg-zinc-900/95 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-8 mb-8 shadow-2xl">
+          <div className="bg-gradient-to-br from-zinc-900/95 to-zinc-800/95 backdrop-blur-xl border-2 border-yellow-500/30 rounded-3xl p-8 mb-8 shadow-2xl">
             <div className="flex flex-col lg:flex-row items-start gap-8">
               {/* Avatar Section */}
-              <div className="relative flex-shrink-0">
-                <div className="w-40 h-40 rounded-2xl border-4 border-yellow-400/30 overflow-hidden bg-zinc-700 shadow-2xl">
+              <div className="relative flex-shrink-0 group">
+                <div className="w-44 h-44 rounded-3xl border-4 border-yellow-400/40 overflow-hidden bg-zinc-700 shadow-2xl ring-4 ring-yellow-400/10 group-hover:ring-yellow-400/30 transition-all duration-300">
                   <Image
                     src={(isEditing ? editForm.avatar : profile?.avatar) || "/Icons/New Member.png"}
                     alt={profile?.username || "Profile"}
-                    width={160}
-                    height={160}
-                    className="w-full h-full object-cover"
+                    width={176}
+                    height={176}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     priority
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -386,8 +487,8 @@ export default function UserProfilePage() {
                 
                 {/* Avatar Edit Button */}
                 {isOwnProfile && isEditing && (
-                  <label className="absolute bottom-0 right-0 bg-yellow-400 hover:bg-yellow-300 p-3 rounded-full cursor-pointer transition-colors shadow-lg border-2 border-zinc-900">
-                    <span className="text-black text-lg">📷</span>
+                  <label className="absolute bottom-2 right-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 p-3 rounded-full cursor-pointer transition-all shadow-lg border-2 border-zinc-900 hover:scale-110 group">
+                    <Shield className="w-5 h-5 text-black" />
                     <input
                       type="file"
                       accept="image/*"
@@ -397,10 +498,17 @@ export default function UserProfilePage() {
                   </label>
                 )}
                 
-                {/* Tier Badge */}
-                <div className={`absolute -top-2 -right-2 px-3 py-1 bg-gradient-to-r ${getTierColor(profile?.tier)} rounded-full text-white font-bold text-sm shadow-lg border-2 border-zinc-900`}>
-                  <span className="mr-1">{getTierIcon(profile?.tier)}</span>
-                  {profile?.tier || "New Member"}
+                {/* Enhanced Tier Badge */}
+                <div className={`absolute -top-3 -right-3 px-4 py-2 bg-gradient-to-r ${getTierColor(profile?.tier)} rounded-xl text-white font-bold text-sm shadow-xl border-2 border-zinc-900 flex items-center gap-2`}>
+                  <Award className="w-4 h-4" />
+                  <span>{getTierIcon(profile?.tier)}</span>
+                  <span>{profile?.tier || "New Member"}</span>
+                </div>
+
+                {/* Reputation Score Badge */}
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-purple-500 px-4 py-1.5 rounded-full border-2 border-zinc-900 shadow-lg flex items-center gap-2">
+                  <Star className="w-3 h-3 text-yellow-300" />
+                  <span className="text-white text-sm font-bold">{liveStats.reputation}</span>
                 </div>
               </div>
 
@@ -408,71 +516,73 @@ export default function UserProfilePage() {
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
                   <div className="flex-1">
-                    <h1 className="text-4xl font-bold text-yellow-400 mb-3 break-words">
+                    <h1 className="text-5xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent mb-4 break-words">
                       {profile.username}
                     </h1>
-                      {/* Live Stats Bar */}
-                    <div className="flex flex-wrap items-center gap-4 mb-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                        <span className="text-blue-400 font-semibold">{liveStats.activePledges}</span>
-                        <span className="text-gray-400">Active Pledges</span>
+                      {/* Enhanced Live Stats Bar */}
+                    <div className="flex flex-wrap items-center gap-3 mb-5">
+                      <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-2">
+                        <Target className="w-4 h-4 text-blue-400" />
+                        <span className="text-blue-400 font-bold text-lg">{liveStats.activePledges}</span>
+                        <span className="text-gray-400 text-sm">Active</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                        <span className="text-green-400 font-semibold">{liveStats.reputation}</span>
-                        <span className="text-gray-400">Reputation</span>
+                      <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2">
+                        <Shield className="w-4 h-4 text-green-400" />
+                        <span className="text-green-400 font-bold text-lg">{liveStats.reputation}</span>
+                        <span className="text-gray-400 text-sm">Reputation</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                        <span className="text-purple-400 font-semibold">{Math.round(liveStats.successRate)}%</span>
-                        <span className="text-gray-400">Success Rate</span>
+                      <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/30 rounded-lg px-3 py-2">
+                        <TrendingUp className="w-4 h-4 text-purple-400" />
+                        <span className="text-purple-400 font-bold text-lg">{Math.round(liveStats.successRate)}%</span>
+                        <span className="text-gray-400 text-sm">Success</span>
                       </div>
                       
                       {/* Followers Count - Clickable */}
                       <button
                         onClick={() => setFollowersModal({ isOpen: true, type: 'followers' })}
-                        className="flex items-center gap-2 hover:bg-zinc-800/50 rounded-lg px-2 py-1 transition-colors group"
+                        className="flex items-center gap-2 bg-pink-500/10 border border-pink-500/30 hover:border-pink-500/60 rounded-lg px-3 py-2 transition-all group"
                       >
-                        <div className="w-2 h-2 bg-pink-400 rounded-full"></div>
-                        <span className="text-pink-400 font-semibold group-hover:text-pink-300">{liveStats.followers}</span>
-                        <span className="text-gray-400 group-hover:text-gray-300">Followers</span>
+                        <UsersIcon className="w-4 h-4 text-pink-400" />
+                        <span className="text-pink-400 font-bold text-lg group-hover:text-pink-300">{liveStats.followers}</span>
+                        <span className="text-gray-400 text-sm group-hover:text-gray-300">Followers</span>
                       </button>
                       
                       {/* Following Count - Clickable */}
                       <button
                         onClick={() => setFollowersModal({ isOpen: true, type: 'following' })}
-                        className="flex items-center gap-2 hover:bg-zinc-800/50 rounded-lg px-2 py-1 transition-colors group"
+                        className="flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 hover:border-orange-500/60 rounded-lg px-3 py-2 transition-all group"
                       >
-                        <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-                        <span className="text-orange-400 font-semibold group-hover:text-orange-300">{liveStats.following}</span>
-                        <span className="text-gray-400 group-hover:text-gray-300">Following</span>
+                        <Heart className="w-4 h-4 text-orange-400" />
+                        <span className="text-orange-400 font-bold text-lg group-hover:text-orange-300">{liveStats.following}</span>
+                        <span className="text-gray-400 text-sm group-hover:text-gray-300">Following</span>
                       </button>
                     </div>
                     
                     {/* Member Since */}
-                    <p className="text-gray-400 mb-4">
-                      <span className="text-yellow-400">🗓️</span> Member since {new Date(profile.joinedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                    </p>
+                    <div className="flex items-center gap-2 text-gray-300 mb-4 bg-zinc-800/50 w-fit px-4 py-2 rounded-lg border border-zinc-700">
+                      <Clock className="w-4 h-4 text-yellow-400" />
+                      <span className="text-sm">Member since {new Date(profile.joinedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    </div>
                   </div>
 
                   {/* Action Buttons */}
                   <div className="flex gap-3">
                     {isOwnProfile ? (
                       isEditing ? (
-                        <div className="flex gap-2">
+                        <div className="flex gap-3">
                           <button
                             onClick={handleSaveProfile}
-                            className="bg-green-600 hover:bg-green-500 text-white px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg"
+                            className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white px-8 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg hover:shadow-green-500/30"
                           >
-                            ✅ Save Changes
+                            <Shield className="w-5 h-5" />
+                            Save Changes
                           </button>
                           <button
                             onClick={() => {
                               setIsEditing(false);
                               setEditForm(profile);
                             }}
-                            className="bg-gray-600 hover:bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold transition-all"
+                            className="flex items-center gap-2 bg-zinc-700 hover:bg-zinc-600 text-white px-8 py-3 rounded-xl font-bold transition-all"
                           >
                             Cancel
                           </button>
@@ -480,13 +590,14 @@ export default function UserProfilePage() {
                       ) : (
                         <button
                           onClick={() => setIsEditing(true)}
-                          className="bg-yellow-600 hover:bg-yellow-500 text-black px-6 py-3 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg"
+                          className="flex items-center gap-2 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-black px-8 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg hover:shadow-yellow-500/30"
                         >
-                          ✏️ Edit Profile
+                          <Activity className="w-5 h-5" />
+                          Edit Profile
                         </button>
                       )
                     ) : (
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         <FollowButton
                           targetUserId={profile.id}
                           targetUsername={profile.username}
@@ -506,8 +617,9 @@ export default function UserProfilePage() {
                           size="lg"
                           variant="default"
                         />
-                        <button className="bg-zinc-700 hover:bg-zinc-600 text-white px-6 py-3 rounded-lg font-semibold transition-all">
-                          💬 Message
+                        <button className="flex items-center gap-2 bg-gradient-to-r from-zinc-700 to-zinc-600 hover:from-zinc-600 hover:to-zinc-500 text-white px-8 py-3 rounded-xl font-bold transition-all hover:scale-105">
+                          <MessageCircle className="w-5 h-5" />
+                          Message
                         </button>
                       </div>
                     )}
@@ -515,72 +627,81 @@ export default function UserProfilePage() {
                 </div>                {/* Bio Section */}
                 <div className="mb-6">
                   {isEditing ? (
-                    <textarea
-                      value={editForm.bio || ""}
-                      onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
-                      placeholder="Tell the community about yourself..."
-                      className="w-full px-4 py-3 bg-zinc-800 border border-zinc-600 rounded-lg text-white resize-none h-24 focus:border-yellow-400 focus:outline-none placeholder-gray-500"
-                    />
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-400 flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4" />
+                        Your Bio
+                      </label>
+                      <textarea
+                        value={editForm.bio || ""}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
+                        placeholder="Tell the community about yourself..."
+                        className="w-full px-5 py-4 bg-zinc-800 border-2 border-zinc-600 focus:border-yellow-400 rounded-xl text-white resize-none h-28 focus:outline-none placeholder-gray-500 transition-all"
+                      />
+                    </div>
                   ) : (
-                    <div className="bg-zinc-800/50 rounded-lg p-4">
-                      <p className="text-gray-300 leading-relaxed">
-                        {profile.bio || "This member hasn't written a bio yet. 🤷‍♂️"}
-                      </p>
+                    <div className="bg-gradient-to-br from-zinc-800/70 to-zinc-900/70 rounded-xl p-5 border border-zinc-700">
+                      <div className="flex items-start gap-3">
+                        <MessageCircle className="w-5 h-5 text-yellow-400 mt-1 flex-shrink-0" />
+                        <p className="text-gray-300 leading-relaxed">
+                          {profile.bio || "This member hasn't written a bio yet. 🤷‍♂️"}
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Social Stats Section */}
+                {/* Enhanced Social Stats Section */}
                 <div className="mb-6">
-                  <div className="bg-gradient-to-r from-zinc-800/50 to-zinc-900/50 rounded-xl p-4 border border-zinc-700/50">
-                    <div className="flex items-center justify-center gap-8">
+                  <div className="bg-gradient-to-r from-zinc-800/70 to-zinc-900/70 rounded-2xl p-6 border-2 border-zinc-700 hover:border-yellow-500/30 transition-all">
+                    <div className="flex items-center justify-around gap-4">
                       {/* Followers */}
                       <button
                         onClick={() => setFollowersModal({ isOpen: true, type: 'followers' })}
-                        className="flex flex-col items-center gap-2 hover:bg-zinc-700/30 rounded-lg px-4 py-3 transition-all group"
+                        className="flex flex-col items-center gap-3 hover:bg-zinc-700/40 rounded-xl px-6 py-4 transition-all group flex-1"
                       >
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-pink-400 rounded-full"></div>
-                          <span className="text-2xl font-bold text-pink-400 group-hover:text-pink-300 transition-colors">
+                          <div className="w-3 h-3 bg-pink-400 rounded-full group-hover:scale-125 transition-transform"></div>
+                          <span className="text-3xl font-bold text-pink-400 group-hover:text-pink-300 transition-colors">
                             {liveStats.followers}
                           </span>
                         </div>
-                        <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
+                        <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors font-medium">
                           Followers
                         </span>
                       </button>
 
                       {/* Divider */}
-                      <div className="w-px h-12 bg-zinc-600"></div>
+                      <div className="w-px h-16 bg-zinc-600"></div>
 
                       {/* Following */}
                       <button
                         onClick={() => setFollowersModal({ isOpen: true, type: 'following' })}
-                        className="flex flex-col items-center gap-2 hover:bg-zinc-700/30 rounded-lg px-4 py-3 transition-all group"
+                        className="flex flex-col items-center gap-3 hover:bg-zinc-700/40 rounded-xl px-6 py-4 transition-all group flex-1"
                       >
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-orange-400 rounded-full"></div>
-                          <span className="text-2xl font-bold text-orange-400 group-hover:text-orange-300 transition-colors">
+                          <div className="w-3 h-3 bg-orange-400 rounded-full group-hover:scale-125 transition-transform"></div>
+                          <span className="text-3xl font-bold text-orange-400 group-hover:text-orange-300 transition-colors">
                             {liveStats.following}
                           </span>
                         </div>
-                        <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
+                        <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors font-medium">
                           Following
                         </span>
                       </button>
 
                       {/* Divider */}
-                      <div className="w-px h-12 bg-zinc-600"></div>
+                      <div className="w-px h-16 bg-zinc-600"></div>
 
                       {/* Posts Count */}
-                      <div className="flex flex-col items-center gap-2 px-4 py-3">
+                      <div className="flex flex-col items-center gap-3 px-6 py-4 flex-1">
                         <div className="flex items-center gap-2">
                           <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                          <span className="text-2xl font-bold text-blue-400">
+                          <span className="text-3xl font-bold text-blue-400">
                             {posts.length}
                           </span>
                         </div>
-                        <span className="text-sm text-gray-400">
+                        <span className="text-sm text-gray-400 font-medium">
                           Posts
                         </span>
                       </div>
@@ -598,36 +719,39 @@ export default function UserProfilePage() {
             <div className="lg:col-span-2 space-y-8">
               
               {/* Profile Navigation Tabs */}
-              <div className="bg-zinc-900/90 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-2 shadow-lg">                <div className="flex gap-2">
+              <div className="bg-gradient-to-r from-zinc-900/95 to-zinc-800/95 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-2.5 shadow-xl">                <div className="flex gap-2">
                   <button
                     onClick={() => setActiveTab('posts')}
-                    className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all ${
+                    className={`flex-1 px-6 py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
                       activeTab === 'posts'
-                        ? 'bg-yellow-400 text-black'
-                        : 'text-gray-400 hover:text-yellow-400 hover:bg-zinc-800/50'
+                        ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg shadow-yellow-500/30 scale-105'
+                        : 'text-gray-400 hover:text-yellow-400 hover:bg-zinc-800/70'
                     }`}
                   >
-                    � Posts ({posts.length})
+                    <MessageCircle className="w-5 h-5" />
+                    Posts ({posts.length})
                   </button>
                   <button
                     onClick={() => setActiveTab('overview')}
-                    className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all ${
+                    className={`flex-1 px-6 py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
                       activeTab === 'overview'
-                        ? 'bg-yellow-400 text-black'
-                        : 'text-gray-400 hover:text-yellow-400 hover:bg-zinc-800/50'
+                        ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg shadow-yellow-500/30 scale-105'
+                        : 'text-gray-400 hover:text-yellow-400 hover:bg-zinc-800/70'
                     }`}
                   >
-                    � Overview
+                    <Target className="w-5 h-5" />
+                    Overview
                   </button>
                   <button
                     onClick={() => setActiveTab('activity')}
-                    className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all ${
+                    className={`flex-1 px-6 py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
                       activeTab === 'activity'
-                        ? 'bg-yellow-400 text-black'
-                        : 'text-gray-400 hover:text-yellow-400 hover:bg-zinc-800/50'
+                        ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg shadow-yellow-500/30 scale-105'
+                        : 'text-gray-400 hover:text-yellow-400 hover:bg-zinc-800/70'
                     }`}
                   >
-                    ⚡ Activity
+                    <Activity className="w-5 h-5" />
+                    Activity
                   </button>
                 </div>
               </div>              {/* Tab Content */}

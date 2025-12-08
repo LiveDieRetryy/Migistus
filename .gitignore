@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# session data (contains sensitive authentication tokens)
+/public/data/sessions.json
+/public/data/user-sessions.json
