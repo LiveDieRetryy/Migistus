@@ -129,20 +129,19 @@ export default function MainNavbar() {
     {
       name: "Community Drops",
       href: "/community-drops",
-      icon: <Image src="/Icons/communitydrops.png" alt="Community Drops" width={32} height={32} className="object-contain" unoptimized />,
+      icon: <img src="/Icons/communitydrops.png" alt="Community Drops" width={32} height={32} className="object-contain" />,
       description: "Active community drops"
     },
     {
       name: "Staff Picks", 
       href: "/staff-picks",
       icon: (
-        <Image
+        <img
           src="/Icons/subsribers.png"
           alt="Staff Picks"
           width={32}
           height={32}
           className="object-contain"
-          unoptimized
         />
       ),
       description: "Curated by our team"
@@ -157,13 +156,13 @@ export default function MainNavbar() {
 
   // Insert Live Drops as a placeholder for ordering
   const navigation = [
-    { name: "Voting", href: "/voting", icon: <Image src="/Icons/voting.png" alt="Voting" width={32} height={32} unoptimized /> },
-    { name: "Coming Soon", href: "/coming-soon", icon: <Image src="/Icons/comingsoon.png" alt="Coming Soon" width={32} height={32} unoptimized /> },
+    { name: "Voting", href: "/voting", icon: <img src="/Icons/voting.png" alt="Voting" width={32} height={32} /> },
+    { name: "Coming Soon", href: "/coming-soon", icon: <img src="/Icons/comingsoon.png" alt="Coming Soon" width={32} height={32} /> },
     // Live Drops placeholder (will be rendered as dropdown)
     { name: "Live Drops", isDropdown: true },
-    { name: "Community", href: "/community", icon: <Image src="/Icons/Chat.png" alt="Community" width={32} height={32} unoptimized /> },
-    { name: "Categories", href: "/categories", icon: <Image src="/Icons/Categories.png" alt="Categories" width={32} height={32} unoptimized /> },
-    { name: "About", href: "/about", icon: <Image src="/Icons/about.png" alt="About" width={32} height={32} unoptimized /> },
+    { name: "Community", href: "/community", icon: <img src="/Icons/Chat.png" alt="Community" width={32} height={32} /> },
+    { name: "Categories", href: "/categories", icon: <img src="/Icons/Categories.png" alt="Categories" width={32} height={32} /> },
+    { name: "About", href: "/about", icon: <img src="/Icons/about.png" alt="About" width={32} height={32} /> },
   ];
 
   // Add or update styles for uniform nav items
