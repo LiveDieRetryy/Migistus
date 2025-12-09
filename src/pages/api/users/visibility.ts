@@ -20,7 +20,7 @@ export default async function handler(
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    const session = getSession(token);
+    const session = await getSession(token);
     if (!session) {
       return res.status(401).json({ error: 'Invalid session' });
     }

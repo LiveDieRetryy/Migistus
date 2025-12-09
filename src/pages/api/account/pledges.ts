@@ -21,9 +21,9 @@ function savePledges(pledges: any[]) {
   fs.writeFileSync(pledgesPath, JSON.stringify(pledges, null, 2));
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Require authentication - this validates the session
-  const session = requireAuth(req, res);
+  const session = await requireAuth(req, res);
   if (!session) {
     return; // requireAuth already sent the 401 response
   }

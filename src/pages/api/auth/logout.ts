@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getSessionToken, deleteSession, clearSessionCookie } from "@/lib/session";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST"]);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
@@ -10,7 +10,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   // Get and delete the session
   const token = getSessionToken(req);
   if (token) {
-    deleteSession(token);
+    await deleteSession(token);
   }
 
   // Clear the session cookie

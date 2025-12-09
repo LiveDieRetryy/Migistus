@@ -28,13 +28,13 @@ function writeUsers(users: any[]) {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'PUT') {
-    res.setHeader('Allow', ['PUT']);
+  if (req.method !== "POST") {
+    res.setHeader("Allow", ["POST"]);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
   // Require authentication
-  const session = requireAuth(req, res);
+  const session = await requireAuth(req, res);
   if (!session) {
     return; // requireAuth already sent the 401 response
   }

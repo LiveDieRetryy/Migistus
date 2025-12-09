@@ -9,7 +9,9 @@
     "lint": "next lint",
     "fix-blob-urls": "node scripts/fix-blob-urls.js",
     "cleanup-images": "node scripts/image-cleanup-service.js",
-    "image-stats": "node scripts/image-cleanup-service.js --stats-only"
+    "image-stats": "node scripts/image-cleanup-service.js --stats-only",
+    "db:migrate": "tsx scripts/migrate-to-database.ts",
+    "db:test": "tsx scripts/test-db-connection.ts"
   },
   "dependencies": {
     "@babel/parser": "^7.27.5",
@@ -22,6 +24,7 @@
     "@radix-ui/react-switch": "^1.0.3",
     "@react-spring/web": "^10.0.3",
     "@types/multer": "^1.4.13",
+    "@vercel/postgres": "^0.10.0",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
@@ -50,6 +53,7 @@
     "eslint-config-next": "^16.0.7",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }

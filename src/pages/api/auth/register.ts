@@ -194,7 +194,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log("✅ User verified in database:", savedUser.username);
   
   // Create server-side session for auto-login
-  const sessionToken = createSession(newUser.id, newUser.username, newUser.email, newUser.tier);
+  const sessionToken = await createSession(newUser.id, newUser.username, newUser.email, newUser.tier);
   setSessionCookie(res, sessionToken);
   
   console.log("✅ Session created for new user:", newUser.username);

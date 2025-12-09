@@ -210,6 +210,34 @@ export async function deleteSession(token: string): Promise<void> {
 }
 
 /**
+ * Extend session expiration (on activity)
+ */
+export async function extendSession(token: string): Promise<void> {
+  const session = await getSession(token);
+  if (!session) return;
+  
+  const newExpiresAt = Date.now() + SESSION_DURATION;
+  
+  if (isProduction()) {
+    // Production: Update in database
+    try {
+      const db = await getDb();
+      await db.createSession(session.userId, token, new Date(newExpiresAt));
+    } catch (error) {
+      console.error('Error extending session:', error);
+    }
+  } else {
+    // Development: Update in file
+    const sessions = readSessionsFile();
+    if (sessions[token]) {
+      sessions[token].expiresAt = newExpiresAt;
+      sessions[token].lastActivity = Date.now();
+      writeSessionsFile(sessions);
+    }
+  }
+}
+
+/**
  * Get session token from request cookies
  */
 export function getSessionToken(req: NextApiRequest): string | null {
@@ -300,34 +328,6 @@ export async function requireAdmin(req: NextApiRequest, res: NextApiResponse): P
 }
 
 /**
- * Extend session expiration (refresh on activity)
- */
-export async function extendSession(token: string): Promise<void> {
-  const session = await getSession(token);
-  if (!session) return;
-  
-  const newExpiresAt = Date.now() + SESSION_DURATION;
-  
-  if (isProduction()) {
-    // Production: Update in database
-    try {
-      const db = await getDb();
-      await db.createSession(session.userId, token, new Date(newExpiresAt));
-    } catch (error) {
-      console.error('Error extending session:', error);
-    }
-  } else {
-    // Development: Update in file
-    const sessions = readSessionsFile();
-    if (sessions[token]) {
-      sessions[token].expiresAt = newExpiresAt;
-      sessions[token].lastActivity = Date.now();
-      writeSessionsFile(sessions);
-    }
-  }
-}
-
-/**
  * Cleanup expired sessions (for maintenance tasks)
  */
 export async function cleanupExpiredSessions(): Promise<void> {
@@ -353,60 +353,4 @@ export async function cleanupExpiredSessions(): Promise<void> {
     writeSessionsFile(activeSessions);
     console.log('✅ Cleaned up expired sessions from file');
   }
-}
-
-/**
- * Check if a user is currently online (compatibility function)
- * Only works in development mode
- */
-export function isUserOnline(userId: number): boolean {
-  if (isProduction()) {
-    console.warn('isUserOnline called in production - not supported with database sessions');
-    return false;
-  }
-  
-  const sessions = readSessionsFile();
-  const now = Date.now();
-  
-  for (const session of Object.values(sessions)) {
-    if (session.userId === userId && session.expiresAt > now) {
-      return true;
-    }
-  }
-  
-  return false;
-}
-
-/**
- * Get all currently online users (compatibility function)
- * Only works in development mode
- */
-export function getOnlineUsers(): Array<{ userId: number; username: string; tier: string; lastActivity: number }> {
-  if (isProduction()) {
-    console.warn('getOnlineUsers called in production - not supported with database sessions');
-    return [];
-  }
-  
-  const sessions = readSessionsFile();
-  const now = Date.now();
-  
-  const onlineUsers = new Map<number, { userId: number; username: string; tier: string; lastActivity: number }>();
-  
-  for (const session of Object.values(sessions)) {
-    if (session.expiresAt > now) {
-      const activityTime = session.lastActivity || session.createdAt;
-      
-      const existing = onlineUsers.get(session.userId);
-      if (!existing || activityTime > existing.lastActivity) {
-        onlineUsers.set(session.userId, {
-          userId: session.userId,
-          username: session.username,
-          tier: session.tier,
-          lastActivity: activityTime
-        });
-      }
-    }
-  }
-  
-  return Array.from(onlineUsers.values());
 }
