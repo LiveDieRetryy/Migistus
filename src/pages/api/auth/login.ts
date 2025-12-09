@@ -44,9 +44,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let user: any = null;
 
     // Use database in production, fallback to files in development
+    console.log("🔍 Environment check:", {
+      VERCEL_ENV: process.env.VERCEL_ENV,
+      NODE_ENV: process.env.NODE_ENV,
+      isProduction: isProduction(),
+      hasPostgresUrl: !!process.env.POSTGRES_URL
+    });
+
     if (isProduction()) {
       console.log("🔐 Production mode: Using database authentication");
-      user = await db.getUserByEmailOrUsername(email.toLowerCase());
+      try {
+        user = await db.getUserByEmailOrUsername(email.toLowerCase());
+        console.log("✅ Database query successful, user found:", !!user);
+      } catch (dbError) {
+        console.error("❌ Database error:", dbError);
+        // Fallback to file-based if database fails
+        console.log("⚠️ Falling back to file-based authentication");
+        const users = readUsersFile();
+        const foundUser = users.find((u: any) => 
+          u.email?.toLowerCase() === email.toLowerCase() || 
+          u.username?.toLowerCase() === email.toLowerCase()
+        );
+        user = foundUser || null;
+      }
     } else {
       console.log("🔐 Development mode: Using file-based authentication");
       const users = readUsersFile();

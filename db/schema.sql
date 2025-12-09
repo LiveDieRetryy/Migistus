@@ -62,8 +62,7 @@ CREATE TABLE IF NOT EXISTS votes (
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   tier VARCHAR(50) NOT NULL,
   value INTEGER DEFAULT 1,
-  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(product_id, user_id, DATE(timestamp))
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Staff picks table
