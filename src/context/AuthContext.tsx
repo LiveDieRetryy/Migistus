@@ -7,6 +7,7 @@ interface User {
   username: string;
   email: string;
   sessionId: string;
+  tier?: string;
 }
 
 interface RegistrationData {
