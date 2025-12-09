@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Head from "next/head";
 import MainNavbar from "@/components/nav/MainNavbar";
 import { useAuth } from "@/context/AuthContext";
@@ -11,7 +11,8 @@ import FollowersModal from '@/components/FollowersModal';
 import CreatePost from '@/components/social/CreatePost';
 import PostCard from '@/components/social/PostCard';
 import { SocialPostsStorage, SocialPost } from '@/utils/socialPostsStorage';
-import { Shield, Award, Star, TrendingUp, Users as UsersIcon, Heart, MessageCircle, Share2, Zap, Eye, Target, Clock, Activity } from "lucide-react";
+import OnlineStatus from '@/components/OnlineStatus';
+import { Shield, Award, Star, TrendingUp, Users as UsersIcon, Heart, MessageCircle, Share2, Zap, Eye, Target, Clock, Activity, ChevronDown } from "lucide-react";
 
 interface UserProfile {
   id: number;
@@ -35,6 +36,158 @@ interface UserProfile {
   };
 }
 
+// Live Profile Status Component
+function LiveProfileStatus({ userId, isOwnProfile }: { userId: number; isOwnProfile: boolean }) {
+  const [isOnline, setIsOnline] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isInvisible, setIsInvisible] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  useEffect(() => {
+    const checkOnlineStatus = async () => {
+      try {
+        // When viewing own profile, we need to check actual online status
+        // regardless of visibility preference
+        const response = await fetch(`/api/users/online?userId=${userId}${isOwnProfile ? '&ignoreInvisible=true' : ''}`);
+        const data = await response.json();
+        setIsOnline(data.online);
+        
+        // Check if user has invisible mode enabled
+        if (isOwnProfile) {
+          // First check localStorage for immediate feedback
+          const localInvisible = localStorage.getItem(`invisible_${userId}`);
+          if (localInvisible !== null) {
+            setIsInvisible(localInvisible === 'true');
+          } else {
+            // If not in localStorage, check from profile data
+            // This will be set from the profile prop
+            setIsInvisible(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking online status:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkOnlineStatus();
+    
+    // Poll every 30 seconds to update status
+    const interval = setInterval(checkOnlineStatus, 30000);
+    
+    return () => clearInterval(interval);
+  }, [userId, isOwnProfile]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!showDropdown) return;
+    
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.visibility-dropdown')) {
+        setShowDropdown(false);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showDropdown]);
+
+  const toggleVisibility = async (mode: 'online' | 'invisible') => {
+    const newInvisibleState = mode === 'invisible';
+    setIsInvisible(newInvisibleState);
+    
+    // Save preference to localStorage
+    localStorage.setItem(`invisible_${userId}`, String(newInvisibleState));
+    
+    // Update server-side visibility
+    try {
+      await fetch('/api/users/visibility', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ invisible: newInvisibleState })
+      });
+      
+      // Force refresh the online status to reflect the change immediately
+      const response = await fetch(`/api/users/online?userId=${userId}&ignoreInvisible=true`);
+      const data = await response.json();
+      setIsOnline(data.online);
+    } catch (error) {
+      console.error('Error updating visibility:', error);
+    }
+    
+    setShowDropdown(false);
+  };
+
+  if (loading) {
+    return null;
+  }
+
+  // Show offline if user is actually offline OR if they're invisible
+  const displayOnline = isOnline && !isInvisible;
+
+  return (
+    <div className="absolute top-6 left-6 z-20 visibility-dropdown">
+      <div className={`relative flex items-center gap-3 backdrop-blur-sm px-4 py-2.5 rounded-xl border shadow-lg transition-all duration-300 ${
+        displayOnline
+          ? 'bg-gradient-to-r from-green-900/90 to-emerald-900/90 border-green-400/40'
+          : 'bg-gradient-to-r from-zinc-800/90 to-zinc-700/90 border-zinc-500/40'
+      } ${isOwnProfile ? 'cursor-pointer hover:scale-105' : ''}`}
+      onClick={() => isOwnProfile && setShowDropdown(!showDropdown)}
+      >
+        <div className="relative">
+          <div className={`w-3 h-3 rounded-full ${displayOnline ? 'bg-green-400 animate-pulse' : 'bg-zinc-500'}`}></div>
+          {displayOnline && (
+            <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
+          )}
+        </div>
+        <span className={`text-sm font-semibold ${displayOnline ? 'text-green-300' : 'text-zinc-400'}`}>
+          {displayOnline ? 'Online Now' : isInvisible ? 'Invisible' : 'Offline'}
+        </span>
+        {isOwnProfile && (
+          <ChevronDown className={`w-4 h-4 ${displayOnline ? 'text-green-300' : 'text-zinc-400'} transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+        )}
+      </div>
+
+      {/* Visibility Dropdown */}
+      {isOwnProfile && showDropdown && (
+        <div className="absolute top-full mt-2 left-0 bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-xl shadow-2xl overflow-hidden min-w-[200px] z-30">
+          <button
+            onClick={() => toggleVisibility('online')}
+            className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors ${
+              !isInvisible ? 'bg-green-900/30' : ''
+            }`}
+          >
+            <div className="relative">
+              <div className="w-2.5 h-2.5 bg-green-400 rounded-full"></div>
+              <div className="absolute inset-0 w-2.5 h-2.5 bg-green-400 rounded-full animate-ping"></div>
+            </div>
+            <div className="flex-1 text-left">
+              <div className="text-sm font-semibold text-green-300">Online</div>
+              <div className="text-xs text-zinc-400">Visible to everyone</div>
+            </div>
+          </button>
+          
+          <button
+            onClick={() => toggleVisibility('invisible')}
+            className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors ${
+              isInvisible ? 'bg-zinc-800/50' : ''
+            }`}
+          >
+            <div className="w-2.5 h-2.5 bg-zinc-500 rounded-full"></div>
+            <div className="flex-1 text-left">
+              <div className="text-sm font-semibold text-zinc-400">Invisible</div>
+              <div className="text-xs text-zinc-500">Appear offline</div>
+            </div>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function UserProfilePage() {
   const router = useRouter();
   const { slug } = router.query;
@@ -43,7 +196,9 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(true);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState<Partial<UserProfile>>({});  const [liveStats, setLiveStats] = useState({
+  const [editForm, setEditForm] = useState<Partial<UserProfile>>({});
+  const hasCountedView = useRef(false); // Track if we've already counted this view
+  const [liveStats, setLiveStats] = useState({
     activePledges: 0,
     completedPledges: 0,
     totalPledgeAmount: 0,
@@ -76,6 +231,11 @@ export default function UserProfilePage() {
   const handlePostDeleted = (postId: number) => {
     setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
   };
+
+  // Reset view counter when navigating to a different profile
+  useEffect(() => {
+    hasCountedView.current = false;
+  }, [slug]);
 
   // Mounted effect
   useEffect(() => {
@@ -234,9 +394,42 @@ export default function UserProfilePage() {
         setIsOwnProfile(currentUser?.id === foundProfile.id);
         setEditForm(enhancedProfile);
         
-        // Increment profile views (only for non-own profiles)
-        if (currentUser?.id !== foundProfile.id) {
-          UserStorage.incrementProfileViews(foundProfile.id);
+        // Increment profile views (only for non-own profiles and only once per session)
+        // IMPORTANT: We need to determine if this is the user's own profile
+        // Check multiple sources to be absolutely sure:
+        let isOwner = false;
+        
+        // 1. Check if currentUser is loaded and matches
+        if (currentUser?.id === foundProfile.id) {
+          isOwner = true;
+        }
+        
+        // 2. Also check localStorage for the logged-in user's ID
+        // This covers the case where currentUser hasn't loaded yet
+        try {
+          const currentUserId = localStorage.getItem('currentUserId');
+          if (currentUserId && parseInt(currentUserId) === foundProfile.id) {
+            isOwner = true;
+          }
+        } catch (error) {
+          // Ignore parsing errors
+        }
+        
+        // Only count view if this is NOT the user's own profile
+        if (!isOwner) {
+          // Check if we've already counted a view for this profile in this session
+          const viewKey = `profile_view_${foundProfile.id}`;
+          const lastViewTime = sessionStorage.getItem(viewKey);
+          const now = Date.now();
+          
+          // Only count if:
+          // 1. Never viewed before in this session (lastViewTime is null)
+          // 2. Or it's been more than 30 minutes since last view (1800000 ms)
+          if (!lastViewTime || (now - parseInt(lastViewTime)) > 1800000) {
+            UserStorage.incrementProfileViews(foundProfile.id);
+            sessionStorage.setItem(viewKey, now.toString());
+            hasCountedView.current = true;
+          }
         }
       }
       
@@ -398,16 +591,15 @@ export default function UserProfilePage() {
       <MainNavbar />
 
       <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white">
-        {/* Enhanced Banner Section with Gradient Overlay */}
-        <div className="relative h-80 bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 overflow-hidden">
+        {/* Streamlined Banner Section */}
+        <div className="relative h-64 bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 overflow-hidden">
           {/* Animated Background Elements */}
           <div className="absolute inset-0">
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl animate-pulse" />
             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-            <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
           </div>
           
-          {/* Custom Banner or Placeholder */}
+          {/* Custom Banner */}
           <div className="absolute inset-0">
             <Image
               src={(isEditing ? editForm.banner : profile?.banner) || "/Icons/BannerPlaceholder.png"}
@@ -422,16 +614,15 @@ export default function UserProfilePage() {
             />
           </div>
           
-          {/* Enhanced Banner Overlay with Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30"></div>
+          {/* Banner Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
           
           {/* Banner Edit Button */}
           {isOwnProfile && isEditing && (
-            <label className="absolute top-6 right-6 bg-zinc-900/90 hover:bg-zinc-800/90 backdrop-blur-sm px-5 py-3 rounded-xl cursor-pointer transition-all border-2 border-yellow-400/30 hover:border-yellow-400/60 shadow-lg hover:shadow-yellow-400/20 group">
+            <label className="absolute top-4 right-4 bg-zinc-900/90 hover:bg-zinc-800/90 backdrop-blur-sm px-4 py-2 rounded-lg cursor-pointer transition-all border border-yellow-400/30 hover:border-yellow-400/60 group">
               <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-yellow-400 group-hover:scale-110 transition-transform" />
-                <span className="text-yellow-400 font-semibold">Change Banner</span>
+                <Shield className="w-4 h-4 text-yellow-400" />
+                <span className="text-yellow-400 text-sm font-semibold">Change Banner</span>
               </div>
               <input
                 type="file"
@@ -443,39 +634,35 @@ export default function UserProfilePage() {
           )}
           
           {/* Live Status Indicator */}
-          <div className="absolute top-6 left-6 flex items-center gap-3 bg-gradient-to-r from-green-900/90 to-emerald-900/90 backdrop-blur-sm px-4 py-2.5 rounded-xl border border-green-400/40 shadow-lg">
-            <div className="relative">
-              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-              <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
-            </div>
-            <span className="text-green-300 text-sm font-semibold">Live Profile</span>
-          </div>
+          {profile && (
+            <LiveProfileStatus userId={profile.id} isOwnProfile={isOwnProfile} />
+          )}
 
-          {/* Profile Stats Badge */}
-          <div className="absolute bottom-6 left-6 flex items-center gap-3">
-            <div className="bg-zinc-900/90 backdrop-blur-sm px-4 py-2 rounded-xl border border-blue-400/40 flex items-center gap-2">
-              <Eye className="w-4 h-4 text-blue-400" />
-              <span className="text-blue-300 text-sm font-medium">{liveStats.profileViews} views</span>
+          {/* Compact Profile Stats Badge */}
+          <div className="absolute bottom-4 left-4 flex items-center gap-2">
+            <div className="bg-zinc-900/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-blue-400/40 flex items-center gap-1.5">
+              <Eye className="w-3.5 h-3.5 text-blue-400" />
+              <span className="text-blue-300 text-xs font-medium">{liveStats.profileViews}</span>
             </div>
-            <div className="bg-zinc-900/90 backdrop-blur-sm px-4 py-2 rounded-xl border border-purple-400/40 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-purple-400" />
-              <span className="text-purple-300 text-sm font-medium">{liveStats.reputation} reputation</span>
+            <div className="bg-zinc-900/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-purple-400/40 flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-purple-400" />
+              <span className="text-purple-300 text-xs font-medium">{liveStats.reputation}</span>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 -mt-32 relative z-10">
-          {/* Enhanced Profile Header */}
-          <div className="bg-gradient-to-br from-zinc-900/95 to-zinc-800/95 backdrop-blur-xl border-2 border-yellow-500/30 rounded-3xl p-8 mb-8 shadow-2xl">
-            <div className="flex flex-col lg:flex-row items-start gap-8">
-              {/* Avatar Section */}
+        <div className="max-w-7xl mx-auto px-4 -mt-20 relative z-10">
+          {/* Streamlined Profile Header */}
+          <div className="bg-gradient-to-br from-zinc-900/95 to-zinc-800/95 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-5 mb-6 shadow-2xl">
+            <div className="flex flex-col lg:flex-row items-start gap-6">
+              {/* Compact Avatar Section */}
               <div className="relative flex-shrink-0 group">
-                <div className="w-44 h-44 rounded-3xl border-4 border-yellow-400/40 overflow-hidden bg-zinc-700 shadow-2xl ring-4 ring-yellow-400/10 group-hover:ring-yellow-400/30 transition-all duration-300">
+                <div className="w-32 h-32 rounded-2xl border-3 border-yellow-400/40 overflow-hidden bg-zinc-700 shadow-xl ring-2 ring-yellow-400/10 group-hover:ring-yellow-400/30 transition-all">
                   <Image
                     src={(isEditing ? editForm.avatar : profile?.avatar) || "/Icons/New Member.png"}
                     alt={profile?.username || "Profile"}
-                    width={176}
-                    height={176}
+                    width={128}
+                    height={128}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     priority
                     onError={(e) => {
@@ -487,8 +674,8 @@ export default function UserProfilePage() {
                 
                 {/* Avatar Edit Button */}
                 {isOwnProfile && isEditing && (
-                  <label className="absolute bottom-2 right-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 p-3 rounded-full cursor-pointer transition-all shadow-lg border-2 border-zinc-900 hover:scale-110 group">
-                    <Shield className="w-5 h-5 text-black" />
+                  <label className="absolute bottom-1 right-1 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 p-2 rounded-full cursor-pointer transition-all shadow-lg border-2 border-zinc-900 hover:scale-110">
+                    <Shield className="w-4 h-4 text-black" />
                     <input
                       type="file"
                       accept="image/*"
@@ -498,63 +685,61 @@ export default function UserProfilePage() {
                   </label>
                 )}
                 
-                {/* Enhanced Tier Badge */}
-                <div className={`absolute -top-3 -right-3 px-4 py-2 bg-gradient-to-r ${getTierColor(profile?.tier)} rounded-xl text-white font-bold text-sm shadow-xl border-2 border-zinc-900 flex items-center gap-2`}>
-                  <Award className="w-4 h-4" />
+                {/* Compact Tier Badge */}
+                <div className={`absolute -top-2 -right-2 px-3 py-1 bg-gradient-to-r ${getTierColor(profile?.tier)} rounded-lg text-white font-bold text-xs shadow-xl border-2 border-zinc-900 flex items-center gap-1.5`}>
                   <span>{getTierIcon(profile?.tier)}</span>
                   <span>{profile?.tier || "New Member"}</span>
                 </div>
 
-                {/* Reputation Score Badge */}
-                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-purple-500 px-4 py-1.5 rounded-full border-2 border-zinc-900 shadow-lg flex items-center gap-2">
+                {/* Compact Reputation Badge */}
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-purple-500 px-3 py-1 rounded-full border-2 border-zinc-900 shadow-lg flex items-center gap-1">
                   <Star className="w-3 h-3 text-yellow-300" />
-                  <span className="text-white text-sm font-bold">{liveStats.reputation}</span>
+                  <span className="text-white text-xs font-bold">{liveStats.reputation}</span>
                 </div>
               </div>
 
-              {/* Profile Info */}
+              {/* Compact Profile Info */}
               <div className="flex-1 min-w-0">
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
                   <div className="flex-1">
-                    <h1 className="text-5xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent mb-4 break-words">
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent mb-3 break-words">
                       {profile.username}
                     </h1>
-                      {/* Enhanced Live Stats Bar */}
-                    <div className="flex flex-wrap items-center gap-3 mb-5">
-                      <div className="flex items-center gap-2 bg-blue-500/10 border border-blue-500/30 rounded-lg px-3 py-2">
-                        <Target className="w-4 h-4 text-blue-400" />
-                        <span className="text-blue-400 font-bold text-lg">{liveStats.activePledges}</span>
-                        <span className="text-gray-400 text-sm">Active</span>
+                      {/* Compact Stats Bar */}
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <div className="flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/30 rounded-lg px-2.5 py-1.5">
+                        <Target className="w-3.5 h-3.5 text-blue-400" />
+                        <span className="text-blue-400 font-bold text-sm">{liveStats.activePledges}</span>
+                        <span className="text-gray-400 text-xs">Active</span>
                       </div>
-                      <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2">
-                        <Shield className="w-4 h-4 text-green-400" />
-                        <span className="text-green-400 font-bold text-lg">{liveStats.reputation}</span>
-                        <span className="text-gray-400 text-sm">Reputation</span>
+                      <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2.5 py-1.5">
+                        <Shield className="w-3.5 h-3.5 text-green-400" />
+                        <span className="text-green-400 font-bold text-sm">{liveStats.reputation}</span>
+                        <span className="text-gray-400 text-xs">Rep</span>
                       </div>
-                      <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/30 rounded-lg px-3 py-2">
-                        <TrendingUp className="w-4 h-4 text-purple-400" />
-                        <span className="text-purple-400 font-bold text-lg">{Math.round(liveStats.successRate)}%</span>
-                        <span className="text-gray-400 text-sm">Success</span>
+                      <div className="flex items-center gap-1.5 bg-purple-500/10 border border-purple-500/30 rounded-lg px-2.5 py-1.5">
+                        <TrendingUp className="w-3.5 h-3.5 text-purple-400" />
+                        <span className="text-purple-400 font-bold text-sm">{Math.round(liveStats.successRate)}%</span>
                       </div>
                       
-                      {/* Followers Count - Clickable */}
+                      {/* Followers - Clickable */}
                       <button
                         onClick={() => setFollowersModal({ isOpen: true, type: 'followers' })}
-                        className="flex items-center gap-2 bg-pink-500/10 border border-pink-500/30 hover:border-pink-500/60 rounded-lg px-3 py-2 transition-all group"
+                        className="flex items-center gap-1.5 bg-pink-500/10 border border-pink-500/30 hover:border-pink-500/60 rounded-lg px-2.5 py-1.5 transition-all group"
                       >
-                        <UsersIcon className="w-4 h-4 text-pink-400" />
-                        <span className="text-pink-400 font-bold text-lg group-hover:text-pink-300">{liveStats.followers}</span>
-                        <span className="text-gray-400 text-sm group-hover:text-gray-300">Followers</span>
+                        <UsersIcon className="w-3.5 h-3.5 text-pink-400" />
+                        <span className="text-pink-400 font-bold text-sm">{liveStats.followers}</span>
+                        <span className="text-gray-400 text-xs">Followers</span>
                       </button>
                       
-                      {/* Following Count - Clickable */}
+                      {/* Following - Clickable */}
                       <button
                         onClick={() => setFollowersModal({ isOpen: true, type: 'following' })}
-                        className="flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 hover:border-orange-500/60 rounded-lg px-3 py-2 transition-all group"
+                        className="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/30 hover:border-orange-500/60 rounded-lg px-2.5 py-1.5 transition-all group"
                       >
-                        <Heart className="w-4 h-4 text-orange-400" />
-                        <span className="text-orange-400 font-bold text-lg group-hover:text-orange-300">{liveStats.following}</span>
-                        <span className="text-gray-400 text-sm group-hover:text-gray-300">Following</span>
+                        <Heart className="w-3.5 h-3.5 text-orange-400" />
+                        <span className="text-orange-400 font-bold text-sm">{liveStats.following}</span>
+                        <span className="text-gray-400 text-xs">Following</span>
                       </button>
                     </div>
                     
@@ -649,64 +834,6 @@ export default function UserProfilePage() {
                       </div>
                     </div>
                   )}
-                </div>
-
-                {/* Enhanced Social Stats Section */}
-                <div className="mb-6">
-                  <div className="bg-gradient-to-r from-zinc-800/70 to-zinc-900/70 rounded-2xl p-6 border-2 border-zinc-700 hover:border-yellow-500/30 transition-all">
-                    <div className="flex items-center justify-around gap-4">
-                      {/* Followers */}
-                      <button
-                        onClick={() => setFollowersModal({ isOpen: true, type: 'followers' })}
-                        className="flex flex-col items-center gap-3 hover:bg-zinc-700/40 rounded-xl px-6 py-4 transition-all group flex-1"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-pink-400 rounded-full group-hover:scale-125 transition-transform"></div>
-                          <span className="text-3xl font-bold text-pink-400 group-hover:text-pink-300 transition-colors">
-                            {liveStats.followers}
-                          </span>
-                        </div>
-                        <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors font-medium">
-                          Followers
-                        </span>
-                      </button>
-
-                      {/* Divider */}
-                      <div className="w-px h-16 bg-zinc-600"></div>
-
-                      {/* Following */}
-                      <button
-                        onClick={() => setFollowersModal({ isOpen: true, type: 'following' })}
-                        className="flex flex-col items-center gap-3 hover:bg-zinc-700/40 rounded-xl px-6 py-4 transition-all group flex-1"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-orange-400 rounded-full group-hover:scale-125 transition-transform"></div>
-                          <span className="text-3xl font-bold text-orange-400 group-hover:text-orange-300 transition-colors">
-                            {liveStats.following}
-                          </span>
-                        </div>
-                        <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors font-medium">
-                          Following
-                        </span>
-                      </button>
-
-                      {/* Divider */}
-                      <div className="w-px h-16 bg-zinc-600"></div>
-
-                      {/* Posts Count */}
-                      <div className="flex flex-col items-center gap-3 px-6 py-4 flex-1">
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                          <span className="text-3xl font-bold text-blue-400">
-                            {posts.length}
-                          </span>
-                        </div>
-                        <span className="text-sm text-gray-400 font-medium">
-                          Posts
-                        </span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -812,19 +939,19 @@ export default function UserProfilePage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                       <div className="bg-zinc-800/50 rounded-xl p-4 text-center border border-blue-500/20">
                         <div className="text-2xl font-bold text-blue-400 mb-1">{liveStats.activePledges}</div>
-                        <div className="text-xs text-gray-400">Active</div>
+                        <div className="text-xs text-gray-400">Active Pledges</div>
                       </div>
                       <div className="bg-zinc-800/50 rounded-xl p-4 text-center border border-green-500/20">
                         <div className="text-2xl font-bold text-green-400 mb-1">{liveStats.completedPledges}</div>
-                        <div className="text-xs text-gray-400">Completed</div>
+                        <div className="text-xs text-gray-400">Complete Pledges</div>
                       </div>
-                      <div className="bg-zinc-800/50 rounded-xl p-4 text-center border border-yellow-500/20">
-                        <div className="text-2xl font-bold text-yellow-400 mb-1">${liveStats.totalPledgeAmount.toFixed(0)}</div>
-                        <div className="text-xs text-gray-400">Total Value</div>
+                      <div className="bg-zinc-800/50 rounded-xl p-4 text-center border border-emerald-500/20">
+                        <div className="text-2xl font-bold text-emerald-400 mb-1">${liveStats.totalPledgeAmount.toFixed(0)}</div>
+                        <div className="text-xs text-gray-400">Money Saved</div>
                       </div>
                       <div className="bg-zinc-800/50 rounded-xl p-4 text-center border border-purple-500/20">
-                        <div className="text-2xl font-bold text-purple-400 mb-1">{Math.round(liveStats.successRate)}%</div>
-                        <div className="text-xs text-gray-400">Success</div>
+                        <div className="text-2xl font-bold text-purple-400 mb-1">{Math.round(liveStats.successRate)}</div>
+                        <div className="text-xs text-gray-400">Votes Gone Live</div>
                       </div>
                     </div>
 
@@ -835,46 +962,72 @@ export default function UserProfilePage() {
                         Recent Activity
                       </h4>
                       <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {UserStorage.getUserActivity(profile.id).slice(0, 4).map((activity: any, index: number) => {
-                          // Enhanced activity display with better formatting
+                        {(() => {
+                          // Filter activities to only show meaningful actions
+                          const allActivities = UserStorage.getUserActivity(profile.id);
+                          const filteredActivities = allActivities.filter((activity: any) => {
+                            // Only show: pledges, votes, and purchases (wallet transactions)
+                            if (activity.type === 'pledge') return true;
+                            if (activity.type === 'vote') return true;
+                            if (activity.type === 'wallet' && activity.action?.includes('purchase')) return true;
+                            if (activity.type === 'drop' && activity.action?.includes('joined')) return true;
+                            return false;
+                          });
+
                           const getActivityIcon = (type: string) => {
                             switch (type) {
-                              case 'social': return '👥';
                               case 'pledge': return '🤝';
                               case 'vote': return '🗳️';
-                              case 'profile': return '👤';
+                              case 'wallet': return '�';
+                              case 'drop': return '�';
                               default: return '⚡';
                             }
                           };
 
                           const getActivityColor = (type: string) => {
                             switch (type) {
-                              case 'social': return 'text-blue-400';
                               case 'pledge': return 'text-green-400';
                               case 'vote': return 'text-purple-400';
-                              case 'profile': return 'text-yellow-400';
+                              case 'wallet': return 'text-emerald-400';
+                              case 'drop': return 'text-orange-400';
                               default: return 'text-gray-400';
                             }
                           };
 
-                          return (
+                          return filteredActivities.slice(0, 4).map((activity: any, index: number) => (
                             <div key={index} className="flex items-center gap-3 p-2 bg-zinc-700/50 rounded-lg">
                               <span className="text-lg">{getActivityIcon(activity.type)}</span>
                               <div className="flex-1 min-w-0">
                                 <div className={`text-sm font-medium ${getActivityColor(activity.type)}`}>
                                   {activity.description || activity.action}
                                 </div>
+                                {activity.details?.savedAmount && (
+                                  <div className="text-xs text-green-400 font-semibold">
+                                    Saved ${activity.details.savedAmount.toFixed(2)}
+                                  </div>
+                                )}
                                 <div className="text-xs text-gray-400">
                                   {new Date(activity.timestamp).toLocaleDateString()} at {new Date(activity.timestamp).toLocaleTimeString()}
                                 </div>
                               </div>
                             </div>
-                          );
-                        })}
+                          ));
+                        })()}
                         
-                        {UserStorage.getUserActivity(profile.id).length === 0 && (
-                          <div className="text-gray-400 text-center py-4 text-sm">No activity recorded yet</div>
-                        )}
+                        {(() => {
+                          const allActivities = UserStorage.getUserActivity(profile.id);
+                          const filteredActivities = allActivities.filter((activity: any) => {
+                            if (activity.type === 'pledge') return true;
+                            if (activity.type === 'vote') return true;
+                            if (activity.type === 'wallet' && activity.action?.includes('purchase')) return true;
+                            if (activity.type === 'drop' && activity.action?.includes('joined')) return true;
+                            return false;
+                          });
+                          
+                          return filteredActivities.length === 0 && (
+                            <div className="text-gray-400 text-center py-4 text-sm">No meaningful activity recorded yet</div>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -892,55 +1045,76 @@ export default function UserProfilePage() {
                     </h3>
                     
                     <div className="space-y-4 max-h-80 overflow-y-auto">
-                      {UserStorage.getUserActivity(profile.id).slice(0, 8).map((activity: any, index: number) => {
-                        const getActivityIcon = (type: string) => {
-                          switch (type) {
-                            case 'social': return '👥';
-                            case 'pledge': return '🤝';
-                            case 'vote': return '🗳️';
-                            case 'profile': return '👤';
-                            case 'wallet': return '💰';
-                            case 'drop': return '📦';
-                            default: return '⚡';
-                          }
+                      {(() => {
+                        // Filter activities to only show meaningful actions
+                        const allActivities = UserStorage.getUserActivity(profile.id);
+                        const filteredActivities = allActivities.filter((activity: any) => {
+                          // Only show: pledges, votes, and purchases (wallet transactions)
+                          if (activity.type === 'pledge') return true;
+                          if (activity.type === 'vote') return true;
+                          if (activity.type === 'wallet' && activity.action?.includes('purchase')) return true;
+                          if (activity.type === 'drop' && activity.action?.includes('joined')) return true;
+                          return false;
+                        });
+
+                        const getActivityIcon = (type: string, action: string) => {
+                          if (type === 'pledge') return '🤝';
+                          if (type === 'vote') return '�️';
+                          if (type === 'wallet') return '�';
+                          if (type === 'drop') return '📦';
+                          return '⚡';
                         };
 
                         const getActivityColor = (type: string) => {
                           switch (type) {
-                            case 'social': return 'border-blue-500/50 hover:border-blue-400/50';
-                            case 'pledge': return 'border-green-500/50 hover:border-green-400/50';
-                            case 'vote': return 'border-purple-500/50 hover:border-purple-400/50';
-                            case 'profile': return 'border-yellow-500/50 hover:border-yellow-400/50';
-                            case 'wallet': return 'border-emerald-500/50 hover:border-emerald-400/50';
-                            case 'drop': return 'border-orange-500/50 hover:border-orange-400/50';
+                            case 'pledge': return 'border-green-500/50 hover:border-green-400/50 bg-green-900/10';
+                            case 'vote': return 'border-purple-500/50 hover:border-purple-400/50 bg-purple-900/10';
+                            case 'wallet': return 'border-emerald-500/50 hover:border-emerald-400/50 bg-emerald-900/10';
+                            case 'drop': return 'border-orange-500/50 hover:border-orange-400/50 bg-orange-900/10';
                             default: return 'border-zinc-700/50 hover:border-yellow-400/30';
                           }
                         };
 
-                        return (
-                          <div key={index} className={`flex items-start gap-4 p-4 bg-zinc-800/50 rounded-lg border ${getActivityColor(activity.type)} transition-colors`}>
+                        return filteredActivities.slice(0, 20).map((activity: any, index: number) => (
+                          <div key={index} className={`flex items-start gap-4 p-4 rounded-lg border ${getActivityColor(activity.type)} transition-colors`}>
                             <div className="text-2xl flex-shrink-0">
-                              {getActivityIcon(activity.type)}
+                              {getActivityIcon(activity.type, activity.action)}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-white font-medium">
                                 {activity.description || activity.action}
                               </p>
+                              {activity.details?.savedAmount && (
+                                <p className="text-green-400 font-semibold mt-1">
+                                  💵 Saved ${activity.details.savedAmount.toFixed(2)}
+                                </p>
+                              )}
                               <p className="text-sm text-gray-400 mt-1">
                                 {new Date(activity.timestamp).toLocaleDateString()} at {new Date(activity.timestamp).toLocaleTimeString()}
                               </p>
                             </div>
                           </div>
-                        );
-                      })}
+                        ));
+                      })()}
                       
-                      {UserStorage.getUserActivity(profile.id).length === 0 && (
-                        <div className="text-center py-12">
-                          <div className="text-6xl mb-4">🌟</div>
-                          <p className="text-gray-400">No activity recorded yet</p>
-                          <p className="text-sm text-gray-500 mt-2">Start engaging to see your activity here!</p>
-                        </div>
-                      )}
+                      {(() => {
+                        const allActivities = UserStorage.getUserActivity(profile.id);
+                        const filteredActivities = allActivities.filter((activity: any) => {
+                          if (activity.type === 'pledge') return true;
+                          if (activity.type === 'vote') return true;
+                          if (activity.type === 'wallet' && activity.action?.includes('purchase')) return true;
+                          if (activity.type === 'drop' && activity.action?.includes('joined')) return true;
+                          return false;
+                        });
+                        
+                        return filteredActivities.length === 0 && (
+                          <div className="text-center py-12">
+                            <div className="text-6xl mb-4">🌟</div>
+                            <p className="text-gray-400">No meaningful activity recorded yet</p>
+                            <p className="text-sm text-gray-500 mt-2">Make pledges, vote on drops, or make purchases to see your activity here!</p>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 </>

@@ -85,19 +85,36 @@ export default function KingsDomainPage() {
     try {
       setRefreshing(true);
       // Load all stats in parallel
-      const [usersResponse, votingResponse, productsResponse, liveDropsResponse] = await Promise.all([
+      const [usersResponse, productsResponse, liveDropsResponse] = await Promise.all([
         fetch('/api/admin/stats/users'),
-        fetch('/api/admin/stats/voting'),
-        fetch('/api/admin/stats/products'),
+        fetch('/api/products'),
         fetch('/api/live-drops').catch(() => ({ json: () => ({ liveDrops: [] }) }))
       ]);
 
-      const [usersData, votingData, productsData, liveDropsResponseData] = await Promise.all([
+      const [usersData, productsResponseData, liveDropsResponseData] = await Promise.all([
         usersResponse.json(),
-        votingResponse.json(),
         productsResponse.json(),
         liveDropsResponse.json()
       ]);
+
+      // Calculate voting stats from products with stage === 'voting'
+      const allProducts = productsResponseData.products || [];
+      const votingProducts = allProducts.filter((p: any) => (p.stage || 'voting') === 'voting');
+      const totalVotes = votingProducts.reduce((sum: number, p: any) => sum + (p.votes || 0), 0);
+      
+      const votingData = {
+        activePolls: votingProducts.length,
+        totalVotes: totalVotes,
+        pendingApproval: votingProducts.filter((p: any) => !p.approved).length
+      };
+
+      // Calculate products stats
+      const productsData = {
+        total: allProducts.length,
+        live: allProducts.filter((p: any) => p.stage === 'community-drops').length,
+        comingSoon: allProducts.filter((p: any) => p.stage === 'coming-soon').length,
+        staffPicks: allProducts.filter((p: any) => p.isStaffPick).length
+      };
 
       const liveDropsData = liveDropsResponseData.liveDrops || [];
       const campaignsData = JSON.parse(localStorage.getItem('marketing_campaigns') || '[]');
@@ -105,7 +122,7 @@ export default function KingsDomainPage() {
       // Generate recent activity
       const recentActivity = [
         { type: 'user', message: `${usersData.newToday || 0} new users registered today`, timestamp: '5 min ago', severity: 'success' as const },
-        { type: 'vote', message: `${votingData.activePolls || 0} active polls running`, timestamp: '12 min ago', severity: 'info' as const },
+        { type: 'vote', message: `${votingData.activePolls || 0} products in voting stage`, timestamp: '12 min ago', severity: 'info' as const },
         { type: 'product', message: `${productsData.live || 0} products currently live`, timestamp: '18 min ago', severity: 'info' as const },
         { type: 'drop', message: `${liveDropsData.filter((d: any) => d.status === 'active').length} live drops active`, timestamp: '25 min ago', severity: 'warning' as const }
       ];
@@ -208,7 +225,7 @@ export default function KingsDomainPage() {
                   <span className="text-purple-400 text-2xl">🗳️</span>
                   <div>
                     <div className="text-2xl font-black text-white">{stats.voting.activePolls}</div>
-                    <div className="text-purple-400 text-xs font-bold">Active Polls</div>
+                    <div className="text-purple-400 text-xs font-bold">In Voting</div>
                   </div>
                 </div>
               </div>
@@ -288,7 +305,7 @@ export default function KingsDomainPage() {
           </div>
         </div>
 
-        {/* Active Polls Card */}
+        {/* In Voting Card */}
         <div className="group bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 backdrop-blur-xl border-2 border-purple-500/30 rounded-2xl p-6 hover:border-purple-400/60 transition-all duration-300 shadow-xl hover:shadow-purple-500/20 hover:scale-105">
           <div className="flex items-center justify-between mb-4">
             <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform">
@@ -299,10 +316,10 @@ export default function KingsDomainPage() {
             </div>
           </div>
           <div className="text-4xl font-black text-white mb-2">{stats.voting.activePolls}</div>
-          <div className="text-purple-400 text-sm font-bold mb-3">Active Polls</div>
+          <div className="text-purple-400 text-sm font-bold mb-3">In Voting</div>
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-400 font-semibold">{stats.voting.pendingApproval} pending</span>
-            <span className="text-green-400 font-bold">Live</span>
+            <span className="text-gray-400 font-semibold">{stats.voting.activePolls} products</span>
+            <span className="text-purple-400 font-bold">{stats.voting.totalVotes} total votes</span>
           </div>
         </div>
 
@@ -322,6 +339,191 @@ export default function KingsDomainPage() {
             <span className="text-gray-400 font-semibold">{stats.campaigns.drafts} drafts</span>
             <span className="text-blue-400 font-bold">{stats.users.optedInMarketing} opted-in</span>
           </div>
+        </div>
+      </div>
+
+      {/* Core Modules Grid - Full Admin Control */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center shadow-lg shadow-yellow-500/30">
+            <span className="text-2xl">🎛️</span>
+          </div>
+          <div>
+            <h2 className="text-3xl font-black text-yellow-400">Core Modules</h2>
+            <p className="text-gray-400 font-semibold">Complete kingdom control & management</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {/* Lifecycle Control Center - Featured */}
+          <Link
+            href="/kingdom/lifecycle"
+            className="group bg-gradient-to-br from-yellow-600 via-orange-600 to-red-600 hover:from-yellow-700 hover:via-orange-700 hover:to-red-700 rounded-2xl p-6 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 border-yellow-500 ring-2 ring-yellow-500/50 shadow-yellow-500/20"
+          >
+            <div className="relative">
+              <div className="absolute -top-3 -right-3 bg-yellow-500 text-black text-xs font-black px-3 py-1 rounded-full shadow-lg">
+                ⭐ NEW
+              </div>
+              <div className="text-center">
+                <div className="text-5xl mb-3">🔄</div>
+                <h3 className="text-xl font-black text-white mb-2">Lifecycle Control Center</h3>
+                <p className="text-gray-100 text-sm mb-4 font-semibold">Complete product lifecycle: Voting → Coming Soon → Live Drops → Archive</p>
+                <div className="space-y-1.5">
+                  <div className="text-xs text-white bg-black/30 rounded-lg px-3 py-1.5 font-bold">
+                    Full Automation
+                  </div>
+                  <div className="text-xs text-white bg-black/30 rounded-lg px-3 py-1.5 font-bold">
+                    4 Stages Unified
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Moderation Control - Featured */}
+          <Link
+            href="/moderation"
+            className="group bg-gradient-to-br from-red-600 via-pink-600 to-purple-600 hover:from-red-700 hover:via-pink-700 hover:to-purple-700 rounded-2xl p-6 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 border-pink-500 ring-2 ring-pink-500/50 shadow-pink-500/20"
+          >
+            <div className="relative">
+              <div className="absolute -top-3 -right-3 bg-pink-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg">
+                ⭐ NEW
+              </div>
+              <div className="text-center">
+                <div className="text-5xl mb-3">🛡️</div>
+                <h3 className="text-xl font-black text-white mb-2">Moderation Control</h3>
+                <p className="text-gray-100 text-sm mb-4 font-semibold">Monitor reports, review flags, manage chat safety and user behavior</p>
+                <div className="space-y-1.5">
+                  <div className="text-xs text-white bg-black/30 rounded-lg px-3 py-1.5 font-bold">
+                    {Math.floor(stats.users.total * 0.02)} Reports
+                  </div>
+                  <div className="text-xs text-white bg-black/30 rounded-lg px-3 py-1.5 font-bold">
+                    Live Safety
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* User Management */}
+          <Link
+            href="/kingdom/users"
+            className="group bg-blue-600 hover:bg-blue-700 rounded-2xl p-6 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 border-gray-700 hover:border-blue-500"
+          >
+            <div className="text-center">
+              <div className="text-5xl mb-3">👥</div>
+              <h3 className="text-xl font-black text-white mb-2">User Management</h3>
+              <p className="text-gray-200 text-sm mb-4 font-semibold">Manage users, view profiles, handle bans and verification</p>
+              <div className="space-y-1.5">
+                <div className="text-xs text-gray-200 bg-black/20 rounded-lg px-3 py-1.5 font-bold">
+                  {stats.users.total} Total Users
+                </div>
+                <div className="text-xs text-gray-200 bg-black/20 rounded-lg px-3 py-1.5 font-bold">
+                  {stats.users.newToday} New Today
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Marketing Control */}
+          <Link
+            href="/kingdom/marketing"
+            className="group bg-green-600 hover:bg-green-700 rounded-2xl p-6 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 border-gray-700 hover:border-green-500"
+          >
+            <div className="text-center">
+              <div className="text-5xl mb-3">📧</div>
+              <h3 className="text-xl font-black text-white mb-2">Marketing Control</h3>
+              <p className="text-gray-200 text-sm mb-4 font-semibold">Send campaigns, manage email lists, view opt-ins</p>
+              <div className="space-y-1.5">
+                <div className="text-xs text-gray-200 bg-black/20 rounded-lg px-3 py-1.5 font-bold">
+                  {stats.users.optedInMarketing} Opted In
+                </div>
+                <div className="text-xs text-gray-200 bg-black/20 rounded-lg px-3 py-1.5 font-bold">
+                  {stats.campaigns.sent} Campaigns Sent
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Product Management */}
+          <Link
+            href="/kingdom/products"
+            className="group bg-orange-600 hover:bg-orange-700 rounded-2xl p-6 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 border-gray-700 hover:border-orange-500"
+          >
+            <div className="text-center">
+              <div className="text-5xl mb-3">📦</div>
+              <h3 className="text-xl font-black text-white mb-2">Product Management</h3>
+              <p className="text-gray-200 text-sm mb-4 font-semibold">Manage all products, staff picks, and product details</p>
+              <div className="space-y-1.5">
+                <div className="text-xs text-gray-200 bg-black/20 rounded-lg px-3 py-1.5 font-bold">
+                  {stats.products.total} Products
+                </div>
+                <div className="text-xs text-gray-200 bg-black/20 rounded-lg px-3 py-1.5 font-bold">
+                  {stats.products.live} Live
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Content Management */}
+          <Link
+            href="/kingdom/content"
+            className="group bg-indigo-600 hover:bg-indigo-700 rounded-2xl p-6 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 border-gray-700 hover:border-indigo-500"
+          >
+            <div className="text-center">
+              <div className="text-5xl mb-3">📝</div>
+              <h3 className="text-xl font-black text-white mb-2">Content Management</h3>
+              <p className="text-gray-200 text-sm mb-4 font-semibold">Manage staff picks, featured content, announcements</p>
+              <div className="space-y-1.5">
+                <div className="text-xs text-gray-200 bg-black/20 rounded-lg px-3 py-1.5 font-bold">
+                  {stats.products.staffPicks} Staff Picks
+                </div>
+                <div className="text-xs text-gray-200 bg-black/20 rounded-lg px-3 py-1.5 font-bold">
+                  Content Control
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Analytics Dashboard */}
+          <Link
+            href="/kingdom/analytics"
+            className="group bg-teal-600 hover:bg-teal-700 rounded-2xl p-6 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 border-gray-700 hover:border-teal-500"
+          >
+            <div className="text-center">
+              <div className="text-5xl mb-3">📊</div>
+              <h3 className="text-xl font-black text-white mb-2">Analytics Dashboard</h3>
+              <p className="text-gray-200 text-sm mb-4 font-semibold">View detailed analytics, reports, user behavior</p>
+              <div className="space-y-1.5">
+                <div className="text-xs text-gray-200 bg-black/20 rounded-lg px-3 py-1.5 font-bold">
+                  Detailed Reports
+                </div>
+                <div className="text-xs text-gray-200 bg-black/20 rounded-lg px-3 py-1.5 font-bold">
+                  User Insights
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* System Settings */}
+          <Link
+            href="/kingdom/settings"
+            className="group bg-gray-600 hover:bg-gray-700 rounded-2xl p-6 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border-2 border-gray-700 hover:border-gray-500"
+          >
+            <div className="text-center">
+              <div className="text-5xl mb-3">⚙️</div>
+              <h3 className="text-xl font-black text-white mb-2">System Settings</h3>
+              <p className="text-gray-200 text-sm mb-4 font-semibold">Site configuration, API settings, feature toggles</p>
+              <div className="space-y-1.5">
+                <div className="text-xs text-gray-200 bg-black/20 rounded-lg px-3 py-1.5 font-bold">
+                  Site Config
+                </div>
+                <div className="text-xs text-gray-200 bg-black/20 rounded-lg px-3 py-1.5 font-bold">
+                  Feature Control
+                </div>
+              </div>
+            </div>
+          </Link>
         </div>
       </div>
 

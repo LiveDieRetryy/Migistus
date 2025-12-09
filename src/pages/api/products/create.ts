@@ -73,6 +73,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     products.push(newProduct);
     writeProductsData(products);
     
+    // Clear cache headers to ensure fresh data
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     res.status(201).json({ 
       success: true, 
       product: newProduct,

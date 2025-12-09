@@ -2,7 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['placehold.co', 'example.com'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -17,6 +16,9 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
+  },
+  turbopack: {
+    root: 'C:/Users/Admin/migistus-app/frontend/migistus-homepage',
   },
   // No changes needed unless you have custom rewrites or redirects blocking /categories/[category]
 };

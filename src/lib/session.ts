@@ -11,6 +11,7 @@ export interface Session {
   tier: string;
   createdAt: number;
   expiresAt: number;
+  lastActivity: number; // Track when user was last active
 }
 
 // File-based session storage for production reliability
@@ -96,6 +97,7 @@ export function createSession(userId: number, username: string, email: string, t
     tier,
     createdAt: now,
     expiresAt: now + SESSION_DURATION,
+    lastActivity: now, // Initialize with current time
   };
   
   const sessions = readSessions();
@@ -235,8 +237,75 @@ export function extendSession(token: string): boolean {
     return false;
   }
   
-  session.expiresAt = Date.now() + SESSION_DURATION;
+  const now = Date.now();
+  session.expiresAt = now + SESSION_DURATION;
+  session.lastActivity = now; // Update last activity time
   sessions[token] = session;
   writeSessions(sessions);
   return true;
+}
+
+/**
+ * Update user's last activity timestamp
+ */
+export function updateUserActivity(token: string): boolean {
+  const sessions = readSessions();
+  const session = sessions[token];
+  
+  if (!session) {
+    return false;
+  }
+  
+  session.lastActivity = Date.now();
+  sessions[token] = session;
+  writeSessions(sessions);
+  return true;
+}
+
+/**
+ * Check if a user is currently online
+ * User is considered online if they've been active within the last 5 minutes
+ */
+export function isUserOnline(userId: number): boolean {
+  const sessions = readSessions();
+  const now = Date.now();
+  
+  for (const session of Object.values(sessions)) {
+    // User is online if they have a valid (non-expired) session
+    if (session.userId === userId && session.expiresAt > now) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+/**
+ * Get all currently online users
+ */
+export function getOnlineUsers(): Array<{ userId: number; username: string; tier: string; lastActivity: number }> {
+  const sessions = readSessions();
+  const now = Date.now();
+  
+  const onlineUsers = new Map<number, { userId: number; username: string; tier: string; lastActivity: number }>();
+  
+  for (const session of Object.values(sessions)) {
+    // User is online if they have a valid (non-expired) session
+    if (session.expiresAt > now) {
+      const activityTime = session.lastActivity || session.createdAt;
+      
+      // Keep only the most recent session for each user
+      const existing = onlineUsers.get(session.userId);
+      if (!existing || activityTime > existing.lastActivity) {
+        onlineUsers.set(session.userId, {
+          userId: session.userId,
+          username: session.username,
+          tier: session.tier,
+          lastActivity: activityTime
+        });
+      }
+    }
+  }
+  
+  return Array.from(onlineUsers.values());
 }

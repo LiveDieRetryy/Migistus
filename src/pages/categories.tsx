@@ -58,32 +58,29 @@ export default function Categories() {
       
       <MainNavbar />
       
-      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white">
+      <div className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black text-white">
         {/* Hero Section */}
-        <div className="relative overflow-hidden pt-8 pb-16">
-          <div className="absolute inset-0 bg-gradient-to-br from-yellow-900/10 via-transparent to-purple-900/10" />
+        <div className="relative overflow-hidden pt-20 pb-12">
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-900/5 via-transparent to-purple-900/5" />
           
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Header */}
-            <div className="text-center mb-12">
-              <div className="flex justify-center mb-6">
-                <div className="relative">
-                  <Grid3X3 className="w-16 h-16 text-yellow-400" />
-                  <Sparkles className="w-6 h-6 text-yellow-300 absolute -top-2 -right-2 animate-pulse" />
-                </div>
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-500/20 to-purple-500/20 px-6 py-2 rounded-full border border-yellow-500/30 mb-6">
+                <Grid3X3 className="w-5 h-5 text-yellow-400" />
+                <span className="text-sm font-semibold text-yellow-400">Browse Departments</span>
               </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4">
-                <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-                  Explore Categories
-                </span>
+              
+              <h1 className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-yellow-400 via-orange-400 to-purple-400 bg-clip-text text-transparent">
+                Explore Categories
               </h1>
-              <p className="text-xl text-zinc-300 max-w-3xl mx-auto leading-relaxed">
-                Discover premium products across all departments. Find your perfect group buy and unlock exclusive pricing.
+              <p className="text-xl text-zinc-400 max-w-3xl mx-auto">
+                Discover premium products across all departments and unlock exclusive group buying prices.
               </p>
             </div>
 
-            {/* Search and Quick Access */}
-            <div className="max-w-2xl mx-auto mb-12">
+            {/* Search Bar */}
+            <div className="max-w-2xl mx-auto mb-6">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-400 w-5 h-5" />
                 <input
@@ -91,39 +88,8 @@ export default function Categories() {
                   placeholder="Search categories..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-zinc-800/50 border border-zinc-700 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-zinc-400 focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition-all"
+                  className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500/50 focus:ring-2 focus:ring-yellow-500/20 transition-all backdrop-blur-sm"
                 />
-              </div>
-              
-              {/* Quick Access Dropdown */}
-              <div className="relative mt-4">
-                <button
-                  className="flex items-center justify-center w-full bg-zinc-800/30 border border-zinc-700 rounded-xl px-6 py-3 text-zinc-300 font-medium hover:bg-zinc-700/50 hover:border-yellow-500/50 transition-all group"
-                  onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                >
-                  <Grid3X3 className="mr-2 w-5 h-5" />
-                  Quick Category Access
-                  <ChevronDown className={`ml-2 w-5 h-5 transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`} />
-                </button>
-                
-                {showCategoryDropdown && (
-                  <div className="absolute z-30 mt-2 w-full bg-zinc-800/95 backdrop-blur-sm border border-zinc-700 rounded-xl shadow-2xl py-2 max-h-80 overflow-y-auto">
-                    {DEPARTMENTS.map((dept) => (
-                      <Link
-                        key={dept.name}
-                        href={`/categories/${slugify(dept.name)}`}
-                        className="flex items-center px-4 py-3 hover:bg-yellow-500/10 transition-colors text-zinc-200 hover:text-yellow-300"
-                        onClick={() => setShowCategoryDropdown(false)}
-                      >
-                        <span className="text-2xl mr-3">{dept.icon}</span>
-                        <div>
-                          <div className="font-medium">{dept.name}</div>
-                          <div className="text-sm text-zinc-400">{dept.description}</div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -138,40 +104,40 @@ export default function Categories() {
                 href={`/categories/${slugify(dept.name)}`}
                 className="group"
               >
-                <div className="bg-zinc-800/30 border border-zinc-700 rounded-2xl p-6 hover:bg-zinc-700/30 hover:border-yellow-500/50 transition-all duration-300 hover:transform hover:scale-105">
+                <div className="relative bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl overflow-hidden hover:border-yellow-500/50 transition-all duration-300 hover:transform hover:scale-105 shadow-lg hover:shadow-yellow-500/20">
                   {/* Category Image */}
-                  <div className="relative w-full h-48 mb-4 rounded-xl overflow-hidden bg-zinc-700/50">
+                  <div className="relative w-full h-48 overflow-hidden bg-gradient-to-br from-zinc-800 to-zinc-900">
                     <Image
                       src={departmentImages[dept.name] || "/images/placeholder.png"}
                       alt={dept.name}
                       fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
                     
-                    {/* Category Icon Overlay */}
-                    <div className="absolute top-4 right-4 text-3xl bg-black/50 rounded-full w-12 h-12 flex items-center justify-center backdrop-blur-sm">
+                    {/* Category Icon Badge */}
+                    <div className="absolute top-3 right-3 text-2xl bg-black/60 backdrop-blur-md rounded-full w-12 h-12 flex items-center justify-center border border-zinc-700/50 group-hover:scale-110 transition-transform">
                       {dept.icon}
                     </div>
                   </div>
                   
                   {/* Category Info */}
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-bold text-white group-hover:text-yellow-300 transition-colors">
+                  <div className="p-5 space-y-2">
+                    <h3 className="text-lg font-bold text-white group-hover:text-yellow-400 transition-colors">
                       {dept.name}
                     </h3>
-                    <p className="text-zinc-400 text-sm leading-relaxed">
+                    <p className="text-zinc-400 text-sm">
                       {dept.description}
                     </p>
-                  </div>
                   
-                  {/* Hover Indicator */}
-                  <div className="mt-4 flex items-center text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-sm font-medium">Explore Category</span>
-                    <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                    {/* Hover Indicator */}
+                    <div className="flex items-center text-yellow-400 opacity-0 group-hover:opacity-100 transition-all pt-2">
+                      <span className="text-xs font-semibold">Explore Category</span>
+                      <svg className="w-3.5 h-3.5 ml-1.5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </Link>
@@ -180,41 +146,51 @@ export default function Categories() {
 
           {/* No Results Message */}
           {filteredDepartments.length === 0 && searchTerm && (
-            <div className="text-center py-12">
-              <div className="text-zinc-400 text-lg mb-4">No categories found matching "{searchTerm}"</div>
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-zinc-800 border border-zinc-700 mb-4">
+                <Search className="w-8 h-8 text-zinc-600" />
+              </div>
+              <div className="text-zinc-400 text-lg mb-2">No categories found matching "{searchTerm}"</div>
+              <p className="text-zinc-500 text-sm mb-6">Try searching with different keywords</p>
               <button
                 onClick={() => setSearchTerm("")}
-                className="text-yellow-400 hover:text-yellow-300 font-medium transition-colors"
+                className="px-6 py-2.5 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 rounded-lg font-semibold transition-all"
               >
-                Clear search
+                Clear Search
               </button>
             </div>
           )}
 
           {/* Call to Action */}
-          <div className="text-center mt-16">
-            <div className="bg-gradient-to-r from-zinc-800/50 to-zinc-700/50 border border-zinc-600 rounded-2xl p-8 max-w-2xl mx-auto">
-              <h2 className="text-2xl font-bold text-yellow-400 mb-4">Ready to Start Group Buying?</h2>
-              <p className="text-zinc-300 mb-6">
-                Join active drops and unlock exclusive pricing through community power.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/drops"
-                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-8 rounded-xl transition-colors inline-flex items-center justify-center"
-                >
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  View Active Drops
-                </Link>
-                <Link
-                  href="/voting"
-                  className="border border-yellow-500 text-yellow-400 hover:bg-yellow-500 hover:text-black font-bold py-3 px-8 rounded-xl transition-colors inline-flex items-center justify-center"
-                >
-                  Vote for Products
-                </Link>
+          {filteredDepartments.length > 0 && (
+            <div className="text-center mt-16">
+              <div className="relative bg-gradient-to-br from-yellow-900/20 to-purple-900/20 border border-yellow-500/30 rounded-2xl p-8 max-w-2xl mx-auto backdrop-blur-sm overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-purple-500/5" />
+                <div className="relative">
+                  <Sparkles className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+                  <h2 className="text-2xl font-bold text-white mb-3">Ready to Start Group Buying?</h2>
+                  <p className="text-zinc-300 mb-6">
+                    Join active drops and unlock exclusive pricing through community power.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Link
+                      href="/live-drops"
+                      className="inline-flex items-center justify-center px-8 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-yellow-500/30"
+                    >
+                      <Sparkles className="w-5 h-5 mr-2" />
+                      View Live Drops
+                    </Link>
+                    <Link
+                      href="/voting"
+                      className="inline-flex items-center justify-center px-8 py-3 border-2 border-yellow-500/50 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 font-bold rounded-xl transition-all"
+                    >
+                      Vote for Products
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </>

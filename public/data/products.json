@@ -11,7 +11,7 @@
       "blob:http://localhost:3000/d5cd6288-c6ad-423d-a821-8933d310e9e4",
       "blob:http://localhost:3000/2ae48031-2103-41be-b459-78de9358cef5"
     ],
-    "description": "Premium gaming headset with surround sound and crystal-clear communication\n\nSpecifications at a glance\nConnection\n3.5 mm Jack\nWorks with\nMac, Laptop Computers, iPads, Desktop Computers, Tablet Computers, Video Game Consoles, Smart Phones\nHeadphone style\nOver-Ear\nWireless\nNone\nHeadset type\nHeadphones\nBrand\nPVUEL",
+    "description": "Premium gaming headset with surround sound and crystal-clear communication\n\n## Specifications at a glance\n• Connection\n• 3.5 mm Jack\n## Works with\nMac, Laptop Computers, iPads, Desktop Computers, Tablet Computers, Video Game Consoles, Smart Phones",
     "fullDescription": "Experience immersive gaming like never before with the Gilded Vanguard Headset. Featuring advanced 7.1 surround sound technology, noise-canceling microphone, and premium comfort padding for extended gaming sessions. Built with durable materials and backed by our community-driven quality assurance.",
     "goal": 100,
     "link": "https://example.com/headset",
@@ -44,9 +44,8 @@
       }
     ],
     "slug": "gilded-vanguard-headset",
-    "stage": "community-drops",
-    "stageEnteredAt": "2024-01-15T10:00:00.000Z",
-    "promotedAt": "2024-01-08T15:30:00.000Z",
+    "stage": "voting",
+    "stageEnteredAt": "2025-12-05T07:01:21.093Z",
     "features": [
       "Multiplatform Compatibility",
       "Flexible Boom Mic",
@@ -68,7 +67,9 @@
     "maxDiscountPercent": 7,
     "nextPriceDropTier": 120.99,
     "nextPriceDropAmount": 500,
-    "status": "staff-pick"
+    "status": "staff-pick",
+    "stock": 10000,
+    "maxOrderQuantity": 25
   },
   {
     "id": 2,
@@ -99,9 +100,8 @@
       }
     ],
     "slug": "warehouse-15-led-headlamp",
-    "stage": "live-drops",
-    "stageEnteredAt": "2024-01-20T14:00:00.000Z",
-    "promotedAt": "2024-01-18T09:15:00.000Z",
+    "stage": "voting",
+    "stageEnteredAt": "2025-12-05T07:01:21.093Z",
     "features": [
       "Adjustable Brightness",
       "Weather Resistant",
@@ -162,8 +162,7 @@
     ],
     "slug": "wireless-mouse-pro",
     "stage": "voting",
-    "stageEnteredAt": "2024-01-25T11:00:00.000Z",
-    "promotedAt": null,
+    "stageEnteredAt": "2025-12-05T07:01:21.093Z",
     "features": [
       "High-DPI Sensor",
       "RGB Lighting",
@@ -221,8 +220,7 @@
     ],
     "slug": "smart-home-security-camera",
     "stage": "voting",
-    "stageEnteredAt": "2024-01-28T16:00:00.000Z",
-    "promotedAt": null,
+    "stageEnteredAt": "2025-12-05T07:01:21.093Z",
     "features": [
       "AI Motion Detection",
       "Night Vision",
@@ -279,8 +277,7 @@
     ],
     "slug": "bluetooth-portable-speaker",
     "stage": "voting",
-    "stageEnteredAt": "2024-01-30T12:00:00.000Z",
-    "promotedAt": null,
+    "stageEnteredAt": "2025-12-05T07:01:21.093Z",
     "features": [
       "360° Sound",
       "Waterproof Design",

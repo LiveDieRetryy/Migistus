@@ -18,7 +18,23 @@ function readSessions() {
     return [];
   }
   try {
-    return JSON.parse(fs.readFileSync(SESSIONS_PATH, "utf-8"));
+    const data = fs.readFileSync(SESSIONS_PATH, "utf-8");
+    const parsed = JSON.parse(data);
+    
+    // Handle both array format and old object format
+    if (Array.isArray(parsed)) {
+      return parsed;
+    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.sessions)) {
+      // Old format: {sessions: [...]} - migrate to new format
+      const sessions = parsed.sessions;
+      fs.writeFileSync(SESSIONS_PATH, JSON.stringify(sessions, null, 2));
+      return sessions;
+    } else {
+      // Invalid format - reset to empty array
+      console.warn('Invalid user-sessions.json format, resetting to empty array');
+      fs.writeFileSync(SESSIONS_PATH, "[]");
+      return [];
+    }
   } catch (error) {
     console.error('Error reading sessions:', error);
     return [];
@@ -39,7 +55,23 @@ function readActivity() {
     return [];
   }
   try {
-    return JSON.parse(fs.readFileSync(ACTIVITY_PATH, "utf-8"));
+    const data = fs.readFileSync(ACTIVITY_PATH, "utf-8");
+    const parsed = JSON.parse(data);
+    
+    // Handle both array format and old object format
+    if (Array.isArray(parsed)) {
+      return parsed;
+    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.activities)) {
+      // Old format: {activities: [...]} - migrate to new format
+      const activities = parsed.activities;
+      fs.writeFileSync(ACTIVITY_PATH, JSON.stringify(activities, null, 2));
+      return activities;
+    } else {
+      // Invalid format - reset to empty array
+      console.warn('Invalid user-activity.json format, resetting to empty array');
+      fs.writeFileSync(ACTIVITY_PATH, "[]");
+      return [];
+    }
   } catch (error) {
     console.error('Error reading activity:', error);
     return [];

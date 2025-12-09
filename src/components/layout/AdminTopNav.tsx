@@ -7,12 +7,12 @@ export default function AdminTopNav() {
         {/* Left navigation links */}
         <div className="flex gap-[40px]">
           {[
-            { label: "Dashboard", href: "/kingdom/dashboard" },
-            { label: "Product Pool", href: "/kingdom/product-pool" },
-            { label: "Moderation", href: "/kingdom/moderation" },
-            { label: "Tiers", href: "/kingdom/tiers" },
-            { label: "Voting", href: "/kingdom/voting" },
-            { label: "Refunds", href: "/kingdom/refunds" },
+            { label: "Dashboard", href: "/admin" },
+            { label: "🔄 Lifecycle Control", href: "/kingdom/lifecycle" },
+            { label: "Product Pool", href: "/admin/product-pool" },
+            { label: "Moderation", href: "/moderation" },
+            { label: "Tiers", href: "/admin/tiers" },
+            { label: "Refunds", href: "/admin/refunds" },
           ].map(({ label, href }) => (
             <Link
               key={href}

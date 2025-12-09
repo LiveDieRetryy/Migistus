@@ -140,6 +140,20 @@ class ActivityTracker {
       const { UserStorage3 } = require('@/utils/userStorage');
       UserStorage3.addUserActivity(this.userId, activityData);
 
+      // Update session activity to mark user as online
+      if (typeof fetch !== 'undefined') {
+        fetch('/api/users/activity', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
+        }).catch(error => {
+          // Silent fail - online status is not critical
+          console.debug('Failed to update session activity:', error);
+        });
+      }
+
       // Send to live backend tracking
       if (typeof fetch !== 'undefined') {
         fetch('/api/tracking/live', {

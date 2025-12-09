@@ -72,6 +72,13 @@ export default function AdminDashboard() {
               </div>
               <div className="flex items-center gap-4">
                 <button
+                  onClick={() => router.push("/kingdom-moderation")}
+                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black rounded-lg font-medium transition-colors flex items-center space-x-2"
+                >
+                  <span>🛡️</span>
+                  <span>Moderation</span>
+                </button>
+                <button
                   onClick={() => router.push("/kingdom")}
                   className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium"
                 >

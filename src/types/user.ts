@@ -20,6 +20,7 @@ export interface UserProfile {
   isInfluencer: boolean;
   isModerator: boolean;
   isAdmin: boolean;
+  isInvisible?: boolean; // User's online visibility preference
   membershipExpiry?: string;
   
   // Financial Information

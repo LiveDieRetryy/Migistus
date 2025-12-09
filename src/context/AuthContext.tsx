@@ -61,6 +61,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(user);
           console.log('Restored user session:', user);
           
+          // Sync invisible preference from profile to localStorage
+          try {
+            const userProfile = UserStorage.getUserProfile(user.id);
+            if (userProfile?.isInvisible !== undefined) {
+              localStorage.setItem(`invisible_${user.id}`, String(userProfile.isInvisible));
+            }
+          } catch (error) {
+            console.error('Error syncing invisible preference:', error);
+          }
+          
           // Initialize sync service when user is restored
           if ((window as any).MigistusUserSync) {
             (window as any).MigistusUserSync.initialize();
@@ -127,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               bio: newUser.bio || "",
               avatar: newUser.avatar || null,
               banner: null,
-              tier: newUser.tier || "New Member",
+              tier: newUser.tier || "Initiate",
               guildTokens: newUser.guildCoins || 100,
               joinedDate: newUser.joinDate || new Date().toISOString().split('T')[0],
               titles: [],
@@ -218,7 +228,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               bio: authenticatedUser.bio || "",
               avatar: authenticatedUser.avatar || null,
               banner: authenticatedUser.banner || null,
-              tier: authenticatedUser.tier || "New Member",
+              tier: authenticatedUser.tier || "Initiate",
               guildTokens: authenticatedUser.guildCoins || 0,
               joinedDate: authenticatedUser.joinDate || new Date().toISOString().split('T')[0],
               titles: authenticatedUser.titles || [],
@@ -378,7 +388,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           bio: "",
           avatar: null,
           banner: null,
-          tier: "New Member",
+          tier: "Initiate",
           guildTokens: 0,
           joinedDate: new Date().toISOString().split('T')[0],
           titles: [],
@@ -444,7 +454,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           body: JSON.stringify([{
             id: uniqueId,
             username: finalUsername,
-            tier: "New Member",
+            tier: "Initiate",
             banned: false,
             wallet,
             guildCoins

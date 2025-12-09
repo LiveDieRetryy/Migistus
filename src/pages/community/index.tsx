@@ -10,6 +10,7 @@ import { UserStorage3 as UserStorage } from "@/utils/userStorage";
 import { activityTracker } from "@/utils/activityTracker";
 import FollowButton from '@/components/FollowButton';
 import { SocialPostsStorage } from "@/utils/socialPostsStorage";
+import OnlineStatus from "@/components/OnlineStatus";
 
 interface User {
   id: number;
@@ -433,6 +434,7 @@ export default function CommunityPage() {
               return {
                 ...existingUser,
                 tier: 'Supplier',
+                avatar: s.avatar || existingUser.avatar,
                 bio: `${s.companyName} - Supplier since ${new Date(s.joinedDate).getFullYear()}. Specializing in ${s.productCategories.join(', ')}.`,
                 location: {
                   country: s.address?.split(',').pop()?.trim() || 'Unknown'
@@ -446,10 +448,10 @@ export default function CommunityPage() {
               
               return {
                 id: supplierId,
-                username: s.name || s.companyName,
+                username: s.username || s.name || s.companyName,
                 email: s.email,
                 tier: 'Supplier',
-                avatar: null,
+                avatar: s.avatar || null,
                 bio: `${s.companyName} - Supplier since ${new Date(s.joinedDate).getFullYear()}. Specializing in ${s.productCategories.join(', ')}.`,
                 joinedDate: s.joinedDate,
                 country: s.address?.split(',').pop()?.trim(),
@@ -1603,11 +1605,10 @@ export default function CommunityPage() {
                                     <span className={isAdminPost ? 'text-zinc-900' : 'text-zinc-400'}>{getTierEmoji(post.tier)}</span>
                                   )}
                                 </div>
-                                <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-zinc-800 ${
-                                  isAdminPost ? 'bg-yellow-500' :
-                                  post.tier === 'MIGISTUS' ? 'bg-yellow-500' :
-                                  post.tier === 'Guild' ? 'bg-purple-500' : 'bg-blue-500'
-                                }`}></div>
+                                {/* Online Status Indicator */}
+                                <div className="absolute -bottom-1 -right-1">
+                                  <OnlineStatus userId={post.userId} size="sm" />
+                                </div>
                               </div>
                               <div>
                                 <div className="flex items-center space-x-2">
@@ -1788,7 +1789,10 @@ export default function CommunityPage() {
                               </div>
                             </div>
                             <div>
-                              <h3 className="font-bold text-white text-lg group-hover:text-green-400 transition-colors">{member.username}</h3>
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-bold text-white text-lg group-hover:text-green-400 transition-colors">{member.username}</h3>
+                                <OnlineStatus userId={member.id} size="sm" />
+                              </div>
                               <p className={`text-sm font-medium ${getTierColor(member.tier)}`}>
                                 {getTierEmoji(member.tier)} {member.tier}
                               </p>
@@ -1892,19 +1896,13 @@ export default function CommunityPage() {
                               <div className="flex items-start gap-4 flex-1">
                                 <div className="relative">
                                   <div className="w-20 h-20 bg-zinc-700 rounded-xl overflow-hidden ring-2 ring-zinc-600 group-hover:ring-purple-500 transition-all">
-                                    {supplier.avatar ? (
-                                      <Image 
-                                        src={supplier.avatar} 
-                                        alt={supplier.username} 
-                                        width={80} 
-                                        height={80} 
-                                        className="object-cover w-full h-full" 
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-3xl bg-gradient-to-br from-purple-600 to-purple-800">
-                                        📦
-                                      </div>
-                                    )}
+                                    <Image 
+                                      src={supplier.avatar || '/Icons/SupplierPlaceHolder.png'} 
+                                      alt={supplier.username} 
+                                      width={80} 
+                                      height={80} 
+                                      className="object-cover w-full h-full" 
+                                    />
                                   </div>
                                   <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-purple-500 rounded-full border-2 border-zinc-800 flex items-center justify-center">
                                     <Shield className="w-4 h-4 text-white" />

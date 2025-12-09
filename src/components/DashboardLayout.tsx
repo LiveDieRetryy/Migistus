@@ -13,6 +13,7 @@ const NAVIGATION_ITEMS = [
     icon: "🏰",
     href: "/kingdom",
     description: "Command center & overview",
+    category: "dashboard"
   },
   // Core Admin Modules
   {
@@ -25,6 +26,14 @@ const NAVIGATION_ITEMS = [
     category: "core"
   },
   {
+    id: "lifecycle",
+    title: "Lifecycle Control",
+    icon: "🔄",
+    href: "/kingdom/lifecycle",
+    description: "Unified product lifecycle management",
+    category: "core"
+  },
+  {
     id: "products",
     title: "Products",
     icon: "📦",
@@ -34,36 +43,14 @@ const NAVIGATION_ITEMS = [
     category: "core"
   },
   {
-    id: "voting",
-    title: "Voting",
-    icon: "🗳️",
-    href: "/kingdom/voting",
-    description: "Community polls & decisions",
-    category: "core"
-  },
-  {
-    id: "live-drops",
-    title: "Live Drops",
-    icon: "🔥",
-    href: "/kingdom/live-drops",
-    description: "Real-time product drops",
-    category: "core"
-  },
-  {
     id: "marketing",
     title: "Marketing",
     icon: "📢",
     href: "/kingdom/marketing",
     description: "Campaigns & promotions",
     category: "core"
-  },  {
-    id: "coming-soon",
-    title: "Coming Soon",
-    icon: "⏰",
-    href: "/kingdom/coming-soon",
-    description: "Upcoming features & announcements",
-    category: "core"
-  },  {
+  },
+  {
     id: "suppliers",
     title: "Suppliers",
     icon: "🏭",
@@ -71,7 +58,8 @@ const NAVIGATION_ITEMS = [
     description: "Manage supplier applications",
     badge: "supplierApplications",
     category: "core"
-  },{
+  },
+  {
     id: "supplier-products",
     title: "Product Reviews",
     icon: "📦",
@@ -119,7 +107,7 @@ const NAVIGATION_ITEMS = [
     id: "moderation",
     title: "Moderation",
     icon: "🛡️",
-    href: "/kingdom/moderation",
+    href: "/moderation",
     description: "Chat & content moderation",
     badge: "reports",
     category: "settings"
@@ -128,32 +116,32 @@ const NAVIGATION_ITEMS = [
 
 const QUICK_ACTIONS = [
   {
+    id: "lifecycle",
+    title: "Lifecycle Control",
+    icon: "↻",
+    href: "/kingdom/lifecycle",
+    color: "from-yellow-500 via-orange-500 to-red-500",
+  },
+  {
     id: "add-product",
     title: "Add Product",
-    icon: "➕",
+    icon: "+",
     href: "/kingdom/products",
     color: "from-blue-500 to-blue-600",
   },
   {
-    id: "create-poll",
-    title: "Create Poll",
-    icon: "🗳️",
-    href: "/kingdom/voting",
-    color: "from-purple-500 to-purple-600",
-  },
-  {
     id: "send-campaign",
     title: "Send Campaign",
-    icon: "📢",
+    icon: "▶",
     href: "/kingdom/marketing",
     color: "from-green-500 to-green-600",
   },
   {
     id: "homepage",
     title: "View Site",
-    icon: "🏠",
+    icon: "⌂",
     href: "/",
-    color: "from-yellow-500 to-yellow-600",
+    color: "from-purple-500 to-purple-600",
   },
 ];
 
@@ -330,30 +318,55 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <span className="text-yellow-400 font-bold">{isCollapsed ? "→" : "←"}</span>
             </button>
           </div>
-
-          {/* System Status Card */}
-          {!isCollapsed && (
-            <div className="mt-5 p-4 bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 rounded-xl border-2 border-yellow-500/20 backdrop-blur-sm shadow-lg">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
-                  <span className="text-sm font-black text-gray-200">System Status</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-gradient-to-r from-green-500/10 to-green-600/10 border border-green-500/30">
-                  <span className="text-lg">{getStatusIcon()}</span>
-                  <span className={`text-xs font-black ${getStatusColor()}`}>
-                    {systemStatus.toUpperCase()}
-                  </span>
-                </div>
-              </div>
-              <div className="text-xs text-gray-400 font-semibold flex items-center gap-2">
-                <span className="text-yellow-400">🕒</span>
-                Last sync: <span className="text-white">{lastSync.toLocaleTimeString()}</span>
-              </div>
-            </div>
-          )}
-        </div>        {/* Enhanced Navigation */}
+        </div>        
+        {/* Enhanced Navigation */}
         <nav className="relative flex-1 px-3 py-6 space-y-8 overflow-y-auto scrollbar-thin scrollbar-thumb-yellow-500/30 scrollbar-track-transparent">
+          {/* Dashboard Section */}
+          <div>
+            <div className="space-y-1.5">
+              {NAVIGATION_ITEMS.filter(item => item.category === 'dashboard').map((item) => {
+                const isActive = activeItem === item.id;
+
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className={`group relative flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ${
+                      isActive
+                        ? "bg-gradient-to-r from-yellow-500/30 via-yellow-400/20 to-yellow-500/30 border-2 border-yellow-400/60 shadow-lg shadow-yellow-500/20 scale-[1.02]"
+                        : "hover:bg-gradient-to-r hover:from-zinc-800/60 hover:to-zinc-700/40 border-2 border-transparent hover:border-yellow-500/20 hover:scale-[1.01]"
+                    }`}
+                    title={isCollapsed ? item.title : ""}
+                  >
+                    {/* Active Indicator Glow */}
+                    {isActive && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-transparent rounded-xl blur-sm"></div>
+                    )}
+                    
+                    <span className={`text-2xl relative z-10 transition-transform group-hover:scale-110 ${
+                      isActive ? 'animate-pulse' : ''
+                    }`}>
+                      {item.icon}
+                    </span>
+                    
+                    {!isCollapsed && (
+                      <div className="flex-1 relative z-10">
+                        <div className={`font-bold text-sm ${
+                          isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'
+                        }`}>
+                          {item.title}
+                        </div>
+                        <div className="text-xs text-gray-500 group-hover:text-gray-400 mt-0.5">
+                          {item.description}
+                        </div>
+                      </div>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Core Modules Section */}
           <div>
             {!isCollapsed && (
@@ -365,7 +378,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
             )}
             <div className="space-y-1.5">
-              {NAVIGATION_ITEMS.filter(item => item.category === 'core' || !item.category).map((item) => {
+              {NAVIGATION_ITEMS.filter(item => item.category === 'core').map((item) => {
                 const isActive = activeItem === item.id;
                 const badgeValue = item.badge ? getBadgeValue(item.badge) : 0;
 
@@ -573,62 +586,46 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         )}        {/* Enhanced User Info Footer */}
         <div className="relative p-4 border-t-2 border-yellow-500/20 bg-zinc-900/50">
           {!isCollapsed ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-zinc-800/80 to-zinc-800/60 rounded-xl border-2 border-yellow-500/20 shadow-lg">
-                <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center text-black font-black text-xl shadow-lg shadow-yellow-500/30 animate-pulse">
-                  👑
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-black text-yellow-300 truncate text-sm">Administrator</p>
-                  <p className="text-xs text-gray-400 font-semibold">King's Domain Access</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Link
-                  href="/"
-                  className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl bg-gradient-to-r from-zinc-700 to-zinc-600 hover:from-zinc-600 hover:to-zinc-500 border-2 border-zinc-600 hover:border-yellow-500/30 transition-all hover:scale-[1.02] shadow-lg text-sm"
-                  title="View Website"
-                >
-                  <span className="text-yellow-400 text-lg">🏠</span>
-                  <span className="text-gray-200 font-bold">Site</span>
-                </Link>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem("isAdmin");
-                    router.push("/admin-login");
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 border-2 border-red-600 hover:border-red-400 transition-all hover:scale-[1.02] shadow-lg text-sm"
-                  title="Logout"
-                >
-                  <span className="text-white text-lg">🚪</span>
-                  <span className="text-white font-bold">Exit</span>
-                </button>
-              </div>
+            <div className="flex gap-2">
+              <Link
+                href="/"
+                className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl bg-gradient-to-r from-zinc-700 to-zinc-600 hover:from-zinc-600 hover:to-zinc-500 border-2 border-zinc-600 hover:border-yellow-500/30 transition-all hover:scale-[1.02] shadow-lg text-sm"
+                title="View Website"
+              >
+                <span className="text-yellow-400 text-lg">🏠</span>
+                <span className="text-gray-200 font-bold">Site</span>
+              </Link>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("isAdmin");
+                  router.push("/admin-login");
+                }}
+                className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 border-2 border-red-600 hover:border-red-400 transition-all hover:scale-[1.02] shadow-lg text-sm"
+                title="Logout"
+              >
+                <span className="text-white text-lg">🚪</span>
+                <span className="text-white font-bold">Exit</span>
+              </button>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center text-black font-black text-xl shadow-lg shadow-yellow-500/30 animate-pulse">
-                👑
-              </div>
-              <div className="flex flex-col gap-2 w-full">
-                <Link
-                  href="/"
-                  className="p-2.5 rounded-xl bg-gradient-to-r from-zinc-700 to-zinc-600 hover:from-zinc-600 hover:to-zinc-500 border-2 border-zinc-600 hover:border-yellow-500/30 transition-all hover:scale-110 shadow-lg flex items-center justify-center"
-                  title="View Website"
-                >
-                  <span className="text-yellow-400 text-xl">🏠</span>
-                </Link>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem("isAdmin");
-                    router.push("/admin-login");
-                  }}
-                  className="p-2.5 rounded-xl bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 border-2 border-red-600 hover:border-red-400 transition-all hover:scale-110 shadow-lg flex items-center justify-center"
-                  title="Logout"
-                >
-                  <span className="text-white text-xl">🚪</span>
-                </button>
-              </div>
+            <div className="flex flex-col gap-2 w-full">
+              <Link
+                href="/"
+                className="p-2.5 rounded-xl bg-gradient-to-r from-zinc-700 to-zinc-600 hover:from-zinc-600 hover:to-zinc-500 border-2 border-zinc-600 hover:border-yellow-500/30 transition-all hover:scale-110 shadow-lg flex items-center justify-center"
+                title="View Website"
+              >
+                <span className="text-yellow-400 text-xl">🏠</span>
+              </Link>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("isAdmin");
+                  router.push("/admin-login");
+                }}
+                className="p-2.5 rounded-xl bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 border-2 border-red-600 hover:border-red-400 transition-all hover:scale-110 shadow-lg flex items-center justify-center"
+                title="Logout"
+              >
+                <span className="text-white text-xl">🚪</span>
+              </button>
             </div>
           )}
         </div>

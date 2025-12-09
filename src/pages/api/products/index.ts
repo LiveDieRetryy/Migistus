@@ -2,6 +2,7 @@
 import fs from "fs";
 import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { processLifecycleTransitions, DEFAULT_LIFECYCLE_CONFIG } from "@/utils/productLifecycle";
 
 const filePath = path.resolve("public/data/products.json");
 
@@ -74,9 +75,39 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === "GET" && Array.isArray(data) && data.length === 0) {
       data = getDefaultProducts();
       writeData(data);
-    }    if (req.method === "GET") {
+    }
+    
+    if (req.method === "GET") {
+      // Process lifecycle transitions automatically
+      try {
+        const processedData = processLifecycleTransitions(data, DEFAULT_LIFECYCLE_CONFIG);
+        
+        // Save updated products if any transitions occurred
+        if (JSON.stringify(processedData) !== JSON.stringify(data)) {
+          writeData(processedData);
+          data = processedData;
+          console.log('✅ API: Lifecycle transitions processed and saved');
+          
+          // Log what changed
+          processedData.forEach((product: any, index: number) => {
+            if (product.stage !== data[index]?.stage) {
+              console.log(`  → Product "${product.name}" transitioned: ${data[index]?.stage || 'voting'} → ${product.stage}`);
+            }
+          });
+        }
+      } catch (lifecycleError) {
+        console.error('❌ API: Lifecycle processing error:', lifecycleError);
+        // Continue without lifecycle processing if it fails
+      }
+      
       console.log('API: Returning products:', data.length);
       console.log('API: Pending review products:', data.filter((p: any) => p.status === 'pending-review').length);
+      console.log('API: Stage breakdown:', {
+        voting: data.filter((p: any) => (p.stage || 'voting') === 'voting').length,
+        comingSoon: data.filter((p: any) => p.stage === 'coming-soon').length,
+        communityDrops: data.filter((p: any) => p.stage === 'community-drops').length,
+        recentlyCompleted: data.filter((p: any) => p.stage === 'recently-completed').length
+      });
       res.status(200).json({ products: data, totalProducts: data.length });
 
     } else if (req.method === "POST") {

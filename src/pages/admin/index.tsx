@@ -80,6 +80,24 @@ export default function AdminDashboard() {
 
   const adminModules = [
     {
+      title: 'Lifecycle Control Center',
+      description: 'Complete product lifecycle: Voting → Coming Soon → Live Drops → Archive',
+      href: '/kingdom/lifecycle',
+      icon: '🔄',
+      color: 'bg-gradient-to-br from-yellow-600 via-orange-600 to-red-600 hover:from-yellow-700 hover:via-orange-700 hover:to-red-700',
+      stats: ['Full Automation', '4 Stages Unified'],
+      featured: true
+    },
+    {
+      title: 'Moderation Control',
+      description: 'Monitor reports, review flags, manage chat safety and user behavior',
+      href: '/moderation',
+      icon: '🛡️',
+      color: 'bg-gradient-to-br from-red-600 via-pink-600 to-purple-600 hover:from-red-700 hover:via-pink-700 hover:to-purple-700',
+      stats: [`${stats.users.total > 0 ? Math.floor(stats.users.total * 0.02) : 0} Reports`, 'Live Safety'],
+      featured: true
+    },
+    {
       title: 'User Management',
       description: 'Manage users, view profiles, handle bans and verification',
       href: '/admin/users',
@@ -96,28 +114,12 @@ export default function AdminDashboard() {
       stats: [`${stats.users.optedInMarketing} Opted In`, `${stats.campaigns.sent} Campaigns Sent`]
     },
     {
-      title: 'Voting Control',
-      description: 'Manage polls, approve submissions, control voting process',
-      href: '/admin/voting',
-      icon: '🗳️',
-      color: 'bg-purple-600 hover:bg-purple-700',
-      stats: [`${stats.voting.activePolls} Active Polls`, `${stats.voting.totalVotes} Total Votes`]
-    },
-    {
       title: 'Product Management',
-      description: 'Manage coming soon items, live drops, staff picks',
+      description: 'Manage all products, staff picks, and product details',
       href: '/admin/products',
       icon: '📦',
       color: 'bg-orange-600 hover:bg-orange-700',
       stats: [`${stats.products.total} Products`, `${stats.products.live} Live`]
-    },
-    {
-      title: 'Live Drops Control',
-      description: 'Manage active drops, control timing, monitor pledges',
-      href: '/admin/live-drops',
-      icon: '🔴',
-      color: 'bg-red-600 hover:bg-red-700',
-      stats: [`${stats.products.live} Active`, 'Real-time Control']
     },
     {
       title: 'Content Management',
@@ -230,7 +232,7 @@ export default function AdminDashboard() {
           <div className="bg-gray-800 rounded-lg p-6 border border-purple-500/30">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Active Polls</p>
+                <p className="text-gray-400 text-sm">In Voting</p>
                 <p className="text-2xl font-bold text-purple-400">{stats.voting.activePolls}</p>
               </div>
               <span className="text-3xl">🗳️</span>
@@ -254,10 +256,19 @@ export default function AdminDashboard() {
             <Link
               key={module.title}
               href={module.href}
-              className={`${module.color} rounded-lg p-6 transition-all duration-200 transform hover:scale-105 hover:shadow-lg border border-gray-700 hover:border-gray-600`}
+              className={`${module.color} rounded-lg p-6 transition-all duration-200 transform hover:scale-105 hover:shadow-lg border ${
+                module.featured 
+                  ? 'border-yellow-500 ring-2 ring-yellow-500/50 shadow-yellow-500/20' 
+                  : 'border-gray-700 hover:border-gray-600'
+              }`}
             >
               <div className="text-center">
                 <div className="text-4xl mb-3">{module.icon}</div>
+                {module.featured && (
+                  <div className="inline-block bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded mb-2">
+                    ⭐ NEW
+                  </div>
+                )}
                 <h3 className="text-xl font-bold text-white mb-2">{module.title}</h3>
                 <p className="text-gray-200 text-sm mb-4 opacity-90">{module.description}</p>
                 
@@ -306,19 +317,19 @@ export default function AdminDashboard() {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <button 
-              onClick={() => window.location.href = '/admin/marketing'}
-              className="bg-green-600 hover:bg-green-700 rounded-lg p-4 text-center transition-colors"
+              onClick={() => window.location.href = '/kingdom/lifecycle'}
+              className="bg-gradient-to-br from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-lg p-4 text-center transition-colors"
             >
-              <span className="text-2xl block mb-2">📧</span>
-              <span className="text-sm font-medium">Send Campaign</span>
+              <span className="text-2xl block mb-2">�</span>
+              <span className="text-sm font-medium">Lifecycle Control</span>
             </button>
             
             <button 
-              onClick={() => window.location.href = '/admin/voting'}
-              className="bg-purple-600 hover:bg-purple-700 rounded-lg p-4 text-center transition-colors"
+              onClick={() => window.location.href = '/admin/marketing'}
+              className="bg-green-600 hover:bg-green-700 rounded-lg p-4 text-center transition-colors"
             >
-              <span className="text-2xl block mb-2">🗳️</span>
-              <span className="text-sm font-medium">Manage Voting</span>
+              <span className="text-2xl block mb-2">�</span>
+              <span className="text-sm font-medium">Send Campaign</span>
             </button>
             
             <button 
@@ -330,11 +341,11 @@ export default function AdminDashboard() {
             </button>
             
             <button 
-              onClick={() => window.location.href = '/admin/live-drops'}
-              className="bg-red-600 hover:bg-red-700 rounded-lg p-4 text-center transition-colors"
+              onClick={() => window.location.href = '/admin/analytics'}
+              className="bg-teal-600 hover:bg-teal-700 rounded-lg p-4 text-center transition-colors"
             >
-              <span className="text-2xl block mb-2">🔴</span>
-              <span className="text-sm font-medium">Start Live Drop</span>
+              <span className="text-2xl block mb-2">�</span>
+              <span className="text-sm font-medium">View Analytics</span>
             </button>
           </div>
         </div>

@@ -30,9 +30,9 @@
   "tripleVoteWeek": false,
   "topWinners": 3,
   "tierLimits": {
-    "Initiate": 1,
-    "Guild": 2,
-    "MIGISTUS": 4
+    "Initiate": 2,
+    "Guild": 5,
+    "MIGISTUS": 15
   },
   "tierMultipliers": {
     "Initiate": 1,

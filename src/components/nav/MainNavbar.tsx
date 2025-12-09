@@ -199,19 +199,28 @@ export default function MainNavbar() {
     { name: "Settings", href: "/account/settings", icon: "⚙️" },    // Admin menu items - The King's Domain
     ...(user?.email === 'admin@migistus.com' ? [
       { name: "─────────────", href: "#", icon: "" }, // Divider
-      { name: "👑 Kings Domain", href: "/kingdom", icon: "👑" },
-      { name: "User Management", href: "/kingdom/users", icon: "👥" },
-      { name: "Royal Marketing", href: "/kingdom/marketing", icon: "📧" },
-      { name: "Voting Control", href: "/kingdom/voting", icon: "🗳️" },
-      { name: "Product Control", href: "/kingdom/products", icon: "📦" },
-      { name: "Live Drops Control", href: "/kingdom/live-drops", icon: "🔴" },
-      { name: "Content Management", href: "/kingdom/content", icon: "📝" },
-      { name: "Analytics", href: "/kingdom/analytics", icon: "📊" },
-      { name: "System Settings", href: "/kingdom/settings", icon: "⚙️" },
+      { name: "👑 Kings Domain", href: "/admin", icon: "👑" },
+      { name: "🔄 Lifecycle Control", href: "/kingdom/lifecycle", icon: "�" },
+      { name: "User Management", href: "/admin/users", icon: "�" },
+      { name: "Royal Marketing", href: "/admin/marketing", icon: "�" },
+      { name: "Product Control", href: "/admin/products", icon: "📦" },
+      { name: "Content Management", href: "/admin/content", icon: "📝" },
+      { name: "Analytics", href: "/admin/analytics", icon: "📊" },
+      { name: "System Settings", href: "/admin/settings", icon: "⚙️" },
     ] : []),
   ];
   useEffect(() => {
     setMounted(true);
+    
+    // Expose auth modal opener globally for other components
+    (window as any).openAuthModal = (isRegister = false) => {
+      setLoginForm(prev => ({ 
+        ...prev, 
+        isRegistering: isRegister,
+        registrationStep: 1 
+      }));
+      setShowLoginModal(true);
+    };
     
     // Close dropdown when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
@@ -225,6 +234,11 @@ export default function MainNavbar() {
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
     }
+
+    return () => {
+      // Cleanup
+      delete (window as any).openAuthModal;
+    };
   }, [isLiveDropsOpen]);
 
   // Load user avatar
@@ -1240,7 +1254,7 @@ export default function MainNavbar() {
                   onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))
                   }
                   className="w-full px-4 py-3 bg-zinc-800 border border-zinc-600 rounded-lg text-white focus:border-yellow-400 focus:outline-none"
-                  placeholder="Enter any password (demo)"
+                  placeholder="Password"
                   required
                   />
                 </div>
@@ -1288,10 +1302,6 @@ export default function MainNavbar() {
                   : "Don't have an account? Register"
                 }
               </button>
-            </div>
-
-            <div className="mt-4 text-center text-xs text-gray-400">
-              <p>This is a demo - {loginForm.isRegistering ? 'fill out the registration form' : 'use any registered credentials'}</p>
             </div>
           </div>
         </div>

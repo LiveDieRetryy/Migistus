@@ -19,7 +19,22 @@ function readActivity() {
   }
   try {
     const data = fs.readFileSync(ACTIVITY_PATH, "utf-8");
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    
+    // Handle both array format and old object format
+    if (Array.isArray(parsed)) {
+      return parsed;
+    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.activities)) {
+      // Old format: {activities: [...]} - migrate to new format
+      const activities = parsed.activities;
+      fs.writeFileSync(ACTIVITY_PATH, JSON.stringify(activities, null, 2));
+      return activities;
+    } else {
+      // Invalid format - reset to empty array
+      console.warn('Invalid user-activity.json format, resetting to empty array');
+      fs.writeFileSync(ACTIVITY_PATH, "[]");
+      return [];
+    }
   } catch (error) {
     console.error('Error reading activity file:', error);
     return [];
@@ -71,6 +86,22 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       }
       
       writeActivity(activities);
+      
+      // Also update session activity for online status tracking
+      try {
+        const { updateUserActivity } = require('@/lib/session');
+        const { parse } = require('cookie');
+        const cookies = parse(req.headers.cookie || '');
+        const sessionToken = cookies.migistus_session;
+        
+        if (sessionToken) {
+          updateUserActivity(sessionToken);
+        }
+      } catch (sessionError) {
+        // Don't fail the activity save if session update fails
+        console.debug('Session activity update failed:', sessionError);
+      }
+      
       return res.status(201).json({ success: true, activity });
     } catch (error) {
       console.error('Error in activity POST:', error);

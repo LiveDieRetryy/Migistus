@@ -1,3 +1,56 @@
-{
-  "sessions": []
-}
+[
+  {
+    "userId": 1,
+    "sessionId": "3ivytva37sjmiwosn10",
+    "loginTime": "2025-12-08T05:34:04.276Z",
+    "lastActivity": "2025-12-08T06:52:57.352Z",
+    "currentPage": "/community-drops",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
+  },
+  {
+    "userId": 1,
+    "sessionId": "cz0eqhsm9vmiwtfyub",
+    "loginTime": "2025-12-08T07:14:23.681Z",
+    "lastActivity": "2025-12-09T00:39:01.349Z",
+    "currentPage": "/community",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
+  },
+  {
+    "userId": 1,
+    "sessionId": "tr8d23mj8cemixtb3m8",
+    "loginTime": "2025-12-08T23:58:22.792Z",
+    "lastActivity": "2025-12-08T23:58:28.547Z",
+    "currentPage": "/voting",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
+  },
+  {
+    "userId": 1765094496017,
+    "sessionId": "dx1btffbrfqmixtbe0g",
+    "loginTime": "2025-12-08T23:58:36.225Z",
+    "lastActivity": "2025-12-09T00:06:09.852Z",
+    "currentPage": "/voting",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
+  },
+  {
+    "userId": 1765094496017,
+    "sessionId": "h3ca4c5io16mixtlbkc",
+    "loginTime": "2025-12-09T00:06:19.701Z",
+    "lastActivity": "2025-12-09T00:09:11.810Z",
+    "currentPage": "/voting",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
+  },
+  {
+    "userId": 1765094496017,
+    "sessionId": "y3e35vbps6hmixtp66z",
+    "loginTime": "2025-12-09T00:09:19.277Z",
+    "lastActivity": "2025-12-09T00:39:01.336Z",
+    "currentPage": "/categories",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
+  }
+]

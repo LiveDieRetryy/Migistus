@@ -2,6 +2,16 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
 
+// Function to generate slug from product name
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/--+/g, '-') // Replace multiple hyphens with single
+    .trim();
+}
+
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
 
@@ -101,6 +111,11 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       return res.status(404).json({ error: 'Product not found' });
     }
 
+    // Ensure slug is generated if not provided or if name changed
+    if (!updatedProduct.slug || updatedProduct.name !== products[productIndex].name) {
+      updatedProduct.slug = generateSlug(updatedProduct.name);
+    }
+
     // Ensure data consistency
     updatedProduct.pledges = typeof updatedProduct.pledges === "number" ? updatedProduct.pledges : 0;
     updatedProduct.pricingTiers = Array.isArray(updatedProduct.pricingTiers) ? updatedProduct.pricingTiers : [];
@@ -116,6 +131,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     }
     
     console.log(`Product ${id} updated successfully`);
+    
+    // Clear cache headers to ensure fresh data
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     res.status(200).json({ success: true, product: products[productIndex] });
 
   } else if (req.method === 'DELETE') {

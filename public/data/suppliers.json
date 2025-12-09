@@ -16,7 +16,10 @@
     ],
     "totalProducts": 0,
     "totalSales": 0,
-    "rating": 5
+    "rating": 5,
+    "avatar": null,
+    "banner": null,
+    "username": "migistus"
   },
   {
     "id": "1765140087766",
@@ -36,6 +39,9 @@
     ],
     "totalProducts": 0,
     "totalSales": 0,
-    "rating": 5
+    "rating": 5,
+    "avatar": null,
+    "banner": null,
+    "username": "greentech-innovations"
   }
 ]
