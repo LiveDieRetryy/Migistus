@@ -28,7 +28,7 @@ export const db = {
   async getUserByEmailOrUsername(identifier: string) {
     const result = await sql`
       SELECT * FROM users 
-      WHERE email = ${identifier} OR username = ${identifier}
+      WHERE LOWER(email) = LOWER(${identifier}) OR LOWER(username) = LOWER(${identifier})
       LIMIT 1
     `;
     return result.rows[0] || null;
