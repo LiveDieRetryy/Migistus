@@ -6,7 +6,7 @@ import {
   CheckCircle, XCircle, Clock, Edit3, Trash2, Plus, AlertCircle,
   Crown, Sparkles, Activity
 } from "lucide-react";
-import KingdomNav from "@/components/nav/KingdomNav";
+import MainNavbar from "@/components/nav/MainNavbar";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -233,7 +233,7 @@ export default function KingdomStaffPicksPage() {
         <meta name="robots" content="noindex, nofollow" />
       </Head>
       
-      <KingdomNav />
+      <MainNavbar />
       
       <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
