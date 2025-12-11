@@ -783,12 +783,12 @@ export default function UserProfilePage() {
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
                     {isOwnProfile ? (
                       isEditing ? (
-                        <div className="flex gap-3">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
                           <button
                             onClick={handleSaveProfile}
-                            className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white px-8 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg hover:shadow-green-500/30"
+                            className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg hover:shadow-green-500/30 text-sm sm:text-base"
                           >
-                            <Shield className="w-5 h-5" />
+                            <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
                             Save Changes
                           </button>
                           <button
@@ -796,7 +796,7 @@ export default function UserProfilePage() {
                               setIsEditing(false);
                               setEditForm(profile);
                             }}
-                            className="flex items-center gap-2 bg-zinc-700 hover:bg-zinc-600 text-white px-8 py-3 rounded-xl font-bold transition-all"
+                            className="flex items-center justify-center gap-2 bg-zinc-700 hover:bg-zinc-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-bold transition-all text-sm sm:text-base"
                           >
                             Cancel
                           </button>
@@ -804,9 +804,9 @@ export default function UserProfilePage() {
                       ) : (
                         <button
                           onClick={() => setIsEditing(true)}
-                          className="flex items-center gap-2 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-black px-8 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg hover:shadow-yellow-500/30"
+                          className="flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-black px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg hover:shadow-yellow-500/30 text-sm sm:text-base w-full"
                         >
-                          <Activity className="w-5 h-5" />
+                          <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
                           Edit Profile
                         </button>
                       )
@@ -884,42 +884,42 @@ export default function UserProfilePage() {
                         : 'text-gray-400 hover:text-yellow-400 hover:bg-zinc-800/70'
                     }`}
                   >
-                    <MessageCircle className="w-5 h-5" />
+                    <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                     Posts ({posts.length})
                   </button>
                   <button
                     onClick={() => setActiveTab('overview')}
-                    className={`flex-1 px-6 py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
+                    className={`flex-1 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base ${
                       activeTab === 'overview'
                         ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg shadow-yellow-500/30 scale-105'
                         : 'text-gray-400 hover:text-yellow-400 hover:bg-zinc-800/70'
                     }`}
                   >
-                    <Target className="w-5 h-5" />
+                    <Target className="w-4 h-4 sm:w-5 sm:h-5" />
                     Overview
                   </button>
                   {isOwnProfile && (
                     <button
                       onClick={() => setActiveTab('wishlist')}
-                      className={`flex-1 px-6 py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
+                      className={`flex-1 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base ${
                         activeTab === 'wishlist'
                           ? 'bg-gradient-to-r from-pink-400 to-purple-500 text-white shadow-lg shadow-pink-500/30 scale-105'
                           : 'text-gray-400 hover:text-pink-400 hover:bg-zinc-800/70'
                       }`}
                     >
-                      <Heart className="w-5 h-5" />
+                      <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
                       Wishlist ({wishlist.length})
                     </button>
                   )}
                   <button
                     onClick={() => setActiveTab('activity')}
-                    className={`flex-1 px-6 py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
+                    className={`flex-1 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base ${
                       activeTab === 'activity'
                         ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg shadow-yellow-500/30 scale-105'
                         : 'text-gray-400 hover:text-yellow-400 hover:bg-zinc-800/70'
                     }`}
                   >
-                    <Activity className="w-5 h-5" />
+                    <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
                     Activity
                   </button>
                 </div>
