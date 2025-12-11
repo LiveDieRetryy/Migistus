@@ -1,10 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
+import { getSessionToken, getSession } from '@/lib/session';
 
 const reviewsPath = path.join(process.cwd(), 'public', 'data', 'product-reviews.json');
 const ordersPath = path.join(process.cwd(), 'public', 'data', 'product-orders.json');
-const sessionsPath = path.join(process.cwd(), 'public', 'data', 'user-sessions.json');
 
 interface Review {
   id: number;
@@ -65,26 +65,18 @@ const getOrders = (): Order[] => {
   }
 };
 
-const getUserFromSession = (sessionId: string | undefined): number | null => {
-  if (!sessionId) return null;
-  
+const getUserFromSession = async (req: NextApiRequest): Promise<number | null> => {
   try {
-    if (!fs.existsSync(sessionsPath)) {
-      console.log('Sessions file does not exist');
+    const sessionToken = getSessionToken(req);
+    if (!sessionToken) return null;
+    
+    const session = await getSession(sessionToken);
+    if (!session) {
+      console.log('No valid session found');
       return null;
     }
-    const fileContent = fs.readFileSync(sessionsPath, 'utf8');
-    if (!fileContent || fileContent.trim() === '') {
-      console.log('Sessions file is empty');
-      return null;
-    }
-    const sessions = JSON.parse(fileContent);
-    if (!Array.isArray(sessions)) {
-      console.log('Sessions data is not an array');
-      return null;
-    }
-    const session = sessions.find((s: any) => s.sessionId === sessionId);
-    return session?.userId || null;
+    
+    return session.userId;
   } catch (error) {
     console.error('Error reading sessions:', error);
     return null;
@@ -126,8 +118,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // POST - Create a new review (only for verified purchasers)
   if (req.method === 'POST') {
-    const sessionId = req.cookies.sessionId;
-    const userId = getUserFromSession(sessionId);
+    const userId = await getUserFromSession(req);
 
     if (!userId) {
       return res.status(401).json({ error: 'Authentication required' });

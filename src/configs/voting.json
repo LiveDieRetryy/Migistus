@@ -4,13 +4,15 @@
   "doubleVoteWeek": false,
   "tripleVoteWeek": false,
   "tierLimits": {
-    "Initiate": 1,
-    "Guild": 2,
-    "MIGISTUS": 4
+    "Initiate": 2,
+    "Guild": 5,
+    "MIGISTUS": 15,
+    "Admin": 999
   },
   "tierMultipliers": {
     "Initiate": 1,
     "Guild": 2,
-    "MIGISTUS": 4
+    "MIGISTUS": 4,
+    "Admin": 4
   }
 }

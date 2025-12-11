@@ -48,8 +48,44 @@
     "userId": 1765094496017,
     "sessionId": "y3e35vbps6hmixtp66z",
     "loginTime": "2025-12-09T00:09:19.277Z",
-    "lastActivity": "2025-12-09T01:12:39.286Z",
-    "currentPage": "/community",
+    "lastActivity": "2025-12-09T04:05:45.732Z",
+    "currentPage": "/account/profile/trvboy",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
+  },
+  {
+    "userId": 1765094496017,
+    "sessionId": "nrt72rew1emiy23pqp",
+    "loginTime": "2025-12-09T04:04:34.729Z",
+    "lastActivity": "2025-12-09T04:55:39.281Z",
+    "currentPage": "/account/profile/trvboy",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
+  },
+  {
+    "userId": 1,
+    "sessionId": "m000xl81fbmiy2b14r",
+    "loginTime": "2025-12-09T04:10:16.079Z",
+    "lastActivity": "2025-12-09T04:12:05.404Z",
+    "currentPage": "/products/gilded-vanguard-headset",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
+  },
+  {
+    "userId": 1765094496017,
+    "sessionId": "602x18iwnzpmiy2dhmr",
+    "loginTime": "2025-12-09T04:12:10.773Z",
+    "lastActivity": "2025-12-09T04:23:14.710Z",
+    "currentPage": "/voting",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
+  },
+  {
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "loginTime": "2025-12-09T04:23:26.132Z",
+    "lastActivity": "2025-12-11T05:09:07.857Z",
+    "currentPage": "/",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
     "ip": "::1"
   }

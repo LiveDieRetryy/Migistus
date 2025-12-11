@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { 
   Vote, Trophy, Crown, Users, Star, ChevronUp, ChevronDown, 
   Filter, Search, Sparkles, HelpCircle, X, Clock, CheckCircle, 
@@ -86,38 +86,14 @@ export default function VotingPage() {
   const [votingAnimation, setVotingAnimation] = useState<number | string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Update time every second for live countdown
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setShowVotingModal(false);
-        setShowFilters(false);
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    console.log('🔄 fetchData called');
     setLoading(true);
     try {
       const [productsRes, votesRes, configRes, lifecycleRes] = await Promise.all([
         fetch("/api/products"),
         fetch("/api/votes"),
-        fetch("/api/voting-config"),
+        fetch("/api/voting/config"),
         fetch("/api/product-lifecycle/config").catch(() => null)
       ]);
 
@@ -139,17 +115,73 @@ export default function VotingPage() {
         (p.stage || 'voting') === 'voting'
       );
 
+      const newVotes = votesData.votes || [];
+      console.log('📊 Fetched votes:', newVotes.length);
+      
       setProducts(votingProducts);
-      setVotes(votesData.votes || []);
+      setVotes(newVotes);
       setVotingConfig(configData);
       setLifecycleConfig(lifecycleData);
+      
+      console.log('✅ State updated');
     } catch (err) {
       console.error("Error fetching data:", err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Update time every second for live countdown
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowVotingModal(false);
+        setShowFilters(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
+  
+  useEffect(() => {
+    // Listen for vote updates from other tabs/pages
+    const channel = new BroadcastChannel('vote-updates');
+    
+    channel.onmessage = (event) => {
+      console.log('📡 BroadcastChannel message received:', event.data);
+      if (event.data.type === 'VOTE_CAST') {
+        console.log('✅ Vote cast detected, refreshing data');
+        fetchData();
+      }
+    };
+    
+    // Refresh when page gains focus
+    const handleFocus = () => {
+      console.log('👁️ Page focused, refreshing vote data');
+      fetchData();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      channel.close();
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [fetchData]);
 
   const getVoteCount = (productId: number | string): number => {
     return votes.filter(vote => vote.productId === productId).length;
@@ -180,7 +212,10 @@ export default function VotingPage() {
   };
 
   const getRemainingVotes = (): number => {
-    if (!user || !votingConfig) return 0;
+    if (!user || !votingConfig) {
+      console.log('⚠️ getRemainingVotes: missing user or config');
+      return 0;
+    }
     const userTier = user.tier || "Initiate";
     
     // Admin users have unlimited votes
@@ -196,8 +231,19 @@ export default function VotingPage() {
     
     const localVotesToday = UserStorage.getTodaysVoteCount(user.id);
     const totalVotesToday = Math.max(apiVotesToday, localVotesToday);
+    const remaining = Math.max(0, maxVotes - totalVotesToday);
     
-    return Math.max(0, maxVotes - totalVotesToday);
+    console.log('🗳️ getRemainingVotes:', { 
+      maxVotes, 
+      apiVotesToday, 
+      localVotesToday, 
+      totalVotesToday, 
+      remaining,
+      totalVotes: votes.length,
+      userTier
+    });
+    
+    return remaining;
   };
 
   const handleVote = async (productId: number | string) => {
@@ -234,6 +280,15 @@ export default function VotingPage() {
           value: 1,
           timestamp: new Date().toISOString()
         });
+        
+        // Broadcast vote to other tabs/pages
+        try {
+          const channel = new BroadcastChannel('vote-updates');
+          channel.postMessage({ type: 'VOTE_CAST', productId, userId: user.id });
+          channel.close();
+        } catch (e) {
+          console.log('BroadcastChannel not supported');
+        }
         
         await fetchData();
       }

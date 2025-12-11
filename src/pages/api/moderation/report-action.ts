@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
+import { getSessionToken, getSession } from '@/lib/session';
 
 const reportsPath = path.join(process.cwd(), 'public', 'data', 'chat-reports.json');
-const sessionsPath = path.join(process.cwd(), 'public', 'data', 'user-sessions.json');
 const usersPath = path.join(process.cwd(), 'public', 'data', 'users.json');
 
 interface ChatReport {
@@ -41,14 +41,12 @@ const saveReports = (reports: ChatReport[]) => {
   fs.writeFileSync(reportsPath, JSON.stringify(reports, null, 2));
 };
 
-const getUserFromSession = (sessionId: string | undefined): { userId: number; isAdmin: boolean } | null => {
-  if (!sessionId) return null;
-  
+const getUserFromSession = async (req: NextApiRequest): Promise<{ userId: number; isAdmin: boolean } | null> => {
   try {
-    if (!fs.existsSync(sessionsPath)) return null;
-    const sessions = JSON.parse(fs.readFileSync(sessionsPath, 'utf8'));
-    const session = Array.isArray(sessions) ? sessions.find((s: any) => s.sessionId === sessionId) : null;
+    const sessionToken = getSessionToken(req);
+    if (!sessionToken) return null;
     
+    const session = await getSession(sessionToken);
     if (!session) return null;
     
     // Check if user is admin
@@ -72,8 +70,7 @@ const getUserFromSession = (sessionId: string | undefined): { userId: number; is
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     try {
-      const sessionId = req.cookies.sessionId;
-      const user = getUserFromSession(sessionId);
+      const user = await getUserFromSession(req);
 
       if (!user) {
         return res.status(401).json({ error: 'Authentication required' });

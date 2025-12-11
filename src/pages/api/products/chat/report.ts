@@ -1,10 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
+import { getSessionToken, getSession } from '@/lib/session';
 
 const reportsPath = path.join(process.cwd(), 'public', 'data', 'chat-reports.json');
 const chatPath = path.join(process.cwd(), 'public', 'data', 'product-chat.json');
-const sessionsPath = path.join(process.cwd(), 'public', 'data', 'user-sessions.json');
 const usersPath = path.join(process.cwd(), 'public', 'data', 'users.json');
 
 interface ChatReport {
@@ -50,29 +50,17 @@ const saveReports = (reports: ChatReport[]) => {
   fs.writeFileSync(reportsPath, JSON.stringify(reports, null, 2));
 };
 
-const getUserFromSession = (sessionId: string | undefined): { userId: number; userName: string } | null => {
-  if (!sessionId) return null;
-  
+const getUserFromSession = async (req: NextApiRequest): Promise<{ userId: number; userName: string } | null> => {
   try {
-    if (!fs.existsSync(sessionsPath)) return null;
-    const sessions = JSON.parse(fs.readFileSync(sessionsPath, 'utf8'));
-    const session = Array.isArray(sessions) ? sessions.find((s: any) => s.sessionId === sessionId) : null;
+    const sessionToken = getSessionToken(req);
+    if (!sessionToken) return null;
     
+    const session = await getSession(sessionToken);
     if (!session) return null;
-    
-    // Get username from users.json
-    if (fs.existsSync(usersPath)) {
-      const users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
-      const user = users.find((u: any) => u.id === session.userId);
-      return {
-        userId: session.userId,
-        userName: user?.username || session.userName || `User ${session.userId}`
-      };
-    }
     
     return {
       userId: session.userId,
-      userName: session.userName || `User ${session.userId}`
+      userName: session.username
     };
   } catch (error) {
     console.error('Error reading session:', error);
@@ -99,8 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // POST - Submit a report
   if (req.method === 'POST') {
     try {
-      const sessionId = req.cookies.sessionId;
-      const reporter = getUserFromSession(sessionId);
+      const reporter = await getUserFromSession(req);
 
       if (!reporter) {
         return res.status(401).json({ error: 'Authentication required' });
@@ -207,8 +194,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // GET - Get all reports (admin only)
   if (req.method === 'GET') {
     try {
-      const sessionId = req.cookies.sessionId;
-      const user = getUserFromSession(sessionId);
+      const user = await getUserFromSession(req);
 
       if (!user) {
         return res.status(401).json({ error: 'Authentication required' });

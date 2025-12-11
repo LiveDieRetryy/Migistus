@@ -1,1 +1,16 @@
-﻿{"wishlist":[]}
+{
+  "wishlist": [
+    {
+      "id": 1765252306265,
+      "productId": 1,
+      "productName": "Oture G2000 Stereo Gaming Headset with Noise Cancelling Mic & LED Light - Orange",
+      "productImage": "blob:http://localhost:3000/870a98d7-8ba2-4bc2-b05f-fe21ef3ef02d",
+      "productPrice": 149.99,
+      "productSlug": "gilded-vanguard-headset",
+      "productCategory": "electronics",
+      "userId": 1765094496017,
+      "username": "Trvboy",
+      "addedAt": "2025-12-09T03:51:46.265Z"
+    }
+  ]
+}

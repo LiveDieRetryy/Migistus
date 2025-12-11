@@ -1,10 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
+import { getSessionToken, getSession } from '@/lib/session';
 
 const votesPath = path.join(process.cwd(), 'public', 'data', 'votes.json');
 const productsPath = path.join(process.cwd(), 'public', 'data', 'products.json');
-const sessionsPath = path.join(process.cwd(), 'public', 'data', 'user-sessions.json');
 const usersPath = path.join(process.cwd(), 'public', 'data', 'users.json');
 
 interface Vote {
@@ -62,30 +62,17 @@ const saveProducts = (products: Product[]) => {
   fs.writeFileSync(productsPath, JSON.stringify(products, null, 2));
 };
 
-const getUserFromSession = (sessionId: string | undefined): { userId: number; userName: string } | null => {
-  if (!sessionId) return null;
-  
+const getUserFromSession = async (req: NextApiRequest): Promise<{ userId: number; userName: string } | null> => {
   try {
-    if (!fs.existsSync(sessionsPath)) {
-      return null;
-    }
-    const sessions = JSON.parse(fs.readFileSync(sessionsPath, 'utf8'));
-    const session = Array.isArray(sessions) ? sessions.find((s: any) => s.sessionId === sessionId) : null;
-    if (!session) return null;
+    const sessionToken = getSessionToken(req);
+    if (!sessionToken) return null;
     
-    // Get username from users.json
-    if (fs.existsSync(usersPath)) {
-      const users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
-      const user = users.find((u: any) => u.id === session.userId);
-      return {
-        userId: session.userId,
-        userName: user?.username || session.userName || `User ${session.userId}`
-      };
-    }
+    const session = await getSession(sessionToken);
+    if (!session) return null;
     
     return {
       userId: session.userId,
-      userName: session.userName || `User ${session.userId}`
+      userName: session.username
     };
   } catch (error) {
     console.error('Error reading session:', error);
@@ -148,8 +135,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // POST - Submit a vote
   if (req.method === 'POST') {
     try {
-      const sessionId = req.cookies.sessionId;
-      const userSession = getUserFromSession(sessionId);
+      const userSession = await getUserFromSession(req);
 
       if (!userSession) {
         return res.status(401).json({ error: 'Authentication required' });
@@ -216,8 +202,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // DELETE - Remove a vote (optional feature)
   if (req.method === 'DELETE') {
     try {
-      const sessionId = req.cookies.sessionId;
-      const userSession = getUserFromSession(sessionId);
+      const userSession = await getUserFromSession(req);
 
       if (!userSession) {
         return res.status(401).json({ error: 'Authentication required' });

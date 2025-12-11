@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
+import { getSessionToken, getSession } from '@/lib/session';
 
 const chatPath = path.join(process.cwd(), 'public', 'data', 'product-chat.json');
-const sessionsPath = path.join(process.cwd(), 'public', 'data', 'user-sessions.json');
 const moderationPath = path.join(process.cwd(), 'public', 'data', 'moderation.json');
 
 interface ChatMessage {
@@ -106,26 +106,24 @@ const saveChatMessages = (messages: ChatMessage[]) => {
   fs.writeFileSync(chatPath, JSON.stringify(messages, null, 2));
 };
 
-const getUserFromSession = (sessionId: string | undefined): { userId: number; userName: string } | null => {
-  if (!sessionId) return null;
-  
+const getUserFromSession = async (req: NextApiRequest): Promise<{ userId: number; userName: string } | null> => {
   try {
-    if (!fs.existsSync(sessionsPath)) {
-      console.log('Sessions file does not exist');
+    const sessionToken = getSessionToken(req);
+    if (!sessionToken) {
+      console.log('No session token found');
       return null;
     }
-    const fileContent = fs.readFileSync(sessionsPath, 'utf8');
-    if (!fileContent || fileContent.trim() === '') {
-      console.log('Sessions file is empty');
+    
+    const session = await getSession(sessionToken);
+    if (!session) {
+      console.log('No valid session found');
       return null;
     }
-    const sessions = JSON.parse(fileContent);
-    if (!Array.isArray(sessions)) {
-      console.log('Sessions data is not an array');
-      return null;
-    }
-    const session = sessions.find((s: any) => s.sessionId === sessionId);
-    return session ? { userId: session.userId, userName: session.userName || `User ${session.userId}` } : null;
+    
+    return { 
+      userId: session.userId, 
+      userName: session.username 
+    };
   } catch (error) {
     console.error('Error reading sessions:', error);
     return null;
@@ -154,8 +152,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // POST - Send a new chat message
   if (req.method === 'POST') {
-    const sessionId = req.cookies.sessionId;
-    const user = getUserFromSession(sessionId);
+    const user = await getUserFromSession(req);
 
     if (!user) {
       return res.status(401).json({ error: 'Authentication required' });

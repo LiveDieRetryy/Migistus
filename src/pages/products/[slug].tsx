@@ -179,12 +179,99 @@ export default function ProductPage() {
   const [reportReason, setReportReason] = useState('spam');
   const [reportDescription, setReportDescription] = useState('');
   const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [wishlistToast, setWishlistToast] = useState<{ show: boolean; message: string; type: 'added' | 'removed' }>({ 
+    show: false, 
+    message: '', 
+    type: 'added' 
+  });
+  const [voteToast, setVoteToast] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({ 
+    show: false, 
+    message: '', 
+    type: 'success' 
+  });
+  const [votingConfig, setVotingConfig] = useState<any>(null);
+  const [allVotes, setAllVotes] = useState<any[]>([]);
+  const [remainingVotes, setRemainingVotes] = useState<number>(0);
 
   useEffect(() => {
     if (slug) {
       fetchProduct();
     }
   }, [slug]);
+  
+  useEffect(() => {
+    // Load voting config and votes
+    const loadVotingData = async () => {
+      try {
+        const [configRes, votesRes] = await Promise.all([
+          fetch('/api/voting/config'),
+          fetch('/api/votes')
+        ]);
+        
+        if (configRes.ok) {
+          const config = await configRes.json();
+          setVotingConfig(config);
+        }
+        
+        if (votesRes.ok) {
+          const votesData = await votesRes.json();
+          setAllVotes(votesData.votes || votesData || []);
+        }
+      } catch (error) {
+        console.error('Error loading voting data:', error);
+      }
+    };
+    
+    loadVotingData();
+  }, []);
+  
+  useEffect(() => {
+    // Calculate remaining votes whenever votes or user changes
+    if (user && votingConfig && allVotes) {
+      calculateRemainingVotes();
+    }
+  }, [user, votingConfig, allVotes]);
+  
+  useEffect(() => {
+    // Listen for vote updates from other pages
+    const channel = new BroadcastChannel('vote-updates');
+    
+    channel.onmessage = async (event) => {
+      if (event.data.type === 'VOTE_CAST') {
+        console.log('Vote cast detected from another page, refreshing votes');
+        // Refresh votes data
+        const votesRes = await fetch('/api/votes');
+        if (votesRes.ok) {
+          const votesData = await votesRes.json();
+          setAllVotes(votesData.votes || votesData || []);
+        }
+        // Refresh product data if it's for this product
+        if (product && event.data.productId === product.id) {
+          fetchProduct();
+        }
+      }
+    };
+    
+    // Refresh when page gains focus
+    const handleFocus = async () => {
+      console.log('Page focused, refreshing vote data');
+      const votesRes = await fetch('/api/votes');
+      if (votesRes.ok) {
+        const votesData = await votesRes.json();
+        setAllVotes(votesData.votes || votesData || []);
+      }
+      if (product) {
+        fetchProduct();
+      }
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      channel.close();
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [product]);
   
   useEffect(() => {
     if (product && activeTab === 'reviews') {
@@ -268,6 +355,7 @@ export default function ProductPage() {
       if (isAuthenticated && user) {
         checkUserVote(productData.id);
         await checkUserOrder(productData.id);
+        await checkWishlistStatus(productData.id);
       }
       
     } catch (err) {
@@ -288,6 +376,72 @@ export default function ProductPage() {
     } catch (error) {
       console.error("Error checking vote:", error);
     }
+  };
+
+  const checkWishlistStatus = async (productId: number) => {
+    if (!isAuthenticated || !user) return;
+    
+    try {
+      const response = await fetch('/api/account/wishlist', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          const isInWishlist = result.data.some((item: any) => item.productId === productId);
+          setIsWishlist(isInWishlist);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking wishlist:", error);
+    }
+  };
+  
+  const calculateRemainingVotes = () => {
+    console.log('calculateRemainingVotes called', { 
+      hasUser: !!user, 
+      hasConfig: !!votingConfig,
+      userId: user?.id,
+      tier: (user as any)?.tier,
+      allVotesCount: allVotes.length
+    });
+    
+    if (!user || !votingConfig) {
+      console.log('No user or config, setting remaining to 0');
+      setRemainingVotes(0);
+      return;
+    }
+    
+    const userTier = (user as any).tier || 'Initiate';
+    console.log('User tier:', userTier);
+    
+    // Admin has unlimited votes
+    if (userTier === 'Admin') {
+      setRemainingVotes(999);
+      return;
+    }
+    
+    const maxVotes = votingConfig.tierLimits?.[userTier] || 1;
+    const today = new Date().toDateString();
+    
+    const votesToday = allVotes.filter((vote: any) => {
+      const isUserVote = vote.userId === user.id;
+      const isToday = new Date(vote.timestamp).toDateString() === today;
+      console.log('Checking vote:', { 
+        voteUserId: vote.userId, 
+        currentUserId: user.id,
+        isUserVote,
+        voteDate: new Date(vote.timestamp).toDateString(),
+        today,
+        isToday
+      });
+      return isUserVote && isToday;
+    }).length;
+    
+    const remaining = Math.max(0, maxVotes - votesToday);
+    console.log('Vote calculation:', { maxVotes, votesToday, remaining, tierLimits: votingConfig.tierLimits });
+    setRemainingVotes(remaining);
   };
 
   const checkUserOrder = async (productId: number) => {
@@ -478,9 +632,20 @@ export default function ProductPage() {
   };
 
   const handleVote = async () => {
-    if (!isAuthenticated || !user || !product || hasVoted) return;
+    console.log('Vote button clicked');
+    console.log('Auth status:', { isAuthenticated, user: user?.id, product: product?.id, hasVoted });
+    
+    if (!isAuthenticated || !user || !product || hasVoted) {
+      console.log('Vote prevented - conditions not met');
+      if (!isAuthenticated) {
+        setVoteToast({ show: true, message: 'Please login to vote', type: 'error' });
+        setTimeout(() => setVoteToast({ show: false, message: '', type: 'error' }), 3000);
+      }
+      return;
+    }
 
     try {
+      console.log('Submitting vote for product:', product.id);
       const response = await fetch("/api/votes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -493,22 +658,152 @@ export default function ProductPage() {
         }),
       });
 
+      console.log('Vote response status:', response.status);
+      const responseData = await response.json();
+      console.log('Vote response data:', responseData);
+
       if (response.ok) {
         setHasVoted(true);
         setShowVotePrompt(true); // Show chat unlock prompt
-        // Refresh product data to get updated vote count
+        
+        // Show success toast
+        setVoteToast({ show: true, message: 'Vote cast! 🎉', type: 'success' });
+        setTimeout(() => setVoteToast({ show: false, message: '', type: 'success' }), 3000);
+        
+        // Broadcast vote to other tabs/pages
+        try {
+          const channel = new BroadcastChannel('vote-updates');
+          console.log('📡 Broadcasting vote to other pages:', { productId: product.id, userId: user.id });
+          channel.postMessage({ type: 'VOTE_CAST', productId: product.id, userId: user.id });
+          channel.close();
+          console.log('✅ Broadcast sent successfully');
+        } catch (e) {
+          console.log('❌ BroadcastChannel not supported:', e);
+        }
+        
+        // Refresh votes and product data
+        const votesRes = await fetch('/api/votes');
+        if (votesRes.ok) {
+          const votesData = await votesRes.json();
+          const newVotes = votesData.votes || votesData || [];
+          setAllVotes(newVotes);
+          
+          // Immediately recalculate remaining votes with new data
+          if (user && votingConfig) {
+            const userTier = (user as any).tier || 'Initiate';
+            if (userTier !== 'Admin') {
+              const maxVotes = votingConfig.tierLimits?.[userTier] || 1;
+              const today = new Date().toDateString();
+              const votesToday = newVotes.filter((vote: any) => 
+                vote.userId === user.id && 
+                new Date(vote.timestamp).toDateString() === today
+              ).length;
+              setRemainingVotes(Math.max(0, maxVotes - votesToday));
+              console.log('Updated remaining votes:', Math.max(0, maxVotes - votesToday));
+            }
+          }
+        }
+        
         fetchProduct();
         // Auto-hide prompt after 8 seconds
         setTimeout(() => setShowVotePrompt(false), 8000);
+      } else {
+        console.error('Vote failed:', responseData);
+        setVoteToast({ show: true, message: responseData.error || 'Failed to vote', type: 'error' });
+        setTimeout(() => setVoteToast({ show: false, message: '', type: 'error' }), 3000);
       }
     } catch (error) {
       console.error("Failed to vote:", error);
+      setVoteToast({ show: true, message: 'Failed to vote - network error', type: 'error' });
+      setTimeout(() => setVoteToast({ show: false, message: '', type: 'error' }), 3000);
     }
   };
 
-  const toggleWishlist = () => {
-    setIsWishlist(!isWishlist);
-    // TODO: Implement wishlist API
+  const toggleWishlist = async () => {
+    if (!isAuthenticated || !user || !product) {
+      // Show login prompt
+      alert('Please login to add items to your wishlist');
+      return;
+    }
+
+    try {
+      if (isWishlist) {
+        // Remove from wishlist
+        const response = await fetch('/api/account/wishlist', {
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Wishlist fetch error:', response.status, errorText);
+          setWishlistToast({ show: true, message: 'Failed to load wishlist', type: 'removed' });
+          setTimeout(() => setWishlistToast({ show: false, message: '', type: 'removed' }), 3000);
+          return;
+        }
+        
+        const result = await response.json();
+        const wishlistItem = result.data?.find((item: any) => item.productId === product.id);
+        
+        if (wishlistItem) {
+          const deleteResponse = await fetch(`/api/account/wishlist?itemId=${wishlistItem.id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          });
+          
+          if (deleteResponse.ok) {
+            setIsWishlist(false);
+            setWishlistToast({ show: true, message: 'Removed from wishlist', type: 'removed' });
+            setTimeout(() => setWishlistToast({ show: false, message: '', type: 'removed' }), 3000);
+          } else {
+            const errorText = await deleteResponse.text();
+            console.error('Delete error:', deleteResponse.status, errorText);
+            setWishlistToast({ show: true, message: 'Failed to remove', type: 'removed' });
+            setTimeout(() => setWishlistToast({ show: false, message: '', type: 'removed' }), 3000);
+          }
+        }
+      } else {
+        // Add to wishlist
+        console.log('Adding to wishlist:', {
+          productId: product.id,
+          productName: product.name,
+          isAuthenticated,
+          userId: user?.id
+        });
+        
+        const response = await fetch('/api/account/wishlist', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            productId: product.id,
+            productName: product.name,
+            productImage: product.image || product.images?.[0],
+            productPrice: product.price,
+            productSlug: product.slug,
+            productCategory: product.category
+          })
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (response.ok) {
+          setIsWishlist(true);
+          setWishlistToast({ show: true, message: 'Added to wishlist!', type: 'added' });
+          setTimeout(() => setWishlistToast({ show: false, message: '', type: 'added' }), 3000);
+        } else {
+          const errorText = await response.text();
+          console.error('Add to wishlist error:', response.status, errorText);
+          setWishlistToast({ show: true, message: 'Failed to add', type: 'added' });
+          setTimeout(() => setWishlistToast({ show: false, message: '', type: 'added' }), 3000);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to update wishlist:", error);
+      setWishlistToast({ show: true, message: 'An error occurred', type: 'added' });
+      setTimeout(() => setWishlistToast({ show: false, message: '', type: 'added' }), 3000);
+    }
   };
 
   const handleShare = async () => {
@@ -837,28 +1132,75 @@ export default function ProductPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-2xl animate-pulse"></div>
           <button
             onClick={handleVote}
-            disabled={!isAuthenticated || hasVoted}
+            disabled={!isAuthenticated || hasVoted || remainingVotes === 0}
             className={`relative w-full py-6 px-8 rounded-2xl font-black text-xl transition-all duration-300 flex items-center justify-center space-x-3 ${
               hasVoted
                 ? "bg-green-600 text-white shadow-lg shadow-green-500/50 cursor-not-allowed"
                 : !isAuthenticated
+                ? "bg-zinc-700 text-zinc-400 cursor-not-allowed"
+                : remainingVotes === 0
                 ? "bg-zinc-700 text-zinc-400 cursor-not-allowed"
                 : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-2xl shadow-blue-500/50 hover:scale-105 hover:shadow-blue-500/70"
             }`}
           >
             <Vote className="w-8 h-8" />
             <span>
-              {hasVoted ? "✓ VOTE CAST!" : !isAuthenticated ? "LOGIN TO VOTE" : "VOTE FOR THIS PRODUCT"}
+              {hasVoted ? "✓ VOTE CAST!" : !isAuthenticated ? "LOGIN TO VOTE" : remainingVotes === 0 ? "NO VOTES LEFT" : "VOTE FOR THIS PRODUCT"}
             </span>
           </button>
+          
+          {/* Vote count indicator */}
+          {isAuthenticated && !hasVoted && remainingVotes > 0 && (
+            <div className="absolute -top-2 -right-2 bg-yellow-500 text-black text-xs font-bold rounded-full w-8 h-8 flex items-center justify-center shadow-lg">
+              {remainingVotes}
+            </div>
+          )}
+          
+          {/* Vote Toast Notification */}
+          {voteToast.show && (
+            <div className={`absolute -top-16 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg z-50 whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-300 ${
+              voteToast.type === 'success' 
+                ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' 
+                : 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+            }`}>
+              <div className="flex items-center gap-2">
+                <Vote className="w-4 h-4" />
+                <span className="text-sm font-semibold">{voteToast.message}</span>
+              </div>
+              {/* Arrow pointing down */}
+              <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent ${
+                voteToast.type === 'success' ? 'border-t-purple-500' : 'border-t-orange-500'
+              }`}></div>
+            </div>
+          )}
         </div>
 
         {/* Social Proof */}
         <div className="flex items-center justify-between p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl">
-          <button onClick={toggleWishlist} className="flex items-center space-x-2 text-zinc-400 hover:text-red-400 transition">
-            <Heart className={`w-5 h-5 ${isWishlist ? 'fill-current text-red-400' : ''}`} />
-            <span className="text-sm">Save</span>
-          </button>
+          <div className="relative">
+            <button onClick={toggleWishlist} className="flex items-center space-x-2 text-zinc-400 hover:text-red-400 transition">
+              <Heart className={`w-5 h-5 ${isWishlist ? 'fill-current text-red-400' : ''}`} />
+              <span className="text-sm">Save</span>
+            </button>
+            
+            {/* Wishlist Toast Notification */}
+            {wishlistToast.show && (
+              <div className={`absolute -top-16 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg z-50 whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-300 ${
+                wishlistToast.type === 'added' 
+                  ? 'bg-gradient-to-r from-pink-500 to-red-500 text-white' 
+                  : 'bg-gradient-to-r from-zinc-700 to-zinc-600 text-white'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <Heart className={`w-4 h-4 ${wishlistToast.type === 'added' ? 'fill-current' : ''}`} />
+                  <span className="text-sm font-semibold">{wishlistToast.message}</span>
+                </div>
+                {/* Arrow pointing down */}
+                <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent ${
+                  wishlistToast.type === 'added' ? 'border-t-red-500' : 'border-t-zinc-600'
+                }`}></div>
+              </div>
+            )}
+          </div>
           <button onClick={handleShare} className="flex items-center space-x-2 text-zinc-400 hover:text-blue-400 transition">
             <Share2 className="w-5 h-5" />
             <span className="text-sm">Share</span>

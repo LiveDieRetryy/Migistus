@@ -12,7 +12,7 @@ import CreatePost from '@/components/social/CreatePost';
 import PostCard from '@/components/social/PostCard';
 import { SocialPostsStorage, SocialPost } from '@/utils/socialPostsStorage';
 import OnlineStatus from '@/components/OnlineStatus';
-import { Shield, Award, Star, TrendingUp, Users as UsersIcon, Heart, MessageCircle, Share2, Zap, Eye, Target, Clock, Activity, ChevronDown } from "lucide-react";
+import { Shield, Award, Star, TrendingUp, Users as UsersIcon, Heart, MessageCircle, Share2, Zap, Eye, Target, Clock, Activity, ChevronDown, ExternalLink } from "lucide-react";
 
 interface UserProfile {
   id: number;
@@ -216,8 +216,10 @@ export default function UserProfilePage() {
     isOpen: false,
     type: 'followers'
   });  const [posts, setPosts] = useState<SocialPost[]>([]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'posts' | 'activity'>('posts');
+  const [activeTab, setActiveTab] = useState<'overview' | 'posts' | 'activity' | 'wishlist'>('posts');
   const [mounted, setMounted] = useState(false);
+  const [wishlist, setWishlist] = useState<any[]>([]);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   const handlePostCreated = (newPost: SocialPost) => {
     setPosts(prevPosts => [newPost, ...prevPosts]);
@@ -243,6 +245,33 @@ export default function UserProfilePage() {
   }, []);
 
   // Real-time update interval
+  // Load wishlist for own profile
+  useEffect(() => {
+    if (isOwnProfile && profile) {
+      loadWishlist();
+    }
+  }, [isOwnProfile, profile]);
+
+  const loadWishlist = async () => {
+    try {
+      setWishlistLoading(true);
+      const response = await fetch('/api/account/wishlist', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          setWishlist(result.data);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load wishlist:', error);
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!profile) return;
     
@@ -869,6 +898,19 @@ export default function UserProfilePage() {
                     <Target className="w-5 h-5" />
                     Overview
                   </button>
+                  {isOwnProfile && (
+                    <button
+                      onClick={() => setActiveTab('wishlist')}
+                      className={`flex-1 px-6 py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
+                        activeTab === 'wishlist'
+                          ? 'bg-gradient-to-r from-pink-400 to-purple-500 text-white shadow-lg shadow-pink-500/30 scale-105'
+                          : 'text-gray-400 hover:text-pink-400 hover:bg-zinc-800/70'
+                      }`}
+                    >
+                      <Heart className="w-5 h-5" />
+                      Wishlist ({wishlist.length})
+                    </button>
+                  )}
                   <button
                     onClick={() => setActiveTab('activity')}
                     className={`flex-1 px-6 py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
@@ -1118,6 +1160,116 @@ export default function UserProfilePage() {
                     </div>
                   </div>
                 </>
+              )}
+
+              {/* Wishlist Tab (Pinterest-style) - Only for Own Profile */}
+              {activeTab === 'wishlist' && isOwnProfile && (
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-br from-pink-900/20 via-purple-900/20 to-zinc-900/50 border-2 border-pink-500/30 rounded-2xl p-6 shadow-lg">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-2xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 text-transparent bg-clip-text flex items-center gap-3">
+                        <Heart className="w-8 h-8 text-pink-500 fill-pink-500" />
+                        My Wishlist Board
+                      </h3>
+                      <Link
+                        href="/account/wishlist"
+                        className="text-sm text-pink-400 hover:text-pink-300 flex items-center gap-2 font-medium"
+                      >
+                        View Full Board
+                        <ExternalLink className="w-4 h-4" />
+                      </Link>
+                    </div>
+                    
+                    {wishlistLoading ? (
+                      <div className="text-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-400 mx-auto mb-4"></div>
+                        <p className="text-zinc-400">Loading your wishlist...</p>
+                      </div>
+                    ) : wishlist.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Heart className="w-16 h-16 text-zinc-700 mx-auto mb-4" />
+                        <h4 className="text-xl font-semibold text-white mb-2">Your wishlist is empty</h4>
+                        <p className="text-zinc-400 mb-6">Start saving products you love!</p>
+                        <Link
+                          href="/voting"
+                          className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold px-6 py-3 rounded-lg transition-all"
+                        >
+                          <Star className="w-4 h-4" />
+                          Discover Products
+                        </Link>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Pinterest-style Masonry Grid */}
+                        <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+                          {wishlist.slice(0, 9).map((item) => (
+                            <div
+                              key={item.id}
+                              className="group relative bg-zinc-800/50 border border-zinc-700 rounded-xl overflow-hidden hover:border-pink-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-pink-500/20 break-inside-avoid mb-4"
+                            >
+                              {/* Product Image */}
+                              <Link href={`/products/${item.productSlug || item.productId}`}>
+                                <div className="relative aspect-[3/4] overflow-hidden bg-zinc-900">
+                                  {item.productImage ? (
+                                    <Image
+                                      src={item.productImage}
+                                      alt={item.productName}
+                                      fill
+                                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <Star className="w-12 h-12 text-zinc-700" />
+                                    </div>
+                                  )}
+                                  
+                                  {/* Hover Overlay */}
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                    <div className="w-full">
+                                      {item.productPrice && (
+                                        <p className="text-lg font-bold text-yellow-400 mb-2">
+                                          ${item.productPrice.toFixed(2)}
+                                        </p>
+                                      )}
+                                      <div className="flex gap-2">
+                                        <div className="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white text-center py-2 rounded-lg font-semibold text-sm">
+                                          View Product
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </Link>
+                              
+                              {/* Product Info */}
+                              <div className="p-3">
+                                <h4 className="font-semibold text-white text-sm line-clamp-2 mb-1">
+                                  {item.productName}
+                                </h4>
+                                <p className="text-xs text-zinc-500">
+                                  Added {new Date(item.addedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* View All Button if more than 9 items */}
+                        {wishlist.length > 9 && (
+                          <div className="text-center mt-6 pt-6 border-t border-zinc-800">
+                            <Link
+                              href="/account/wishlist"
+                              className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold px-8 py-3 rounded-lg transition-all shadow-lg hover:shadow-pink-500/50"
+                            >
+                              <Heart className="w-5 h-5" />
+                              View All {wishlist.length} Products
+                            </Link>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
 

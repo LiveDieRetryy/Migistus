@@ -1,1 +1,58 @@
-{"votes":[]}
+{
+  "votes": [
+    {
+      "id": 1,
+      "productId": 1,
+      "userId": 1765094496017,
+      "userName": "Trvboy",
+      "tier": "Initiate",
+      "value": 1,
+      "timestamp": "2025-12-09T04:01:26.743Z"
+    },
+    {
+      "id": 2,
+      "productId": 2,
+      "userId": 1765094496017,
+      "userName": "Trvboy",
+      "tier": "Initiate",
+      "value": 1,
+      "timestamp": "2025-12-09T04:18:26.301Z"
+    },
+    {
+      "id": 3,
+      "productId": 3,
+      "userId": 1765094496017,
+      "userName": "Trvboy",
+      "tier": "Initiate",
+      "value": 1,
+      "timestamp": "2025-12-09T04:19:39.751Z"
+    },
+    {
+      "id": 4,
+      "productId": 4,
+      "userId": 1765094496017,
+      "userName": "Trvboy",
+      "tier": "Initiate",
+      "value": 1,
+      "timestamp": "2025-12-09T04:21:44.716Z"
+    },
+    {
+      "id": 5,
+      "productId": 1,
+      "userId": 19619216536,
+      "userName": "TravisHelmick",
+      "tier": "Initiate",
+      "value": 1,
+      "timestamp": "2025-12-09T04:23:39.331Z"
+    },
+    {
+      "id": 6,
+      "productId": 2,
+      "userId": 19619216536,
+      "userName": "TravisHelmick",
+      "tier": "Initiate",
+      "value": 1,
+      "timestamp": "2025-12-09T04:26:19.617Z"
+    }
+  ]
+}

@@ -773,9 +773,10 @@ export default function MainNavbar() {
 
       {/* Mobile Menu */}
       <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-        isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+        isMenuOpen ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0"
       }`}>
-        <div className="bg-zinc-900/95 backdrop-blur-lg border-t border-yellow-400/20">            <div className="px-4 py-4 space-y-2">
+        <div className="bg-zinc-900/95 backdrop-blur-lg border-t border-yellow-400/20">
+          <div className="px-4 py-4 space-y-2 overflow-y-auto max-h-[80vh]">
             {/* Live Drops Section */}
             <div className="mb-3">
               <div className="flex items-center gap-2 px-4 py-2 text-yellow-400 font-semibold">
@@ -816,6 +817,11 @@ export default function MainNavbar() {
 
             {/* Other Navigation Items */}
             {navigation.map((item) => {
+              // Skip the Live Drops dropdown placeholder (already rendered above)
+              if (item.isDropdown) {
+                return null;
+              }
+              
               if (typeof item.href === 'string' && item.icon) {
                 return (
                   <Link
