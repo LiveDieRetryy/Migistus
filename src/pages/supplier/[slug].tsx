@@ -635,7 +635,7 @@ export default function SupplierProfilePage() {
         {/* Profile Header */}
         <div className="relative">
           {/* Banner Image - Taller */}
-          <div className="h-80 relative overflow-hidden bg-gradient-to-br from-zinc-950 via-zinc-900 to-black">
+          <div className="h-48 sm:h-64 lg:h-80 relative overflow-hidden bg-gradient-to-br from-zinc-950 via-zinc-900 to-black">
             {supplier.bannerImage ? (
               <>
                 <img
@@ -681,34 +681,34 @@ export default function SupplierProfilePage() {
             )}
             
             {/* Back Button - Top Left */}
-            <div className="absolute top-6 left-6 z-10">
+            <div className="absolute top-3 left-3 sm:top-6 sm:left-6 z-10">
               {isOwnProfile ? (
-                <Link href="/supplier-dashboard" className="flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-sm border border-yellow-500/30 rounded-full text-yellow-400 hover:text-yellow-300 transition">
-                  <ArrowLeft className="w-4 h-4" />
+                <Link href="/supplier-dashboard" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-black/50 backdrop-blur-sm border border-yellow-500/30 rounded-full text-yellow-400 hover:text-yellow-300 transition text-sm sm:text-base">
+                  <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="font-semibold">Dashboard</span>
                 </Link>
               ) : (
-                <Link href="/community?tab=suppliers" className="flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-sm border border-yellow-500/30 rounded-full text-yellow-400 hover:text-yellow-300 transition">
-                  <ArrowLeft className="w-4 h-4" />
+                <Link href="/community?tab=suppliers" className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-black/50 backdrop-blur-sm border border-yellow-500/30 rounded-full text-yellow-400 hover:text-yellow-300 transition text-sm sm:text-base">
+                  <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="font-semibold">Back</span>
                 </Link>
               )}
             </div>
             
             {/* Verified badge - Top Right */}
-            <div className="absolute top-6 right-6 flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-sm border border-yellow-500/30 rounded-full z-10">
-              <Shield className="w-5 h-5 text-yellow-400" />
-              <span className="text-white font-semibold">VERIFIED SUPPLIER</span>
+            <div className="absolute top-3 right-3 sm:top-6 sm:right-6 flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-black/50 backdrop-blur-sm border border-yellow-500/30 rounded-full z-10">
+              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
+              <span className="text-white font-semibold text-xs sm:text-sm">VERIFIED</span>
             </div>
           </div>
 
           {/* Profile Info Overlay - Positioned Below Banner */}
-          <div className="relative px-4 sm:px-6 lg:px-8 -mt-16">
+          <div className="relative px-3 sm:px-4 lg:px-8 -mt-12 sm:-mt-16">
             <div className="max-w-7xl mx-auto">
-              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-6 relative z-10">
+              <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6 relative z-10">
                 {/* Avatar with glow effect */}
                 <div className="flex-shrink-0">
-                  <div className="w-36 h-36 rounded-2xl overflow-hidden border-4 border-zinc-900 bg-zinc-800 shadow-2xl ring-4 ring-yellow-500/20">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-36 lg:h-36 rounded-2xl overflow-hidden border-4 border-zinc-900 bg-zinc-800 shadow-2xl ring-4 ring-yellow-500/20">
                     <img
                       src={getSupplierAvatar(supplier.logo)}
                       alt={`${supplier.name} logo`}
@@ -718,29 +718,29 @@ export default function SupplierProfilePage() {
                 </div>
 
                 {/* Basic Info - Modern Layout */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-                    <div className="bg-zinc-900/60 backdrop-blur-md rounded-xl p-6 flex-1 border border-zinc-800">
-                      <div className="flex items-center gap-3 mb-3">
-                        <h1 className="text-4xl font-bold text-white">{supplier.name}</h1>
+                <div className="flex-1 min-w-0 w-full">
+                  <div className="flex flex-col gap-3 sm:gap-4">
+                    <div className="bg-zinc-900/60 backdrop-blur-md rounded-xl p-4 sm:p-6 flex-1 border border-zinc-800">
+                      <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white text-center sm:text-left">{supplier.name}</h1>
                         {supplier.verified && (
-                          <div className="flex items-center gap-1 px-3 py-1 bg-yellow-500/10 border border-yellow-500/30 rounded-full">
-                            <Award className="w-4 h-4 text-yellow-400" />
-                            <span className="text-xs font-semibold text-yellow-400">VERIFIED</span>
+                          <div className="flex items-center gap-1 px-2 sm:px-3 py-0.5 sm:py-1 bg-yellow-500/10 border border-yellow-500/30 rounded-full">
+                            <Award className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400" />
+                            <span className="text-[10px] sm:text-xs font-semibold text-yellow-400">VERIFIED</span>
                           </div>
                         )}
                       </div>
-                      <p className="text-zinc-300 text-lg mb-4">{supplier.shortBio}</p>
-                      <div className="flex flex-wrap items-center gap-6 text-sm text-zinc-400">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-yellow-400" />
+                      <p className="text-zinc-300 text-sm sm:text-base lg:text-lg mb-3 sm:mb-4 text-center sm:text-left">{supplier.shortBio}</p>
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-6 text-xs sm:text-sm text-zinc-400">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400" />
                           <span>{supplier.location.displayLocation}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-yellow-400" />
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400" />
                           <span>Joined {supplier.memberSince}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
                           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                           <span className="text-green-400">{supplier.lastActive}</span>
                         </div>
@@ -748,28 +748,28 @@ export default function SupplierProfilePage() {
                     </div>
 
                     {/* Action Buttons - Modern Style */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full">
                       {!isOwnProfile && (
                         <>
                           <button
                             onClick={handleFollow}
-                            className={`px-8 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg ${
+                            className={`px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base ${
                               isFollowing
                                 ? 'bg-zinc-800 hover:bg-zinc-700 text-white border-2 border-zinc-700'
                                 : 'bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black shadow-yellow-500/50'
                             }`}
                           >
-                            <Users className="w-5 h-5" />
+                            <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                             {isFollowing ? 'Following' : 'Follow'}
                           </button>
-                          <button className="px-4 py-3 bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700 text-white rounded-xl transition-all duration-300 shadow-lg">
-                            <MessageCircle className="w-5 h-5" />
+                          <button className="px-4 py-2.5 sm:py-3 bg-zinc-800/80 hover:bg-zinc-700 border border-zinc-700 text-white rounded-xl transition-all duration-300 shadow-lg flex items-center justify-center">
+                            <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                           </button>
                         </>
                       )}
                       {isOwnProfile && (
-                        <div className="px-6 py-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
-                          <span className="text-yellow-400 font-medium">Your Profile</span>
+                        <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-center">
+                          <span className="text-yellow-400 font-medium text-sm sm:text-base">Your Profile</span>
                         </div>
                       )}
                     </div>
@@ -778,48 +778,48 @@ export default function SupplierProfilePage() {
               </div>
 
               {/* Stats Row - Modern Cards with Hover Effects */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mt-8 mb-8">
-                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
-                  <div className="flex items-center justify-center mb-2">
-                    <Users className="w-5 h-5 text-yellow-400" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mt-6 sm:mt-8 mb-6 sm:mb-8">
+                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 sm:p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
+                  <div className="flex items-center justify-center mb-1 sm:mb-2">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
                   </div>
-                  <div className="text-3xl font-bold text-yellow-400 mb-1">{supplier.stats.followers.toLocaleString()}</div>
-                  <div className="text-xs text-zinc-400 font-medium">Followers</div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-0.5 sm:mb-1">{supplier.stats.followers.toLocaleString()}</div>
+                  <div className="text-[10px] sm:text-xs text-zinc-400 font-medium">Followers</div>
                 </div>
-                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
-                  <div className="flex items-center justify-center mb-2">
-                    <Package className="w-5 h-5 text-yellow-400" />
+                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 sm:p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
+                  <div className="flex items-center justify-center mb-1 sm:mb-2">
+                    <Package className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
                   </div>
-                  <div className="text-3xl font-bold text-yellow-400 mb-1">{supplier.stats.totalProducts}</div>
-                  <div className="text-xs text-zinc-400 font-medium">Products</div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-0.5 sm:mb-1">{supplier.stats.totalProducts}</div>
+                  <div className="text-[10px] sm:text-xs text-zinc-400 font-medium">Products</div>
                 </div>
-                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
-                  <div className="flex items-center justify-center mb-2">
-                    <Star className="w-5 h-5 text-yellow-400" />
+                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 sm:p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
+                  <div className="flex items-center justify-center mb-1 sm:mb-2">
+                    <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
                   </div>
-                  <div className="text-3xl font-bold text-yellow-400 mb-1">{supplier.stats.avgRating.toFixed(1)}</div>
-                  <div className="text-xs text-zinc-400 font-medium">Rating</div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-0.5 sm:mb-1">{supplier.stats.avgRating.toFixed(1)}</div>
+                  <div className="text-[10px] sm:text-xs text-zinc-400 font-medium">Rating</div>
                 </div>
-                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
-                  <div className="flex items-center justify-center mb-2">
-                    <ShoppingBag className="w-5 h-5 text-yellow-400" />
+                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 sm:p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
+                  <div className="flex items-center justify-center mb-1 sm:mb-2">
+                    <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
                   </div>
-                  <div className="text-3xl font-bold text-yellow-400 mb-1">{supplier.stats.totalSales.toLocaleString()}</div>
-                  <div className="text-xs text-zinc-400 font-medium">Sales</div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-0.5 sm:mb-1">{supplier.stats.totalSales.toLocaleString()}</div>
+                  <div className="text-[10px] sm:text-xs text-zinc-400 font-medium">Sales</div>
                 </div>
-                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
-                  <div className="flex items-center justify-center mb-2">
-                    <Heart className="w-5 h-5 text-yellow-400" />
+                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 sm:p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
+                  <div className="flex items-center justify-center mb-1 sm:mb-2">
+                    <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
                   </div>
-                  <div className="text-3xl font-bold text-yellow-400 mb-1">{supplier.socialMetrics.posts}</div>
-                  <div className="text-xs text-zinc-400 font-medium">Posts</div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-0.5 sm:mb-1">{supplier.socialMetrics.posts}</div>
+                  <div className="text-[10px] sm:text-xs text-zinc-400 font-medium">Posts</div>
                 </div>
-                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
-                  <div className="flex items-center justify-center mb-2">
-                    <TrendingUp className="w-5 h-5 text-yellow-400" />
+                <div className="group bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-xl p-4 sm:p-6 text-center hover:border-yellow-500/50 transition-all duration-300 cursor-pointer hover:scale-105">
+                  <div className="flex items-center justify-center mb-1 sm:mb-2">
+                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
                   </div>
-                  <div className="text-3xl font-bold text-yellow-400 mb-1">{supplier.socialMetrics.engagement}%</div>
-                  <div className="text-xs text-zinc-400 font-medium">Engagement</div>
+                  <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-0.5 sm:mb-1">{supplier.socialMetrics.engagement}%</div>
+                  <div className="text-[10px] sm:text-xs text-zinc-400 font-medium">Engagement</div>
                 </div>
               </div>
             </div>
@@ -828,20 +828,20 @@ export default function SupplierProfilePage() {
 
         {/* Tab Navigation - Modern Style */}
         <div className="sticky top-0 z-30 bg-zinc-950/95 backdrop-blur-lg border-b border-zinc-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav className="flex space-x-1">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+            <nav className="flex space-x-0.5 sm:space-x-1 overflow-x-auto">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`py-4 px-6 font-semibold text-sm transition-all duration-300 relative ${
+                  className={`py-3 sm:py-4 px-3 sm:px-6 font-semibold text-xs sm:text-sm transition-all duration-300 relative whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'text-yellow-400'
                       : 'text-zinc-400 hover:text-zinc-300'
                   }`}
                 >
-                  <span className="flex items-center gap-2">
-                    <span>{tab.icon}</span>
+                  <span className="flex items-center gap-1.5 sm:gap-2">
+                    <span className="text-sm sm:text-base">{tab.icon}</span>
                     <span>{tab.name}</span>
                   </span>
                   {activeTab === tab.id && (
@@ -854,40 +854,40 @@ export default function SupplierProfilePage() {
         </div>
 
         {/* Tab Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
           {/* Overview Tab */}
           {activeTab === 'overview' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {/* Main Content */}
-              <div className="lg:col-span-2 space-y-8">
+              <div className="lg:col-span-2 space-y-4 sm:space-y-6 lg:space-y-8">
                 {/* Recent Activity */}
-                <div className="bg-zinc-800/30 rounded-lg p-6">
-                  <h3 className="text-xl font-semibold text-white mb-6">Recent Activity</h3>
-                  <div className="space-y-6">
+                <div className="bg-zinc-800/30 rounded-lg p-4 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6">Recent Activity</h3>
+                  <div className="space-y-4 sm:space-y-6">
                     {supplier.recentActivity.map((activity) => (
-                      <div key={activity.id} className="border-b border-zinc-700 last:border-b-0 pb-6 last:pb-0">
-                        <div className="flex gap-4">
+                      <div key={activity.id} className="border-b border-zinc-700 last:border-b-0 pb-4 sm:pb-6 last:pb-0">
+                        <div className="flex gap-3 sm:gap-4">
                           {activity.image && (
-                            <div className="w-16 h-16 bg-zinc-700 rounded-lg overflow-hidden flex-shrink-0">
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-zinc-700 rounded-lg overflow-hidden flex-shrink-0">
                               <img src={activity.image} alt="" className="w-full h-full object-cover" />
                             </div>
                           )}
-                          <div className="flex-1">
-                            <h4 className="font-medium text-white mb-2">{activity.title}</h4>
-                            <p className="text-zinc-400 mb-3">{activity.description}</p>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-white mb-1 sm:mb-2 text-sm sm:text-base">{activity.title}</h4>
+                            <p className="text-zinc-400 mb-2 sm:mb-3 text-xs sm:text-sm">{activity.description}</p>
                             <div className="flex items-center justify-between">
-                              <span className="text-sm text-zinc-500">{activity.timestamp}</span>
-                              <div className="flex items-center gap-4 text-sm text-zinc-400">
+                              <span className="text-xs sm:text-sm text-zinc-500">{activity.timestamp}</span>
+                              <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-zinc-400">
                                 <div className="flex items-center gap-1">
-                                  <Heart className="w-4 h-4" />
+                                  <Heart className="w-3 h-3 sm:w-4 sm:h-4" />
                                   {activity.likes}
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  <MessageCircle className="w-4 h-4" />
+                                  <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                                   {activity.comments}
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  <Share2 className="w-4 h-4" />
+                                  <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
                                   {activity.shares}
                                 </div>
                               </div>
@@ -900,18 +900,18 @@ export default function SupplierProfilePage() {
                 </div>
 
                 {/* Featured Products */}
-                <div className="bg-zinc-800/30 rounded-lg p-6">
-                  <h3 className="text-xl font-semibold text-white mb-6">Featured Products</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="bg-zinc-800/30 rounded-lg p-4 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6">Featured Products</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     {supplier.featuredProducts.map((product) => (
                       <div key={product.id} className="bg-zinc-800 rounded-lg p-4">
                         <div className="aspect-square bg-zinc-700 rounded-lg mb-4 overflow-hidden">
                           <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                         </div>
-                        <h4 className="font-medium text-white mb-2">{product.name}</h4>
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg font-bold text-yellow-400">${product.price}</span>
+                        <h4 className="font-medium text-white mb-2 text-sm sm:text-base">{product.name}</h4>
+                        <div className="flex items-center justify-between mb-2 sm:mb-3">
+                          <div className="flex items-center gap-1.5 sm:gap-2">
+                            <span className="text-base sm:text-lg font-bold text-yellow-400">${product.price}</span>
                             {product.originalPrice && (
                               <span className="text-sm text-zinc-400 line-through">${product.originalPrice}</span>
                             )}
@@ -922,7 +922,7 @@ export default function SupplierProfilePage() {
                             {product.stage}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between text-sm text-zinc-400">
+                        <div className="flex items-center justify-between text-xs sm:text-sm text-zinc-400">
                           <span>{product.votes} votes</span>
                           <span>{product.pledges} pledges</span>
                         </div>
@@ -933,24 +933,24 @@ export default function SupplierProfilePage() {
               </div>
 
               {/* Sidebar */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Contact Info */}
-                <div className="bg-zinc-800/30 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">Contact Information</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-zinc-300">
-                      <Globe className="w-4 h-4 text-zinc-400" />
-                      <a href={`mailto:${supplier.contactInfo.email}`} className="hover:text-yellow-400 transition">
+                <div className="bg-zinc-800/30 rounded-lg p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Contact Information</h3>
+                  <div className="space-y-2 sm:space-y-3">
+                    <div className="flex items-center gap-2 sm:gap-3 text-zinc-300 text-sm sm:text-base">
+                      <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-zinc-400 flex-shrink-0" />
+                      <a href={`mailto:${supplier.contactInfo.email}`} className="hover:text-yellow-400 transition break-all">
                         {supplier.contactInfo.email}
                       </a>
                     </div>
-                    <div className="flex items-center gap-3 text-zinc-300">
-                      <Phone className="w-4 h-4 text-zinc-400" />
+                    <div className="flex items-center gap-2 sm:gap-3 text-zinc-300 text-sm sm:text-base">
+                      <Phone className="w-3 h-3 sm:w-4 sm:h-4 text-zinc-400 flex-shrink-0" />
                       <span>{supplier.contactInfo.phone}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-zinc-300">
-                      <Globe className="w-4 h-4 text-zinc-400" />
-                      <a href={supplier.contactInfo.website} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition">
+                    <div className="flex items-center gap-2 sm:gap-3 text-zinc-300 text-sm sm:text-base">
+                      <Globe className="w-3 h-3 sm:w-4 sm:h-4 text-zinc-400 flex-shrink-0" />
+                      <a href={supplier.contactInfo.website} target="_blank" rel="noopener noreferrer" className="hover:text-yellow-400 transition break-all">
                         {supplier.contactInfo.website}
                       </a>
                     </div>
@@ -958,9 +958,9 @@ export default function SupplierProfilePage() {
                 </div>
 
                 {/* Social Media */}
-                <div className="bg-zinc-800/30 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">Social Media</h3>
-                  <div className="space-y-3">
+                <div className="bg-zinc-800/30 rounded-lg p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Social Media</h3>
+                  <div className="space-y-2 sm:space-y-3">
                     {supplier.socialMedia.twitter && (
                       <div className="flex items-center gap-3 text-zinc-300">
                         <span className="text-blue-400">𝕏</span>
