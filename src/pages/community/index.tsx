@@ -1676,14 +1676,14 @@ export default function CommunityPage() {
           {activeTab === 'members' && (
             <div className="space-y-6">
               {/* Welcome Message */}
-              <div className="bg-gradient-to-r from-green-900/20 via-green-800/20 to-emerald-900/20 border border-green-500/30 rounded-2xl p-6 backdrop-blur-sm">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-green-500/10 rounded-xl">
-                    <Users className="w-6 h-6 text-green-400" />
+              <div className="bg-gradient-to-r from-green-900/20 via-green-800/20 to-emerald-900/20 border border-green-500/30 rounded-2xl p-4 sm:p-6 backdrop-blur-sm">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="p-2 sm:p-3 bg-green-500/10 rounded-xl">
+                    <Users className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-green-300 mb-2">Find Your Guild Mates</h3>
-                    <p className="text-zinc-300 text-sm leading-relaxed">
+                    <h3 className="text-base sm:text-lg font-bold text-green-300 mb-1 sm:mb-2">Find Your Guild Mates</h3>
+                    <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed">
                       Search and connect with all MIGISTUS members. Use filters to find people with similar interests 
                       and build your community network.
                     </p>
@@ -1691,14 +1691,14 @@ export default function CommunityPage() {
                 </div>
               </div>
 
-              <div className="bg-zinc-900/50 border border-zinc-700 rounded-2xl p-8">
-                <div className="flex items-center space-x-3 mb-8">
-                  <div className="p-2 bg-green-500/10 rounded-lg">
-                    <Users className="w-6 h-6 text-green-400" />
+              <div className="bg-zinc-900/50 border border-zinc-700 rounded-2xl p-4 sm:p-6 lg:p-8">
+                <div className="flex items-center space-x-2 sm:space-x-3 mb-6 sm:mb-8">
+                  <div className="p-1.5 sm:p-2 bg-green-500/10 rounded-lg">
+                    <Users className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-white">Guild Mates Discovery</h2>
-                    <p className="text-sm text-zinc-400 mt-1">
+                    <h2 className="text-xl sm:text-2xl font-bold text-white">Guild Mates Discovery</h2>
+                    <p className="text-xs sm:text-sm text-zinc-400 mt-0.5 sm:mt-1">
                       Browse and connect with community members ({allMembers.length} member{allMembers.length !== 1 ? 's' : ''} found)
                     </p>
                   </div>
@@ -1766,9 +1766,9 @@ export default function CommunityPage() {
                       })
                       .slice(0, 20) // Show first 20 results
                       .map((member) => (
-                        <div key={member.id} className="group flex items-center justify-between p-5 bg-gradient-to-r from-zinc-800/50 to-zinc-900/50 border border-zinc-700 rounded-2xl hover:border-green-500/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-green-500/10">                          <div className="flex items-center space-x-4">
-                            <div className="relative">
-                              <div className="w-14 h-14 bg-zinc-700 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-zinc-600 group-hover:ring-green-500 transition-all">
+                        <div key={member.id} className="group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 bg-gradient-to-r from-zinc-800/50 to-zinc-900/50 border border-zinc-700 rounded-2xl hover:border-green-500/50 transition-all duration-300 hover:scale-[1.01] sm:hover:scale-[1.02] hover:shadow-lg hover:shadow-green-500/10">                          <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
+                            <div className="relative flex-shrink-0">
+                              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-zinc-700 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-zinc-600 group-hover:ring-green-500 transition-all">
                                 <Image 
                                   src={member.avatar || "/Icons/New Member.png"} 
                                   alt={member.username} 
@@ -1781,25 +1781,25 @@ export default function CommunityPage() {
                                   }}
                                 />
                               </div>
-                              <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-zinc-800 flex items-center justify-center ${
+                              <div className={`absolute -bottom-0.5 sm:-bottom-1 -right-0.5 sm:-right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-zinc-800 flex items-center justify-center ${
                                 member.tier === 'MIGISTUS' ? 'bg-yellow-500' :
                                 member.tier === 'Guild' ? 'bg-purple-500' : 'bg-blue-500'
                               }`}>
-                                <Award className="w-3 h-3 text-white" />
+                                <Award className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
                               </div>
                             </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-bold text-white text-lg group-hover:text-green-400 transition-colors">{member.username}</h3>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 sm:gap-2">
+                                <h3 className="font-bold text-white text-base sm:text-lg group-hover:text-green-400 transition-colors truncate">{member.username}</h3>
                                 <OnlineStatus userId={member.id} size="sm" />
                               </div>
-                              <p className={`text-sm font-medium ${getTierColor(member.tier)}`}>
+                              <p className={`text-xs sm:text-sm font-medium ${getTierColor(member.tier)}`}>
                                 {getTierEmoji(member.tier)} {member.tier}
                               </p>
                               {member.bio && (
-                                <p className="text-sm text-zinc-400 mt-1 max-w-md truncate">{member.bio}</p>
+                                <p className="text-xs sm:text-sm text-zinc-400 mt-1 max-w-md truncate">{member.bio}</p>
                               )}
-                              <div className="flex space-x-4 text-xs text-zinc-400 mt-2">
+                              <div className="flex flex-wrap gap-2 sm:gap-4 text-[10px] sm:text-xs text-zinc-400 mt-1.5 sm:mt-2">
                                 <span className="flex items-center gap-1">
                                   <Users className="w-3 h-3" />
                                   {member.stats?.followers || 0} followers
@@ -1815,14 +1815,14 @@ export default function CommunityPage() {
                               </div>
                             </div>
                           </div>
-                          <div className="flex space-x-2">
+                          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                             <FollowButton 
                               targetUserId={member.id}
                               targetUsername={member.username}
                               size="sm"
                             />                            <Link 
                               href={`/account/profile/${member.username.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
-                              className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-sm rounded-lg font-medium transition-all duration-300"
+                              className="px-3 sm:px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-xs sm:text-sm rounded-lg font-medium transition-all duration-300 text-center"
                             >
                               View Profile
                             </Link>
