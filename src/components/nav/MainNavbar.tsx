@@ -661,13 +661,7 @@ export default function MainNavbar() {
                     }`}
                     style={{ minWidth: 96, minHeight: 96 }}
                   >
-                    <Image
-                      src={item.name === 'Community' ? '/Icons/Chat.png' : `/Icons/${item.name.replace(/\s/g, '').toLowerCase()}.png`}
-                      alt={item.name}
-                      width={64}
-                      height={64}
-                      className="object-contain"
-                    />
+                    {item.icon}
                   </Link>
                 );
               }
