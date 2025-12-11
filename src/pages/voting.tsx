@@ -405,11 +405,11 @@ export default function VotingPage() {
           
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Top Bar - Tier Left, Countdown Right */}
-            <div className="flex items-start justify-between mb-8 flex-wrap gap-4">
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-start justify-between mb-8 gap-4">
               {/* Left: Voter Tier Status */}
               {isAuthenticated && user && user.tier !== "Supplier" ? (
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-3 bg-zinc-800/50 backdrop-blur-sm border border-zinc-700/50 rounded-2xl px-5 py-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                  <div className="flex items-center gap-3 bg-zinc-800/50 backdrop-blur-sm border border-zinc-700/50 rounded-2xl px-4 sm:px-5 py-3 w-full sm:w-auto">
                     {getTierIcon(user.tier)}
                     <div>
                       <div className="text-xs text-zinc-400">Your Tier</div>
@@ -417,7 +417,7 @@ export default function VotingPage() {
                         {user.tier || "Initiate"}
                       </div>
                     </div>
-                    <div className="border-l border-zinc-700 pl-3 ml-3">
+                    <div className="border-l border-zinc-700 pl-3 ml-3 hidden sm:block">
                       {user.tier === "Admin" ? (
                         <>
                           <div className="text-2xl font-black text-yellow-400">∞</div>
@@ -430,7 +430,7 @@ export default function VotingPage() {
                         </>
                       )}
                     </div>
-                    <div className="border-l border-zinc-700 pl-3">
+                    <div className="border-l border-zinc-700 pl-3 hidden sm:block">
                       <div className="text-2xl font-black text-yellow-400">
                         {votingConfig?.tierMultipliers?.[user.tier || "Initiate"] || 1}x
                       </div>
@@ -442,10 +442,10 @@ export default function VotingPage() {
                   {user.tier !== "Admin" && user.tier !== "MIGISTUS" && (
                     <Link
                       href="/upgrade-tier"
-                      className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 rounded-2xl text-black font-bold transition-all transform hover:scale-105 shadow-lg shadow-yellow-500/30"
+                      className="flex items-center justify-center gap-2 px-4 sm:px-5 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 rounded-2xl text-black font-bold transition-all transform hover:scale-105 shadow-lg shadow-yellow-500/30 w-full sm:w-auto"
                     >
-                      <TrendingUp className="w-5 h-5" />
-                      <span>Upgrade Tier</span>
+                      <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="text-sm sm:text-base">Upgrade Tier</span>
                     </Link>
                   )}
                 </div>
@@ -473,13 +473,13 @@ export default function VotingPage() {
               )}
 
               {/* Right: Voting Countdown */}
-              <div className="flex items-center gap-3 bg-blue-900/30 backdrop-blur-sm border border-blue-500/30 rounded-2xl px-5 py-3">
-                <Calendar className="w-8 h-8 text-blue-400" />
-                <div>
+              <div className="flex items-center gap-3 bg-blue-900/30 backdrop-blur-sm border border-blue-500/30 rounded-2xl px-4 sm:px-5 py-3 w-full lg:w-auto">
+                <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
                   <div className="text-xs text-blue-300">Voting Ends This Friday</div>
-                  <div className="text-lg font-bold text-white">Top voted products advance to Coming Soon</div>
+                  <div className="text-sm sm:text-lg font-bold text-white line-clamp-1">Top voted products advance</div>
                 </div>
-                <div className="border-l border-blue-700 pl-3 ml-3 text-center">
+                <div className="border-l border-blue-700 pl-3 ml-3 text-center flex-shrink-0">
                   {(() => {
                     const daysUntilVotingEnds = DEFAULT_LIFECYCLE_CONFIG.votingEndDay;
                     const today = new Date().getDay();
@@ -510,13 +510,13 @@ export default function VotingPage() {
                 </div>
               </div>
               
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black mb-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4">
                 <span className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 bg-clip-text text-transparent drop-shadow-lg">
                   Shape the Future
                 </span>
               </h1>
               
-              <p className="text-lg sm:text-xl text-zinc-300 max-w-3xl mx-auto leading-relaxed mb-4">
+              <p className="text-base sm:text-lg md:text-xl text-zinc-300 max-w-3xl mx-auto leading-relaxed mb-4">
                 Your vote decides what comes next. Discover products from suppliers and vote for the ones you want to see in upcoming drops.
               </p>
               
@@ -612,7 +612,7 @@ export default function VotingPage() {
                 </button>
               </div>
               
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {topProducts.map((product, index) => (
                   <Link key={product.id} href={getProductUrl(product)}>
                     <div className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-xl p-4 hover:bg-zinc-700/50 hover:border-yellow-500/50 transition-all duration-300 cursor-pointer group">
@@ -662,12 +662,12 @@ export default function VotingPage() {
             </div>
 
             {/* Filter Controls */}
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               {/* Sort Dropdown */}
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="flex-1 min-w-[200px] bg-zinc-700/50 border border-zinc-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20"
+                className="flex-1 bg-zinc-700/50 border border-zinc-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 text-sm sm:text-base"
               >
                 <option value="trending">🔥 Trending</option>
                 <option value="votes">⬆️ Most Votes</option>
@@ -679,7 +679,7 @@ export default function VotingPage() {
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="flex-1 min-w-[200px] bg-zinc-700/50 border border-zinc-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20"
+                className="flex-1 bg-zinc-700/50 border border-zinc-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 text-sm sm:text-base"
               >
                 <option value="all">All Categories</option>
                 {categories.map(category => (
@@ -741,7 +741,7 @@ export default function VotingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
           {/* Results Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-xl sm:text-2xl font-bold text-white">
               {filteredProducts.length} Product{filteredProducts.length !== 1 ? 's' : ''} Available
             </h2>
           </div>

@@ -106,5 +106,14 @@
     "currentPage": "/",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
     "ip": "::1"
+  },
+  {
+    "userId": 1,
+    "sessionId": "vn60pqhhklmj1wt6yc",
+    "loginTime": "2025-12-11T20:47:30.517Z",
+    "lastActivity": "2025-12-11T20:47:38.586Z",
+    "currentPage": "/products/gilded-vanguard-headset",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
   }
 ]

@@ -1,6 +1,63 @@
 [
   {
     "type": "session",
+    "action": "page_hidden",
+    "details": {
+      "page": "/products/gilded-vanguard-headset",
+      "timeOnPage": 335332
+    },
+    "userId": 1,
+    "sessionId": "vn60pqhhklmj1wt6yc",
+    "timestamp": "2025-12-11T20:47:38.555Z",
+    "page": "/products/gilded-vanguard-headset",
+    "id": 1765486058589.751
+  },
+  {
+    "id": 1765486058584.4136,
+    "userId": 1,
+    "sessionId": "vn60pqhhklmj1wt6yc",
+    "type": "session",
+    "action": "page_hidden",
+    "page": "/products/gilded-vanguard-headset",
+    "details": {
+      "page": "/products/gilded-vanguard-headset",
+      "timeOnPage": 335332
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T20:47:38.584Z"
+  },
+  {
+    "timestamp": "2025-12-11T20:47:38.573Z",
+    "id": 1765486058573.0925
+  },
+  {
+    "type": "auth",
+    "action": "session_initialized",
+    "timestamp": "2025-12-11T20:47:30.461Z",
+    "userId": 1,
+    "sessionId": "vn60pqhhklmj1wt6yc",
+    "page": "/products/gilded-vanguard-headset",
+    "id": 1765486050577.504
+  },
+  {
+    "timestamp": "2025-12-11T20:47:30.524Z",
+    "id": 1765486050524.646
+  },
+  {
+    "id": 1765486050515.624,
+    "userId": 1,
+    "sessionId": "vn60pqhhklmj1wt6yc",
+    "type": "auth",
+    "action": "session_initialized",
+    "page": "/products/gilded-vanguard-headset",
+    "details": {},
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T20:47:30.515Z"
+  },
+  {
+    "type": "session",
     "action": "heartbeat",
     "details": {
       "page": "/",
@@ -10526,69 +10583,5 @@
     "timestamp": "2025-12-11T02:51:31.283Z",
     "page": "/",
     "id": 1765421491327.2446
-  },
-  {
-    "id": 1765421491320.319,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8790010
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:51:31.320Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:51:31.302Z",
-    "id": 1765421491302.4905
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8760010
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:51:01.283Z",
-    "page": "/",
-    "id": 1765421461332.3286
-  },
-  {
-    "id": 1765421461321.6143,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8760010
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:51:01.321Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:51:01.302Z",
-    "id": 1765421461302.6914
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8730010
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:50:31.283Z",
-    "page": "/",
-    "id": 1765421431322.0718
   }
 ]

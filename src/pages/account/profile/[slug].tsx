@@ -680,13 +680,13 @@ export default function UserProfilePage() {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 -mt-20 relative z-10">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 -mt-20 relative z-10">
           {/* Streamlined Profile Header */}
-          <div className="bg-gradient-to-br from-zinc-900/95 to-zinc-800/95 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-5 mb-6 shadow-2xl">
-            <div className="flex flex-col lg:flex-row items-start gap-6">
+          <div className="bg-gradient-to-br from-zinc-900/95 to-zinc-800/95 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 sm:p-5 mb-6 shadow-2xl">
+            <div className="flex flex-col lg:flex-row items-start gap-4 sm:gap-6">
               {/* Compact Avatar Section */}
-              <div className="relative flex-shrink-0 group">
-                <div className="w-32 h-32 rounded-2xl border-3 border-yellow-400/40 overflow-hidden bg-zinc-700 shadow-xl ring-2 ring-yellow-400/10 group-hover:ring-yellow-400/30 transition-all">
+              <div className="relative flex-shrink-0 group mx-auto lg:mx-0">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl border-3 border-yellow-400/40 overflow-hidden bg-zinc-700 shadow-xl ring-2 ring-yellow-400/10 group-hover:ring-yellow-400/30 transition-all">
                   <Image
                     src={(isEditing ? editForm.avatar : profile?.avatar) || "/Icons/New Member.png"}
                     alt={profile?.username || "Profile"}
@@ -715,7 +715,7 @@ export default function UserProfilePage() {
                 )}
                 
                 {/* Compact Tier Badge */}
-                <div className={`absolute -top-2 -right-2 px-3 py-1 bg-gradient-to-r ${getTierColor(profile?.tier)} rounded-lg text-white font-bold text-xs shadow-xl border-2 border-zinc-900 flex items-center gap-1.5`}>
+                <div className={`absolute -top-2 -right-2 px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r ${getTierColor(profile?.tier)} rounded-lg text-white font-bold text-[10px] sm:text-xs shadow-xl border-2 border-zinc-900 flex items-center gap-1`}>
                   <span>{getTierIcon(profile?.tier)}</span>
                   <span>{profile?.tier || "New Member"}</span>
                 </div>
@@ -728,18 +728,18 @@ export default function UserProfilePage() {
               </div>
 
               {/* Compact Profile Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
+              <div className="flex-1 min-w-0 text-center lg:text-left">
+                <div className="flex flex-col gap-3 sm:gap-4 mb-4">
                   <div className="flex-1">
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent mb-3 break-words">
+                    <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent mb-3 break-words">
                       {profile.username}
                     </h1>
                       {/* Compact Stats Bar */}
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <div className="flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/30 rounded-lg px-2.5 py-1.5">
-                        <Target className="w-3.5 h-3.5 text-blue-400" />
-                        <span className="text-blue-400 font-bold text-sm">{liveStats.activePledges}</span>
-                        <span className="text-gray-400 text-xs">Active</span>
+                    <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1.5 sm:gap-2 mb-3">
+                      <div className="flex items-center gap-1 sm:gap-1.5 bg-blue-500/10 border border-blue-500/30 rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5">
+                        <Target className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-400" />
+                        <span className="text-blue-400 font-bold text-xs sm:text-sm">{liveStats.activePledges}</span>
+                        <span className="text-gray-400 text-[10px] sm:text-xs">Active</span>
                       </div>
                       <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2.5 py-1.5">
                         <Shield className="w-3.5 h-3.5 text-green-400" />
@@ -773,14 +773,14 @@ export default function UserProfilePage() {
                     </div>
                     
                     {/* Member Since */}
-                    <div className="flex items-center gap-2 text-gray-300 mb-4 bg-zinc-800/50 w-fit px-4 py-2 rounded-lg border border-zinc-700">
-                      <Clock className="w-4 h-4 text-yellow-400" />
-                      <span className="text-sm">Member since {new Date(profile.joinedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    <div className="flex items-center gap-2 text-gray-300 mb-4 bg-zinc-800/50 w-fit mx-auto lg:mx-0 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-zinc-700">
+                      <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400" />
+                      <span className="text-xs sm:text-sm">Member since {new Date(profile.joinedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                     </div>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
                     {isOwnProfile ? (
                       isEditing ? (
                         <div className="flex gap-3">
@@ -811,7 +811,7 @@ export default function UserProfilePage() {
                         </button>
                       )
                     ) : (
-                      <div className="flex gap-3">
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
                         <FollowButton
                           targetUserId={profile.id}
                           targetUsername={profile.username}
@@ -831,8 +831,8 @@ export default function UserProfilePage() {
                           size="lg"
                           variant="default"
                         />
-                        <button className="flex items-center gap-2 bg-gradient-to-r from-zinc-700 to-zinc-600 hover:from-zinc-600 hover:to-zinc-500 text-white px-8 py-3 rounded-xl font-bold transition-all hover:scale-105">
-                          <MessageCircle className="w-5 h-5" />
+                        <button className="flex items-center justify-center gap-2 bg-gradient-to-r from-zinc-700 to-zinc-600 hover:from-zinc-600 hover:to-zinc-500 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-bold transition-all hover:scale-105 text-sm sm:text-base w-full">
+                          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                           Message
                         </button>
                       </div>
@@ -869,16 +869,16 @@ export default function UserProfilePage() {
           </div>
 
           {/* Enhanced Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8">
             
             {/* Left Column - Main Content */}
             <div className="lg:col-span-2 space-y-8">
               
               {/* Profile Navigation Tabs */}
-              <div className="bg-gradient-to-r from-zinc-900/95 to-zinc-800/95 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-2.5 shadow-xl">                <div className="flex gap-2">
+              <div className="bg-gradient-to-r from-zinc-900/95 to-zinc-800/95 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-2 sm:p-2.5 shadow-xl">                <div className="flex gap-1.5 sm:gap-2">
                   <button
                     onClick={() => setActiveTab('posts')}
-                    className={`flex-1 px-6 py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
+                    className={`flex-1 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base ${
                       activeTab === 'posts'
                         ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg shadow-yellow-500/30 scale-105'
                         : 'text-gray-400 hover:text-yellow-400 hover:bg-zinc-800/70'
