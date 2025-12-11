@@ -157,13 +157,13 @@ export default function MainNavbar() {
 
   // Insert Live Drops as a placeholder for ordering
   const navigation = [
-    { name: "Voting", href: "/voting", icon: <img src="/Icons/voting.png" alt="Voting" width={32} height={32} /> },
-    { name: "Coming Soon", href: "/coming-soon", icon: <img src="/Icons/comingsoon.png" alt="Coming Soon" width={32} height={32} /> },
+    { name: "Voting", href: "/voting", iconSrc: "/Icons/voting.png" },
+    { name: "Coming Soon", href: "/coming-soon", iconSrc: "/Icons/comingsoon.png" },
     // Live Drops placeholder (will be rendered as dropdown)
     { name: "Live Drops", isDropdown: true },
-    { name: "Community", href: "/community", icon: <img src="/Icons/Chat.png" alt="Community" width={32} height={32} /> },
-    { name: "Categories", href: "/categories", icon: <img src="/Icons/categories-icon.png" alt="Categories" width={32} height={32} /> },
-    { name: "About", href: "/about", icon: <img src="/Icons/about.png" alt="About" width={32} height={32} /> },
+    { name: "Community", href: "/community", iconSrc: "/Icons/Chat.png" },
+    { name: "Categories", href: "/categories", iconSrc: "/Icons/categories-icon.png" },
+    { name: "About", href: "/about", iconSrc: "/Icons/about.png" },
   ];
 
   // Add or update styles for uniform nav items
@@ -648,7 +648,7 @@ export default function MainNavbar() {
                   </div>
                 );
               }
-              if (typeof item.href === 'string' && item.icon) {
+              if (typeof item.href === 'string' && item.iconSrc) {
                 const href = item.href as string;
                 return (
                   <Link
@@ -661,7 +661,13 @@ export default function MainNavbar() {
                     }`}
                     style={{ minWidth: 96, minHeight: 96 }}
                   >
-                    {item.icon}
+                    <Image
+                      src={item.iconSrc}
+                      alt={item.name}
+                      width={64}
+                      height={64}
+                      className="object-contain"
+                    />
                   </Link>
                 );
               }
@@ -910,7 +916,7 @@ export default function MainNavbar() {
               }
               
               // Render regular navigation items
-              if (typeof item.href === 'string' && item.icon) {
+              if (typeof item.href === 'string' && item.iconSrc) {
                 return (
                   <Link
                     key={item.name}
@@ -923,7 +929,7 @@ export default function MainNavbar() {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      {item.icon}
+                      <img src={item.iconSrc} alt={item.name} width={32} height={32} />
                       <span className="font-medium">{item.name}</span>
                     </div>
                   </Link>
