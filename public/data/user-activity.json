@@ -1,6 +1,1408 @@
 [
   {
     "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 367122
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:22:41.171Z",
+    "page": "/",
+    "id": 1765430561194.1858
+  },
+  {
+    "id": 1765430561190.7659,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 367122
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:22:41.190Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:22:41.181Z",
+    "id": 1765430561181.8762
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 60220
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:22:31.522Z",
+    "page": "/voting",
+    "id": 1765430551546.7168
+  },
+  {
+    "id": 1765430551542.0032,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/voting",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 60220
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:22:31.542Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:22:31.533Z",
+    "id": 1765430551533.086
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 337115
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:22:11.164Z",
+    "page": "/",
+    "id": 1765430531186.6687
+  },
+  {
+    "id": 1765430531183.884,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 337115
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:22:11.183Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:22:11.173Z",
+    "id": 1765430531173.7812
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 30220
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:22:01.522Z",
+    "page": "/voting",
+    "id": 1765430521549.897
+  },
+  {
+    "id": 1765430521545.8516,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/voting",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 30220
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:22:01.545Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:22:01.534Z",
+    "id": 1765430521534.6714
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/community",
+      "timeOnPage": 307118
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:41.167Z",
+    "page": "/community",
+    "id": 1765430501185.1348
+  },
+  {
+    "id": 1765430501181.7004,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/community",
+    "details": {
+      "page": "/community",
+      "timeOnPage": 307118
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:41.181Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:41.171Z",
+    "id": 1765430501171.0322
+  },
+  {
+    "type": "session",
+    "action": "page_visible",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 298856
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:32.905Z",
+    "page": "/products/bluetooth-portable-speaker",
+    "id": 1765430493019.8699
+  },
+  {
+    "id": 1765430493014.9705,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_visible",
+    "page": "/products/bluetooth-portable-speaker",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 298856
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:33.014Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:33.006Z",
+    "id": 1765430493006.7908
+  },
+  {
+    "type": "session",
+    "action": "page_visible",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 298855
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:32.904Z",
+    "page": "/products/bluetooth-portable-speaker",
+    "id": 1765430492990.0994
+  },
+  {
+    "id": 1765430492985.3818,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_visible",
+    "page": "/products/bluetooth-portable-speaker",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 298855
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:32.985Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:32.973Z",
+    "id": 1765430492973.3499
+  },
+  {
+    "type": "session",
+    "action": "page_visible",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 298854
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:32.903Z",
+    "page": "/products/bluetooth-portable-speaker",
+    "id": 1765430492962.7764
+  },
+  {
+    "id": 1765430492953.4124,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_visible",
+    "page": "/products/bluetooth-portable-speaker",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 298854
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:32.954Z"
+  },
+  {
+    "type": "session",
+    "action": "page_hidden",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 1599
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:32.901Z",
+    "page": "/voting",
+    "id": 1765430492941.4214
+  },
+  {
+    "id": 1765430492936.0676,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_hidden",
+    "page": "/voting",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 1599
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:32.936Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:32.928Z",
+    "id": 1765430492928.7825
+  },
+  {
+    "timestamp": "2025-12-11T05:21:32.917Z",
+    "id": 1765430492917.8743
+  },
+  {
+    "type": "auth",
+    "action": "session_initialized",
+    "timestamp": "2025-12-11T05:21:31.302Z",
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "page": "/voting",
+    "id": 1765430491324.775
+  },
+  {
+    "id": 1765430491319.815,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "auth",
+    "action": "session_initialized",
+    "page": "/voting",
+    "details": {},
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:31.319Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:31.306Z",
+    "id": 1765430491306.8367
+  },
+  {
+    "type": "navigation",
+    "action": "page_unload",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 5699
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:30.879Z",
+    "page": "/voting",
+    "id": 1765430490899.1587
+  },
+  {
+    "id": 1765430490896.43,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "navigation",
+    "action": "page_unload",
+    "page": "/voting",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 5699
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:30.896Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:30.886Z",
+    "id": 1765430490886.8635
+  },
+  {
+    "type": "session",
+    "action": "page_visible",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 3981
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:29.161Z",
+    "page": "/voting",
+    "id": 1765430489279.562
+  },
+  {
+    "id": 1765430489274.3774,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_visible",
+    "page": "/voting",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 3981
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:29.274Z"
+  },
+  {
+    "type": "session",
+    "action": "page_hidden",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 295110
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:29.159Z",
+    "page": "/products/bluetooth-portable-speaker",
+    "id": 1765430489260.652
+  },
+  {
+    "id": 1765430489254.2559,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_hidden",
+    "page": "/products/bluetooth-portable-speaker",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 295110
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:29.254Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:29.245Z",
+    "id": 1765430489245.8445
+  },
+  {
+    "type": "session",
+    "action": "page_hidden",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 295110
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:29.159Z",
+    "page": "/products/bluetooth-portable-speaker",
+    "id": 1765430489233.6897
+  },
+  {
+    "id": 1765430489229.8594,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_hidden",
+    "page": "/products/bluetooth-portable-speaker",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 295110
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:29.229Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:29.216Z",
+    "id": 1765430489216.7686
+  },
+  {
+    "type": "session",
+    "action": "page_hidden",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 295109
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:29.158Z",
+    "page": "/products/bluetooth-portable-speaker",
+    "id": 1765430489202.1697
+  },
+  {
+    "id": 1765430489198.1,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_hidden",
+    "page": "/products/bluetooth-portable-speaker",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 295109
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:29.198Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:29.186Z",
+    "id": 1765430489186.389
+  },
+  {
+    "timestamp": "2025-12-11T05:21:29.174Z",
+    "id": 1765430489174.0754
+  },
+  {
+    "type": "session",
+    "action": "page_visible",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 292818
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:26.867Z",
+    "page": "/products/bluetooth-portable-speaker",
+    "id": 1765430486989.6284
+  },
+  {
+    "id": 1765430486983.7246,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_visible",
+    "page": "/products/bluetooth-portable-speaker",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 292818
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:26.983Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:26.973Z",
+    "id": 1765430486973.7156
+  },
+  {
+    "type": "session",
+    "action": "page_visible",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 292818
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:26.867Z",
+    "page": "/products/bluetooth-portable-speaker",
+    "id": 1765430486956.1826
+  },
+  {
+    "id": 1765430486951.8796,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_visible",
+    "page": "/products/bluetooth-portable-speaker",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 292818
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:26.951Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:26.939Z",
+    "id": 1765430486939.6775
+  },
+  {
+    "type": "session",
+    "action": "page_visible",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 292817
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:26.866Z",
+    "page": "/products/bluetooth-portable-speaker",
+    "id": 1765430486927.4358
+  },
+  {
+    "id": 1765430486917.163,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_visible",
+    "page": "/products/bluetooth-portable-speaker",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 292817
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:26.917Z"
+  },
+  {
+    "type": "session",
+    "action": "page_hidden",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 1684
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:26.864Z",
+    "page": "/voting",
+    "id": 1765430486905.437
+  },
+  {
+    "id": 1765430486899.2148,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_hidden",
+    "page": "/voting",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 1684
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:26.899Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:26.890Z",
+    "id": 1765430486890.058
+  },
+  {
+    "timestamp": "2025-12-11T05:21:26.880Z",
+    "id": 1765430486880.8635
+  },
+  {
+    "type": "session",
+    "action": "page_visible",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 863
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:26.043Z",
+    "page": "/voting",
+    "id": 1765430486153.3115
+  },
+  {
+    "id": 1765430486148.357,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_visible",
+    "page": "/voting",
+    "details": {
+      "page": "/voting",
+      "timeOnPage": 863
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:26.148Z"
+  },
+  {
+    "type": "session",
+    "action": "page_hidden",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 291993
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:26.042Z",
+    "page": "/products/bluetooth-portable-speaker",
+    "id": 1765430486137.7747
+  },
+  {
+    "id": 1765430486131.6633,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_hidden",
+    "page": "/products/bluetooth-portable-speaker",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 291993
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:26.131Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:26.122Z",
+    "id": 1765430486122.0894
+  },
+  {
+    "type": "session",
+    "action": "page_hidden",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 291993
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:26.042Z",
+    "page": "/products/bluetooth-portable-speaker",
+    "id": 1765430486110.8262
+  },
+  {
+    "id": 1765430486106.8806,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_hidden",
+    "page": "/products/bluetooth-portable-speaker",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 291993
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:26.106Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:26.094Z",
+    "id": 1765430486094.095
+  },
+  {
+    "type": "session",
+    "action": "page_hidden",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 291992
+    },
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "timestamp": "2025-12-11T05:21:26.041Z",
+    "page": "/products/bluetooth-portable-speaker",
+    "id": 1765430486081.6843
+  },
+  {
+    "id": 1765430486077.2537,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "session",
+    "action": "page_hidden",
+    "page": "/products/bluetooth-portable-speaker",
+    "details": {
+      "page": "/products/bluetooth-portable-speaker",
+      "timeOnPage": 291992
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:26.077Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:26.064Z",
+    "id": 1765430486064.637
+  },
+  {
+    "timestamp": "2025-12-11T05:21:26.055Z",
+    "id": 1765430486055.4697
+  },
+  {
+    "type": "auth",
+    "action": "session_initialized",
+    "timestamp": "2025-12-11T05:21:25.180Z",
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "page": "/voting",
+    "id": 1765430485200.615
+  },
+  {
+    "id": 1765430485196.0122,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "auth",
+    "action": "session_initialized",
+    "page": "/voting",
+    "details": {},
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:25.196Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:25.186Z",
+    "id": 1765430485186.6028
+  },
+  {
+    "id": 1765430471187.1982,
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "type": "auth",
+    "action": "session_initialized",
+    "page": "/voting",
+    "details": {},
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:11.187Z"
+  },
+  {
+    "type": "auth",
+    "action": "session_initialized",
+    "timestamp": "2025-12-11T05:21:11.163Z",
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "page": "/voting",
+    "id": 1765430471177.94
+  },
+  {
+    "timestamp": "2025-12-11T05:21:11.165Z",
+    "id": 1765430471165.6729
+  },
+  {
+    "type": "auth",
+    "action": "logout",
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "timestamp": "2025-12-11T05:21:02.793Z",
+    "page": "/voting",
+    "id": 1765430462865.073
+  },
+  {
+    "id": 1765430462862.328,
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "type": "auth",
+    "action": "logout",
+    "page": "/voting",
+    "details": {},
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:02.862Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:02.852Z",
+    "id": 1765430462852.3086
+  },
+  {
+    "type": "auth",
+    "action": "logout",
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "timestamp": "2025-12-11T05:21:02.783Z",
+    "page": "/voting",
+    "id": 1765430462837.485
+  },
+  {
+    "id": 1765430462827.003,
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "type": "auth",
+    "action": "logout",
+    "page": "/voting",
+    "details": {},
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:02.827Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:02.817Z",
+    "id": 1765430462817.816
+  },
+  {
+    "type": "navigation",
+    "action": "account_menu_logout_desktop",
+    "details": {
+      "method": "desktop_menu",
+      "timestamp": "2025-12-11T05:21:02.782Z"
+    },
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "timestamp": "2025-12-11T05:21:02.782Z",
+    "page": "/voting",
+    "id": 1765430462807.7395
+  },
+  {
+    "id": 1765430462800.8713,
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "type": "navigation",
+    "action": "account_menu_logout_desktop",
+    "page": "/voting",
+    "details": {
+      "method": "desktop_menu",
+      "timestamp": "2025-12-11T05:21:02.782Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:02.800Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:02.788Z",
+    "id": 1765430462788.0615
+  },
+  {
+    "type": "navigation",
+    "action": "account_menu_open",
+    "details": {
+      "username": "Admin",
+      "userId": 1
+    },
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "timestamp": "2025-12-11T05:21:01.809Z",
+    "page": "/voting",
+    "id": 1765430461828.2388
+  },
+  {
+    "id": 1765430461825.1226,
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "type": "navigation",
+    "action": "account_menu_open",
+    "page": "/voting",
+    "details": {
+      "username": "Admin",
+      "userId": 1
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:21:01.825Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:21:01.815Z",
+    "id": 1765430461815.4048
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 250527
+    },
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "timestamp": "2025-12-11T05:20:44.576Z",
+    "page": "/",
+    "id": 1765430444598.321
+  },
+  {
+    "id": 1765430444594.4197,
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 250527
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:20:44.594Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:20:44.583Z",
+    "id": 1765430444583.3162
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 220525
+    },
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "timestamp": "2025-12-11T05:20:14.574Z",
+    "page": "/",
+    "id": 1765430414591.9578
+  },
+  {
+    "id": 1765430414587.377,
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 220525
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:20:14.587Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:20:14.577Z",
+    "id": 1765430414577.755
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 190528
+    },
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "timestamp": "2025-12-11T05:19:44.577Z",
+    "page": "/",
+    "id": 1765430384594.723
+  },
+  {
+    "id": 1765430384591.6384,
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 190528
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:19:44.591Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:19:44.581Z",
+    "id": 1765430384581.117
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 160526
+    },
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "timestamp": "2025-12-11T05:19:14.575Z",
+    "page": "/",
+    "id": 1765430354593.504
+  },
+  {
+    "id": 1765430354589.6316,
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 160526
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:19:14.589Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:19:14.579Z",
+    "id": 1765430354579.559
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 130527
+    },
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "timestamp": "2025-12-11T05:18:44.576Z",
+    "page": "/",
+    "id": 1765430324594.3662
+  },
+  {
+    "id": 1765430324591.4285,
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 130527
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:18:44.591Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:18:44.581Z",
+    "id": 1765430324581.707
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 100527
+    },
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "timestamp": "2025-12-11T05:18:14.576Z",
+    "page": "/",
+    "id": 1765430294597.6946
+  },
+  {
+    "id": 1765430294593.0515,
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 100527
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:18:14.593Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:18:14.584Z",
+    "id": 1765430294584.6997
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 70527
+    },
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "timestamp": "2025-12-11T05:17:44.576Z",
+    "page": "/",
+    "id": 1765430264599.2664
+  },
+  {
+    "id": 1765430264594.9092,
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 70527
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:17:44.594Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:17:44.584Z",
+    "id": 1765430264584.0757
+  },
+  {
+    "type": "session",
+    "action": "heartbeat",
+    "details": {
+      "page": "/",
+      "timeOnPage": 40530
+    },
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "timestamp": "2025-12-11T05:17:14.579Z",
+    "page": "/",
+    "id": 1765430234593.3784
+  },
+  {
+    "id": 1765430234589.2366,
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "type": "session",
+    "action": "heartbeat",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 40530
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:17:14.589Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:17:14.578Z",
+    "id": 1765430234578.0928
+  },
+  {
+    "id": 1765430204579.232,
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "type": "auth",
+    "action": "session_initialized",
+    "page": "/",
+    "details": {},
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:16:44.579Z"
+  },
+  {
+    "type": "auth",
+    "action": "session_initialized",
+    "timestamp": "2025-12-11T05:16:44.565Z",
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "page": "/",
+    "id": 1765430204568.783
+  },
+  {
+    "timestamp": "2025-12-11T05:16:44.557Z",
+    "id": 1765430204557.7642
+  },
+  {
+    "type": "auth",
+    "action": "logout",
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "timestamp": "2025-12-11T05:16:36.748Z",
+    "page": "/",
+    "id": 1765430196768.0095
+  },
+  {
+    "id": 1765430196763.085,
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "type": "auth",
+    "action": "logout",
+    "page": "/",
+    "details": {},
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:16:36.763Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:16:36.754Z",
+    "id": 1765430196754.732
+  },
+  {
+    "type": "auth",
+    "action": "logout",
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "timestamp": "2025-12-11T05:16:36.682Z",
+    "page": "/",
+    "id": 1765430196720.8965
+  },
+  {
+    "id": 1765430196713.0303,
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "type": "auth",
+    "action": "logout",
+    "page": "/",
+    "details": {},
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:16:36.713Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:16:36.704Z",
+    "id": 1765430196704.9548
+  },
+  {
+    "type": "navigation",
+    "action": "account_menu_logout_desktop",
+    "details": {
+      "method": "desktop_menu",
+      "timestamp": "2025-12-11T05:16:36.681Z"
+    },
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "timestamp": "2025-12-11T05:16:36.681Z",
+    "page": "/",
+    "id": 1765430196693.834
+  },
+  {
+    "id": 1765430196689.917,
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "type": "navigation",
+    "action": "account_menu_logout_desktop",
+    "page": "/",
+    "details": {
+      "method": "desktop_menu",
+      "timestamp": "2025-12-11T05:16:36.681Z"
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:16:36.689Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:16:36.677Z",
+    "id": 1765430196677.3472
+  },
+  {
+    "type": "navigation",
+    "action": "account_menu_open",
+    "details": {
+      "username": "TravisHelmick",
+      "userId": 19619216536
+    },
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "timestamp": "2025-12-11T05:16:35.702Z",
+    "page": "/",
+    "id": 1765430195710.1384
+  },
+  {
+    "id": 1765430195706.0237,
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "type": "navigation",
+    "action": "account_menu_open",
+    "page": "/",
+    "details": {
+      "username": "TravisHelmick",
+      "userId": 19619216536
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:16:35.706Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:16:35.697Z",
+    "id": 1765430195697.8542
+  },
+  {
+    "type": "auth",
+    "action": "session_initialized",
+    "timestamp": "2025-12-11T05:16:34.049Z",
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "page": "/",
+    "id": 1765430194066.1172
+  },
+  {
+    "id": 1765430194061.328,
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "type": "auth",
+    "action": "session_initialized",
+    "page": "/",
+    "details": {},
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:16:34.061Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:16:34.044Z",
+    "id": 1765430194044.4832
+  },
+  {
+    "id": 1765430084625.6077,
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "type": "navigation",
+    "action": "page_unload",
+    "page": "/",
+    "details": {
+      "page": "/",
+      "timeOnPage": 24067
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:14:44.625Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:14:44.613Z",
+    "id": 1765430084613.5083
+  },
+  {
+    "type": "navigation",
+    "action": "page_unload",
+    "details": {
+      "page": "/",
+      "timeOnPage": 24067
+    },
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "timestamp": "2025-12-11T05:14:44.586Z",
+    "page": "/",
+    "id": 1765430084601.8423
+  },
+  {
+    "type": "navigation",
+    "action": "account_menu_open",
+    "details": {
+      "username": "TravisHelmick",
+      "userId": 19619216536
+    },
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "timestamp": "2025-12-11T05:14:24.920Z",
+    "page": "/",
+    "id": 1765430064936.9644
+  },
+  {
+    "id": 1765430064932.8809,
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "type": "navigation",
+    "action": "account_menu_open",
+    "page": "/",
+    "details": {
+      "username": "TravisHelmick",
+      "userId": 19619216536
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:14:24.932Z"
+  },
+  {
+    "timestamp": "2025-12-11T05:14:24.920Z",
+    "id": 1765430064920.6357
+  },
+  {
+    "type": "auth",
+    "action": "session_initialized",
+    "timestamp": "2025-12-11T05:14:20.519Z",
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "page": "/",
+    "id": 1765430060665.9453
+  },
+  {
+    "timestamp": "2025-12-11T05:14:20.620Z",
+    "id": 1765430060620.661
+  },
+  {
+    "id": 1765430060597.6257,
+    "userId": 19619216536,
+    "sessionId": "kih0kgv31yamiy2ryr0",
+    "type": "auth",
+    "action": "session_initialized",
+    "page": "/",
+    "details": {},
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1",
+    "timestamp": "2025-12-11T05:14:20.598Z"
+  },
+  {
+    "type": "session",
     "action": "page_hidden",
     "details": {
       "page": "/",
@@ -9188,1477 +10590,5 @@
     "timestamp": "2025-12-11T02:50:31.283Z",
     "page": "/",
     "id": 1765421431322.0718
-  },
-  {
-    "id": 1765421431316.0564,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8730010
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:50:31.316Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:50:31.301Z",
-    "id": 1765421431301.0715
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8700005
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:50:01.278Z",
-    "page": "/",
-    "id": 1765421401315.975
-  },
-  {
-    "id": 1765421401309.0583,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8700005
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:50:01.309Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:50:01.294Z",
-    "id": 1765421401294.2195
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8670003
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:49:31.276Z",
-    "page": "/",
-    "id": 1765421371320.4675
-  },
-  {
-    "id": 1765421371312.5864,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8670003
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:49:31.312Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:49:31.295Z",
-    "id": 1765421371295.359
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8640001
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:49:01.274Z",
-    "page": "/",
-    "id": 1765421341321.3381
-  },
-  {
-    "id": 1765421341313.55,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8640001
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:49:01.313Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:49:01.293Z",
-    "id": 1765421341293.4329
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8610007
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:48:31.280Z",
-    "page": "/",
-    "id": 1765421311325.6658
-  },
-  {
-    "id": 1765421311315.3613,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8610007
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:48:31.315Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:48:31.296Z",
-    "id": 1765421311297.469
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8580002
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:48:01.275Z",
-    "page": "/",
-    "id": 1765421281316.5173
-  },
-  {
-    "id": 1765421281305.4277,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8580002
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:48:01.305Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:48:01.291Z",
-    "id": 1765421281291.7278
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8550002
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:47:31.275Z",
-    "page": "/",
-    "id": 1765421251317.7012
-  },
-  {
-    "id": 1765421251311.0461,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8550002
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:47:31.311Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:47:31.293Z",
-    "id": 1765421251293.3564
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8520012
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:47:01.285Z",
-    "page": "/",
-    "id": 1765421221324.6091
-  },
-  {
-    "id": 1765421221317.8948,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8520012
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:47:01.317Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:47:01.304Z",
-    "id": 1765421221304.8325
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8490013
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:46:31.286Z",
-    "page": "/",
-    "id": 1765421191327.0771
-  },
-  {
-    "id": 1765421191318.9658,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8490013
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:46:31.318Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:46:31.304Z",
-    "id": 1765421191304.9124
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8460003
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:46:01.276Z",
-    "page": "/",
-    "id": 1765421161313.4722
-  },
-  {
-    "id": 1765421161307.8088,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8460003
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:46:01.307Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:46:01.292Z",
-    "id": 1765421161292.477
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8430010
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:45:31.283Z",
-    "page": "/",
-    "id": 1765421131324.1057
-  },
-  {
-    "timestamp": "2025-12-11T02:45:31.311Z",
-    "id": 1765421131311.262
-  },
-  {
-    "id": 1765421131304.3396,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8430010
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:45:31.304Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8400001
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:45:01.274Z",
-    "page": "/",
-    "id": 1765421101316.524
-  },
-  {
-    "id": 1765421101310.8914,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8400001
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:45:01.310Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:45:01.294Z",
-    "id": 1765421101294.703
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8370008
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:44:31.281Z",
-    "page": "/",
-    "id": 1765421071323.046
-  },
-  {
-    "id": 1765421071316.9924,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8370008
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:44:31.316Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:44:31.301Z",
-    "id": 1765421071301.573
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8340011
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:44:01.284Z",
-    "page": "/",
-    "id": 1765421041325.2139
-  },
-  {
-    "id": 1765421041319.8293,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8340011
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:44:01.319Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:44:01.299Z",
-    "id": 1765421041299.7473
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8310010
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:43:31.283Z",
-    "page": "/",
-    "id": 1765421011332.5972
-  },
-  {
-    "id": 1765421011319.6887,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8310010
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:43:31.319Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:43:31.300Z",
-    "id": 1765421011300.2078
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8280008
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:43:01.281Z",
-    "page": "/",
-    "id": 1765420981321.6956
-  },
-  {
-    "id": 1765420981312.2312,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8280008
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:43:01.312Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:43:01.297Z",
-    "id": 1765420981297.7244
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8250005
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:42:31.278Z",
-    "page": "/",
-    "id": 1765420951323.5205
-  },
-  {
-    "id": 1765420951316.108,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8250005
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:42:31.316Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:42:31.299Z",
-    "id": 1765420951299.3337
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8220011
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:42:01.284Z",
-    "page": "/",
-    "id": 1765420921325.3118
-  },
-  {
-    "id": 1765420921319.7734,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8220011
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:42:01.319Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:42:01.302Z",
-    "id": 1765420921302.6643
-  },
-  {
-    "id": 1765420891322.3765,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8190001
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:41:31.322Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8190001
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:41:31.274Z",
-    "page": "/",
-    "id": 1765420891307.9426
-  },
-  {
-    "timestamp": "2025-12-11T02:41:31.291Z",
-    "id": 1765420891291.1853
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8160003
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:41:01.276Z",
-    "page": "/",
-    "id": 1765420861310.9075
-  },
-  {
-    "id": 1765420861304.7478,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8160003
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:41:01.304Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:41:01.289Z",
-    "id": 1765420861289.8127
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8130015
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:40:31.288Z",
-    "page": "/",
-    "id": 1765420831330.3591
-  },
-  {
-    "id": 1765420831322.65,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8130015
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:40:31.322Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:40:31.305Z",
-    "id": 1765420831305.2786
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8100011
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:40:01.284Z",
-    "page": "/",
-    "id": 1765420801318.2754
-  },
-  {
-    "id": 1765420801313.3877,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8100011
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:40:01.313Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:40:01.298Z",
-    "id": 1765420801298.6318
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8070011
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:39:31.284Z",
-    "page": "/",
-    "id": 1765420771316.0574
-  },
-  {
-    "id": 1765420771310.629,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8070011
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:39:31.310Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:39:31.298Z",
-    "id": 1765420771298.0435
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8040005
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:39:01.278Z",
-    "page": "/",
-    "id": 1765420741318.8965
-  },
-  {
-    "id": 1765420741308.4058,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8040005
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:39:01.308Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:39:01.295Z",
-    "id": 1765420741295.256
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8010004
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:38:31.277Z",
-    "page": "/",
-    "id": 1765420711310.7046
-  },
-  {
-    "id": 1765420711304.0996,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 8010004
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:38:31.304Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:38:31.291Z",
-    "id": 1765420711291.204
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7980010
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:38:01.283Z",
-    "page": "/",
-    "id": 1765420681332.8076
-  },
-  {
-    "timestamp": "2025-12-11T02:38:01.319Z",
-    "id": 1765420681320.7312
-  },
-  {
-    "id": 1765420681312.7566,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7980010
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:38:01.312Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7950001
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:37:31.274Z",
-    "page": "/",
-    "id": 1765420651322.5242
-  },
-  {
-    "id": 1765420651314.2542,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7950001
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:37:31.314Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:37:31.296Z",
-    "id": 1765420651296.9814
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7920016
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:37:01.289Z",
-    "page": "/",
-    "id": 1765420621333.0417
-  },
-  {
-    "id": 1765420621325.5032,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7920016
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:37:01.325Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:37:01.307Z",
-    "id": 1765420621307.4243
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7890007
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:36:31.280Z",
-    "page": "/",
-    "id": 1765420591321.6572
-  },
-  {
-    "id": 1765420591312.6506,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7890007
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:36:31.312Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:36:31.293Z",
-    "id": 1765420591293.4316
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7860009
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:36:01.282Z",
-    "page": "/",
-    "id": 1765420561321.5786
-  },
-  {
-    "id": 1765420561314.5256,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7860009
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:36:01.314Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:36:01.299Z",
-    "id": 1765420561299.588
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7830011
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:35:31.284Z",
-    "page": "/",
-    "id": 1765420531327.447
-  },
-  {
-    "id": 1765420531320.8057,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7830011
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:35:31.320Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:35:31.304Z",
-    "id": 1765420531304.9038
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7800007
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:35:01.280Z",
-    "page": "/",
-    "id": 1765420501323.2236
-  },
-  {
-    "id": 1765420501313.5745,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7800007
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:35:01.313Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:35:01.297Z",
-    "id": 1765420501297.9956
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7770005
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:34:31.278Z",
-    "page": "/",
-    "id": 1765420471325.3066
-  },
-  {
-    "id": 1765420471315.1846,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7770005
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:34:31.315Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:34:31.297Z",
-    "id": 1765420471297.809
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7740006
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:34:01.279Z",
-    "page": "/",
-    "id": 1765420441324.922
-  },
-  {
-    "id": 1765420441310.4412,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7740006
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:34:01.310Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:34:01.294Z",
-    "id": 1765420441294.0037
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7710010
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:33:31.283Z",
-    "page": "/",
-    "id": 1765420411323.946
-  },
-  {
-    "timestamp": "2025-12-11T02:33:31.308Z",
-    "id": 1765420411308.2222
-  },
-  {
-    "id": 1765420411301.4204,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7710010
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:33:31.301Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7680006
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:33:01.279Z",
-    "page": "/",
-    "id": 1765420381322.3188
-  },
-  {
-    "id": 1765420381314.6716,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7680006
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:33:01.314Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:33:01.294Z",
-    "id": 1765420381294.987
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7650005
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:32:31.278Z",
-    "page": "/",
-    "id": 1765420351324.1396
-  },
-  {
-    "id": 1765420351317.7537,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7650005
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:32:31.317Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:32:31.296Z",
-    "id": 1765420351296.6538
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7620004
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:32:01.277Z",
-    "page": "/",
-    "id": 1765420321317.3103
-  },
-  {
-    "id": 1765420321309.9424,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7620004
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:32:01.309Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:32:01.294Z",
-    "id": 1765420321294.7974
-  },
-  {
-    "id": 1765420291327.7522,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7590003
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:31:31.327Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7590003
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:31:31.276Z",
-    "page": "/",
-    "id": 1765420291306.6487
-  },
-  {
-    "timestamp": "2025-12-11T02:31:31.294Z",
-    "id": 1765420291294.4395
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7560005
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:31:01.278Z",
-    "page": "/",
-    "id": 1765420261317.8413
-  },
-  {
-    "id": 1765420261309.0225,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7560005
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:31:01.309Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:31:01.295Z",
-    "id": 1765420261295.6973
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7530012
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:30:31.285Z",
-    "page": "/",
-    "id": 1765420231327.35
-  },
-  {
-    "id": 1765420231319.6396,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7530012
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:30:31.319Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:30:31.304Z",
-    "id": 1765420231304.572
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7500005
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:30:01.278Z",
-    "page": "/",
-    "id": 1765420201317.7944
-  },
-  {
-    "id": 1765420201310.8354,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7500005
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:30:01.310Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:30:01.295Z",
-    "id": 1765420201295.5852
-  },
-  {
-    "id": 1765420171325.2175,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7470009
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:29:31.325Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7470009
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:29:31.282Z",
-    "page": "/",
-    "id": 1765420171310.8162
-  },
-  {
-    "timestamp": "2025-12-11T02:29:31.298Z",
-    "id": 1765420171298.225
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7440009
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:29:01.282Z",
-    "page": "/",
-    "id": 1765420141323.215
-  },
-  {
-    "timestamp": "2025-12-11T02:29:01.306Z",
-    "id": 1765420141306.4353
-  },
-  {
-    "id": 1765420141299.8442,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7440009
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:29:01.299Z"
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7410008
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:28:31.281Z",
-    "page": "/",
-    "id": 1765420111324.905
-  },
-  {
-    "id": 1765420111317.6672,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7410008
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:28:31.317Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:28:31.298Z",
-    "id": 1765420111298.2683
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7380010
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:28:01.283Z",
-    "page": "/",
-    "id": 1765420081324.4946
-  },
-  {
-    "id": 1765420081318.9473,
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "type": "session",
-    "action": "heartbeat",
-    "page": "/",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7380010
-    },
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "ip": "::1",
-    "timestamp": "2025-12-11T02:28:01.318Z"
-  },
-  {
-    "timestamp": "2025-12-11T02:28:01.302Z",
-    "id": 1765420081302.454
-  },
-  {
-    "type": "session",
-    "action": "heartbeat",
-    "details": {
-      "page": "/",
-      "timeOnPage": 7350014
-    },
-    "userId": 19619216536,
-    "sessionId": "kih0kgv31yamiy2ryr0",
-    "timestamp": "2025-12-11T02:27:31.287Z",
-    "page": "/",
-    "id": 1765420051330.058
   }
 ]

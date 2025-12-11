@@ -13,6 +13,7 @@ export default function MainNavbar() {
   const router = useRouter();  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLiveDropsOpen, setIsLiveDropsOpen] = useState(false);
+  const [isMobileLiveDropsOpen, setIsMobileLiveDropsOpen] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [showNavbar, setShowNavbar] = useState(true);
@@ -777,51 +778,144 @@ export default function MainNavbar() {
       }`}>
         <div className="bg-zinc-900/95 backdrop-blur-lg border-t border-yellow-400/20">
           <div className="px-4 py-4 space-y-2 overflow-y-auto max-h-[80vh]">
-            {/* Live Drops Section */}
-            <div className="mb-3">
-              <div className="flex items-center gap-2 px-4 py-2 text-yellow-400 font-semibold">
-                <Image
-                  src="/Icons/livedrops.png"
-                  alt="Live Drops"
-                  width={20}
-                  height={20}
-                  className="object-contain"
-                />
-                Live Drops
-              </div>
-              <div className="ml-4 space-y-1">
-                {liveDropsItems.map((item) => (
+            {/* User Profile / Auth Section - Always at top */}
+            {isAuthenticated ? (
+              <div className="space-y-2 mb-4 pb-4 border-b border-zinc-700/50">
+                <div className="flex items-center gap-3 px-4 py-3 bg-zinc-800/50 rounded-lg">
+                  <div className="w-8 h-8 rounded-full border-2 border-yellow-400/30 overflow-hidden bg-zinc-700">
+                    <Image
+                      src="/Icons/New Member.png"
+                      alt="Profile"
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <div className="font-medium text-white">{user?.username || 'Member'}</div>
+                    <div className="text-sm text-gray-400">{user?.email}</div>
+                  </div>
+                </div>
+                {accountMenuItems.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${
-                      isActivePage(item.href)
-                        ? "bg-yellow-400/10 text-yellow-400"
-                        : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
-                    }`}
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      // Track mobile account menu navigation
+                      activityTracker.trackAccountMenuAction('navigate_mobile', {
+                        destination: item.href,
+                        menuItem: item.name,
+                        icon: item.icon
+                      });
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 rounded-lg transition-colors"
                   >
-                    {typeof item.icon === 'string' ? (
-                      <span className="text-base">{item.icon}</span>
-                    ) : (
-                      item.icon
-                    )}
-                    <div>
-                      <div className="font-medium text-sm">{item.name}</div>
-                      <div className="text-xs text-gray-500">{item.description}</div>
-                    </div>
+                    <span className="text-lg">{item.icon}</span>
+                    <span className="font-medium">{item.name}</span>
                   </Link>
                 ))}
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    // Track mobile logout action
+                    activityTracker.trackAccountMenuAction('logout_mobile', {
+                      method: 'mobile_menu',
+                      timestamp: new Date().toISOString()
+                    });
+                    activityTracker.trackLogout();
+                    handleLogout();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors"
+                >
+                  <span className="text-lg">🚪</span>
+                  <span className="font-medium">Sign Out</span>
+                </button>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-2 mb-4 pb-4 border-b border-zinc-700/50">
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    openLoginModal(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-3 px-4 py-3 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 rounded-lg transition-colors border border-zinc-700"
+                >
+                  <span className="text-lg">🔑</span>
+                  <span className="font-medium">Sign In</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    openLoginModal(true);
+                  }}
+                  className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-yellow-400 text-black hover:bg-yellow-300 rounded-lg transition-colors font-semibold"
+                >
+                  <span className="text-lg">⭐</span>
+                  <span>Join The Guild</span>
+                </button>
+              </div>
+            )}
 
-            {/* Other Navigation Items */}
+            {/* Navigation Items - Render in order with Live Drops in the middle */}
             {navigation.map((item) => {
-              // Skip the Live Drops dropdown placeholder (already rendered above)
+              // Render Live Drops as collapsible dropdown
               if (item.isDropdown) {
-                return null;
+                return (
+                  <div key="live-drops" className="mb-3">
+                    <button
+                      onClick={() => setIsMobileLiveDropsOpen(!isMobileLiveDropsOpen)}
+                      className="w-full flex items-center justify-between px-4 py-3 text-yellow-400 font-semibold hover:bg-yellow-400/5 rounded-lg transition-all"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Image
+                          src="/Icons/livedrops.png"
+                          alt="Live Drops"
+                          width={20}
+                          height={20}
+                          className="object-contain"
+                        />
+                        Live Drops
+                      </div>
+                      <ChevronDown 
+                        className={`w-5 h-5 transition-transform duration-200 ${
+                          isMobileLiveDropsOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-300 ${
+                      isMobileLiveDropsOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                      <div className="ml-4 space-y-1 mt-2">
+                        {liveDropsItems.map((item) => (
+                          <Link
+                            key={item.name}
+                            href={item.href}
+                            onClick={() => setIsMenuOpen(false)}
+                            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${
+                              isActivePage(item.href)
+                                ? "bg-yellow-400/10 text-yellow-400"
+                                : "text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5"
+                            }`}
+                          >
+                            {typeof item.icon === 'string' ? (
+                              <span className="text-base">{item.icon}</span>
+                            ) : (
+                              item.icon
+                            )}
+                            <div>
+                              <div className="font-medium text-sm">{item.name}</div>
+                              <div className="text-xs text-gray-500">{item.description}</div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
               }
               
+              // Render regular navigation items
               if (typeof item.href === 'string' && item.icon) {
                 return (
                   <Link
@@ -843,86 +937,6 @@ export default function MainNavbar() {
               }
               return null;
             })}
-            
-            <div className="border-t border-zinc-700/50 my-4"></div>
-            
-            {isAuthenticated ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-3 px-4 py-3 bg-zinc-800/50 rounded-lg">
-                  <div className="w-8 h-8 rounded-full border-2 border-yellow-400/30 overflow-hidden bg-zinc-700">
-                    <Image
-                      src="/Icons/New Member.png"
-                      alt="Profile"
-                      width={32}
-                      height={32}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <div className="font-medium text-white">{user?.username || 'Member'}</div>
-                    <div className="text-sm text-gray-400">{user?.email}</div>
-                  </div>
-                </div>
-                  {accountMenuItems.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      // Track mobile account menu navigation
-                      activityTracker.trackAccountMenuAction('navigate_mobile', {
-                        destination: item.href,
-                        menuItem: item.name,
-                        icon: item.icon
-                      });
-                    }}
-                    className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 rounded-lg transition-colors"
-                  >
-                    <span className="text-lg">{item.icon}</span>
-                    <span className="font-medium">{item.name}</span>
-                  </Link>
-                ))}
-                  <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    // Track mobile logout action
-                    activityTracker.trackAccountMenuAction('logout_mobile', {
-                      method: 'mobile_menu',
-                      timestamp: new Date().toISOString()
-                    });
-                    activityTracker.trackLogout();
-                    handleLogout();
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors"
-                >
-                  <span className="text-lg">🚪</span>
-                  <span className="font-medium">Sign Out</span>
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    openLoginModal(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 rounded-lg transition-colors"
-                >
-                  <span className="text-lg">🔑</span>
-                  <span className="font-medium">Sign In</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    openLoginModal(true);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 bg-yellow-400 text-black hover:bg-yellow-300 rounded-lg transition-colors font-semibold"
-                >
-                  <span className="text-lg">⭐</span>
-                  <span>Join The Guild</span>
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>

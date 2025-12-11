@@ -84,7 +84,25 @@
     "userId": 19619216536,
     "sessionId": "kih0kgv31yamiy2ryr0",
     "loginTime": "2025-12-09T04:23:26.132Z",
-    "lastActivity": "2025-12-11T05:09:07.857Z",
+    "lastActivity": "2025-12-11T05:16:36.765Z",
+    "currentPage": "/",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
+  },
+  {
+    "userId": 1,
+    "sessionId": "m77zpnmpusqmj0zk80l",
+    "loginTime": "2025-12-11T05:16:44.580Z",
+    "lastActivity": "2025-12-11T05:21:02.864Z",
+    "currentPage": "/voting",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
+  },
+  {
+    "userId": 1765094496017,
+    "sessionId": "bik51lpqseomj0zpxq3",
+    "loginTime": "2025-12-11T05:21:11.189Z",
+    "lastActivity": "2025-12-11T05:22:41.192Z",
     "currentPage": "/",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
     "ip": "::1"
