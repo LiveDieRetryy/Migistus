@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
+import { Analytics } from "@vercel/analytics/next";
 import { AuthProvider } from "@/context/AuthContext";
 import { Web3Utils } from "@/utils/web3Utils";
 import MainLayout from "@/components/layout/MainLayout";
@@ -146,6 +147,7 @@ export default function App({ Component, pageProps }: AppProps) {
           {getLayout(<Component {...pageProps} />)}
         </MainLayout>
       </AuthProvider>
+      <Analytics />
     </ErrorBoundary>
   );
 }
