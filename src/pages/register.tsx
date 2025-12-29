@@ -274,7 +274,7 @@ export default function RegisterPage() {  const [form, setForm] = useState({
       setIsAuthenticated(true);
 
       // Check if email verification is required
-      if (response.requiresVerification) {
+      if ((response as any).requiresVerification) {
         // Redirect to verification page
         router.push(`/verify-email-reminder?email=${encodeURIComponent(response.user.email)}&username=${encodeURIComponent(response.user.username)}`);
       } else {
