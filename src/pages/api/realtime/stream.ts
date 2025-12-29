@@ -80,8 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const onlineUsers = await sql`
             SELECT DISTINCT user_id 
             FROM sessions 
-            WHERE is_active = true 
-              AND expires_at > NOW()
+            WHERE expires_at > NOW()
               AND last_active > NOW() - INTERVAL '5 minutes'
           `;
 

@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "userId": 1767033714774,
+    "sessionId": "ec36e08a07df4b060e6ea909c9c4ac37ebbf03cf308f3aeeb205880b10247a04",
+    "loginTime": "2025-12-29T18:44:19.996Z",
+    "lastActivity": "2025-12-29T18:49:13.894Z",
+    "currentPage": "/",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "ip": "::1"
+  }
+]

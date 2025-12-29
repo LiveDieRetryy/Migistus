@@ -273,10 +273,16 @@ export default function RegisterPage() {  const [form, setForm] = useState({
       });
       setIsAuthenticated(true);
 
-      // Show success message briefly, then redirect
-      setTimeout(() => {
-        router.push('/account');
-      }, 2000);
+      // Check if email verification is required
+      if (response.requiresVerification) {
+        // Redirect to verification page
+        router.push(`/verify-email-reminder?email=${encodeURIComponent(response.user.email)}&username=${encodeURIComponent(response.user.username)}`);
+      } else {
+        // Show success message briefly, then redirect to account
+        setTimeout(() => {
+          router.push('/account');
+        }, 2000);
+      }
     } catch (err: any) {
       setError(err.message || "Registration failed");
     } finally {

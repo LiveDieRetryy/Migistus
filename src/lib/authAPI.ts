@@ -60,7 +60,9 @@ class AuthAPIClient {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Login failed');
+      const err: any = new Error(error.error || error.message || 'Login failed');
+      err.response = { data: error, status: response.status };
+      throw err;
     }
 
     return response.json();

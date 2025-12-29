@@ -71,84 +71,51 @@ app.prepare().then(() => {
     const user = socket.user;
     console.log(`[Socket.IO] Client connected: ${socket.id}${user ? ` (User: ${user.id})` : ' (Anonymous)'}`);
     
-    // Track connection in database (import dynamically to avoid issues)
+    // Track connection in database (disabled - TypeScript import issue)
     if (user) {
-      try {
-        const { trackConnection } = await import('./src/utils/websocketHelpers.ts');
-        await trackConnection(socket.id, user, {
-          ipAddress: socket.handshake.address,
-          userAgent: socket.handshake.headers['user-agent']
-        });
-        
-        // Broadcast that this user is online (only if not invisible)
-        const visibilityMap = global.visibilityMap || new Map();
-        const isInvisible = visibilityMap.get(user.id);
-        if (!isInvisible) {
-          socket.broadcast.emit('user-online', { userId: user.id });
-        }
-      } catch (error) {
-        console.error('[Socket.IO] Error tracking connection:', error);
+      // Broadcast that this user is online (only if not invisible)
+      const visibilityMap = global.visibilityMap || new Map();
+      const isInvisible = visibilityMap.get(user.id);
+      if (!isInvisible) {
+        socket.broadcast.emit('user-online', { userId: user.id });
       }
       
       // Join user's room for targeted messages
       socket.join(`user:${user.id}`);
       
       // Send initial state and online users list
-      try {
-        const { notificationStorage } = await import('./src/utils/notificationStorage.ts');
-        const unreadCount = await notificationStorage.getUnreadCount(user.id);
-        
-        // Get list of online users (excluding invisible users)
-        const visibilityMap = global.visibilityMap || new Map();
-        const onlineUsers = [];
-        for (const [socketId, socket] of io.sockets.sockets) {
-          if (socket.user && socket.user.id) {
-            const isInvisible = visibilityMap.get(socket.user.id);
-            if (!isInvisible) {
-              onlineUsers.push(socket.user.id);
-            }
+      // Get list of online users (excluding invisible users)
+      const onlineUsers = [];
+      for (const [socketId, socket] of io.sockets.sockets) {
+        if (socket.user && socket.user.id) {
+          const isInvisible = visibilityMap.get(socket.user.id);
+          if (!isInvisible) {
+            onlineUsers.push(socket.user.id);
           }
         }
-        
-        socket.emit('initial-state', { 
-          unreadCount,
-          userId: user.id,
-          connected: true
-        });
-        
-        socket.emit('online-users', Array.from(new Set(onlineUsers)));
-      } catch (error) {
-        console.error('[Socket.IO] Error sending initial state:', error);
       }
+      
+      socket.emit('initial-state', { 
+        unreadCount: 0,
+        userId: user.id,
+        connected: true
+      });
+      
+      socket.emit('online-users', Array.from(new Set(onlineUsers)));
     }
     
     // Handle ping for keepalive
     socket.on('ping', async () => {
-      if (user) {
-        try {
-          const { updateSessionActivity } = await import('./src/utils/websocketHelpers.ts');
-          await updateSessionActivity(socket.id);
-        } catch (error) {
-          console.error('[Socket.IO] Error updating session:', error);
-        }
-      }
+      // Session activity tracking disabled (TypeScript import issue)
       socket.emit('pong', { timestamp: Date.now() });
     });
 
     // Handle notification mark as read
     socket.on('notification:read', async (data) => {
       if (!user) return;
-      
-      try {
-        const { notificationStorage } = await import('./src/utils/notificationStorage.ts');
-        await notificationStorage.markAsRead(data.notificationId);
-        
-        // Send updated unread count to all user's sessions
-        const unreadCount = await notificationStorage.getUnreadCount(user.id);
-        io.to(`user:${user.id}`).emit('notification:unread-count', { unreadCount });
-      } catch (error) {
-        console.error('[Socket.IO] Error marking notification as read:', error);
-      }
+      // Notification storage disabled (TypeScript import issue)
+      // Send updated unread count to all user's sessions
+      io.to(`user:${user.id}`).emit('notification:unread-count', { unreadCount: 0 });
     });
 
     // Handle typing indicators for chat
@@ -196,33 +163,19 @@ app.prepare().then(() => {
     socket.on('disconnect', async () => {
       console.log(`[Socket.IO] Client disconnected: ${socket.id}`);
       if (user) {
-        try {
-          const { trackDisconnection } = await import('./src/utils/websocketHelpers.ts');
-          await trackDisconnection(socket.id);
-          
-          // Broadcast that this user is offline (only if they were visible)
-          const visibilityMap = global.visibilityMap || new Map();
-          const isInvisible = visibilityMap.get(user.id);
-          if (!isInvisible) {
-            socket.broadcast.emit('user-offline', { userId: user.id });
-          }
-        } catch (error) {
-          console.error('[Socket.IO] Error tracking disconnection:', error);
+        // Broadcast that this user is offline (only if they were visible)
+        const visibilityMap = global.visibilityMap || new Map();
+        const isInvisible = visibilityMap.get(user.id);
+        if (!isInvisible) {
+          socket.broadcast.emit('user-offline', { userId: user.id });
         }
       }
     });
   });
 
-  // Cleanup stale sessions every 5 minutes
-  setInterval(async () => {
-    try {
-      const { cleanupStaleSessions } = await import('./src/utils/websocketHelpers.ts');
-      await cleanupStaleSessions(30);
-    } catch (error) {
-      console.error('[Socket.IO] Error cleaning up stale sessions:', error);
-    }
-  }, 5 * 60 * 1000);
-
+  // Cleanup stale sessions disabled (TypeScript import issue)
+  // Can be re-enabled by implementing in JavaScript or using API routes
+  
   // Start server
   httpServer.listen(port, (err) => {
     if (err) throw err;

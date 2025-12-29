@@ -87,6 +87,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(403).json({ error: "Account has been suspended" });
     }
 
+    // Check if email is verified
+    const emailVerified = user.email_verified !== false; // Default to true for legacy accounts
+    if (!emailVerified) {
+      console.log("⚠️ Email not verified for user:", email);
+      return res.status(403).json({ 
+        error: "Email not verified",
+        code: "EMAIL_NOT_VERIFIED",
+        email: user.email,
+        username: user.username,
+        message: "Please verify your email address before logging in."
+      });
+    }
+
     // Handle users without passwords (legacy accounts)
     const passwordHash = user.password_hash || user.password;
     if (!passwordHash) {

@@ -2,8 +2,48 @@ import fs from "fs";
 import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { createSession, setSessionCookie } from "@/lib/session";
+import { sendEmail, emailTemplates } from "@/lib/email";
+import { db, isProduction } from "@/lib/db";
 import formidable from 'formidable';
+
+// Verification token management
+interface VerificationToken {
+  token: string;
+  email: string;
+  createdAt: string;
+  used: boolean;
+}
+
+const TOKENS_FILE = path.join(process.cwd(), 'public', 'data', 'verification-tokens.json');
+
+function ensureDirectoryExists() {
+  const dir = path.dirname(TOKENS_FILE);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
+
+function readVerificationTokens(): VerificationToken[] {
+  ensureDirectoryExists();
+  if (!fs.existsSync(TOKENS_FILE)) {
+    fs.writeFileSync(TOKENS_FILE, JSON.stringify([]));
+    return [];
+  }
+  const data = fs.readFileSync(TOKENS_FILE, 'utf8');
+  return JSON.parse(data);
+}
+
+function writeVerificationTokens(tokens: VerificationToken[]) {
+  ensureDirectoryExists();
+  fs.writeFileSync(TOKENS_FILE, JSON.stringify(tokens, null, 2));
+}
+
+function generateVerificationToken(): string {
+  // Generate a 6-digit verification code
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 // Disable default body parser to handle FormData
 export const config = {
@@ -216,6 +256,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     tier: "New Member",
     banned: false,
     verified: false,
+    email_verified: false, // Email verification status
     joinDate: new Date().toISOString().split('T')[0],
     lastLogin: null,
     wallet: 0,
@@ -289,6 +330,57 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log("✅ Session created for new user:", newUser.username);
   console.log("📢 Registration complete - client should dispatch 'newUserRegistered' event");
   
+  // Generate verification token and send email (don't block registration if it fails)
+  try {
+    const verificationCode = generateVerificationToken();
+    
+    if (isProduction()) {
+      console.log("🔐 Production mode: Storing verification token in database");
+      try {
+        // Store in database
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+        await db.createVerificationToken(newUser.email, verificationCode, expiresAt);
+        console.log("✅ Verification token stored in database");
+      } catch (dbError) {
+        console.error("❌ Database error, falling back to file storage:", dbError);
+        // Fallback to file storage
+        const tokens = readVerificationTokens();
+        const filteredTokens = tokens.filter(t => t.email !== newUser.email);
+        filteredTokens.push({
+          token: verificationCode,
+          email: newUser.email,
+          createdAt: new Date().toISOString(),
+          used: false,
+        });
+        writeVerificationTokens(filteredTokens);
+      }
+    } else {
+      console.log("🔓 Development mode: Storing verification token in file");
+      const tokens = readVerificationTokens();
+      const filteredTokens = tokens.filter(t => t.email !== newUser.email);
+      filteredTokens.push({
+        token: verificationCode,
+        email: newUser.email,
+        createdAt: new Date().toISOString(),
+        used: false,
+      });
+      writeVerificationTokens(filteredTokens);
+    }
+    
+    const template = emailTemplates.emailVerification(newUser.username, verificationCode, 60);
+    
+    await sendEmail({
+      to: newUser.email,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
+    });
+    console.log("✅ Verification email sent to:", newUser.email);
+  } catch (emailError) {
+    console.error("⚠️ Failed to send verification email:", emailError);
+    // Continue - don't fail registration because email failed
+  }
+  
   // Return the new user object for localStorage (without sensitive data)
   const userResponse = {
     id: newUser.id,
@@ -320,7 +412,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       sessionId: sessionToken,
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
     },
-    message: "Welcome to MIGISTUS! Your account has been created successfully."
+    requiresVerification: true,
+    message: "Welcome to MIGISTUS! Please check your email to verify your account."
   });
   } catch (error: any) {
     console.error('❌ Registration error:', error);

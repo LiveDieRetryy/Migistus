@@ -91,6 +91,16 @@ export const db = {
     `;
   },
 
+  async markUserAsVerified(email: string) {
+    const result = await sql`
+      UPDATE users 
+      SET email_verified = true, verified = true, updated_at = CURRENT_TIMESTAMP
+      WHERE LOWER(email) = LOWER(${email})
+      RETURNING *
+    `;
+    return result.rows[0] || null;
+  },
+
   // Sessions
   async createSession(userId: number, sessionId: string, expiresAt: Date) {
     const result = await sql`
@@ -116,6 +126,41 @@ export const db = {
     await sql`DELETE FROM sessions WHERE session_id = ${sessionId}`;
   },
 
+  // Email Verification Tokens
+  async createVerificationToken(email: string, code: string, expiresAt: Date) {
+    const result = await sql`
+      INSERT INTO verification_tokens (email, code, expires_at, used)
+      VALUES (${email.toLowerCase()}, ${code}, ${expiresAt.toISOString()}, false)
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async getVerificationToken(code: string) {
+    const result = await sql`
+      SELECT * FROM verification_tokens 
+      WHERE code = ${code} AND used = false AND expires_at > CURRENT_TIMESTAMP
+      ORDER BY created_at DESC
+      LIMIT 1
+    `;
+    return result.rows[0] || null;
+  },
+
+  async markTokenAsUsed(code: string) {
+    await sql`
+      UPDATE verification_tokens 
+      SET used = true, updated_at = CURRENT_TIMESTAMP
+      WHERE code = ${code}
+    `;
+  },
+
+  async cleanupExpiredTokens() {
+    await sql`
+      DELETE FROM verification_tokens 
+      WHERE expires_at < CURRENT_TIMESTAMP OR used = true
+    `;
+  },
+
   async cleanupExpiredSessions() {
     await sql`DELETE FROM sessions WHERE expires_at < CURRENT_TIMESTAMP`;
   },
@@ -125,7 +170,7 @@ export const db = {
       UPDATE sessions 
       SET last_active = CURRENT_TIMESTAMP,
           current_page = ${currentPage || null}
-      WHERE user_id = ${userId} AND is_active = true AND expires_at > CURRENT_TIMESTAMP
+      WHERE user_id = ${userId} AND expires_at > CURRENT_TIMESTAMP
       RETURNING *
     `;
     return result.rows[0] || null;
@@ -139,8 +184,7 @@ export const db = {
       SELECT DISTINCT u.id, u.username, u.avatar, u.tier, s.last_active, s.current_page
       FROM users u
       JOIN sessions s ON s.user_id = u.id
-      WHERE s.is_active = true 
-        AND s.expires_at > CURRENT_TIMESTAMP
+      WHERE s.expires_at > CURRENT_TIMESTAMP
         AND s.last_active > ${fiveMinutesAgo}
         AND (s.is_invisible = false OR s.is_invisible IS NULL)
       ORDER BY s.last_active DESC
@@ -157,7 +201,6 @@ export const db = {
           SELECT COUNT(*) as count
           FROM sessions s
           WHERE s.user_id = ${userId}
-            AND s.is_active = true
             AND s.expires_at > CURRENT_TIMESTAMP
             AND s.last_active > ${fiveMinutesAgo}
         `
@@ -165,7 +208,6 @@ export const db = {
           SELECT COUNT(*) as count
           FROM sessions s
           WHERE s.user_id = ${userId}
-            AND s.is_active = true
             AND s.expires_at > CURRENT_TIMESTAMP
             AND s.last_active > ${fiveMinutesAgo}
             AND (s.is_invisible = false OR s.is_invisible IS NULL)
@@ -178,7 +220,7 @@ export const db = {
     await sql`
       UPDATE sessions 
       SET is_invisible = ${isInvisible}
-      WHERE user_id = ${userId} AND is_active = true
+      WHERE user_id = ${userId}
     `;
   },
 

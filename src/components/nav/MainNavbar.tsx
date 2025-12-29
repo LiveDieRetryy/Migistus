@@ -153,7 +153,7 @@ export default function MainNavbar() {
     },
     {
       name: "Recently Completed",
-      href: "/drops/completed", 
+      href: "/recently-completed", 
       icon: <span style={{fontSize: '2rem'}}>✅</span>,
       description: "Past successful drops"
     }

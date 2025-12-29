@@ -172,12 +172,23 @@ export default function ChatMessenger({
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    if (diffDays < 7) return date.toLocaleDateString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+    // Always show time
+    const timeStr = date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+
+    if (diffMins < 1) return `Just now • ${timeStr}`;
+    if (diffMins < 60) return `${diffMins}m ago • ${timeStr}`;
+    if (diffHours < 24) return timeStr;
+    if (diffDays < 7) {
+      const dayStr = date.toLocaleDateString('en-US', { weekday: 'short' });
+      return `${dayStr} ${timeStr}`;
+    }
     
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${dateStr} ${timeStr}`;
   };
 
   // Handle keyboard shortcuts

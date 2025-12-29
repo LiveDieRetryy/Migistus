@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { notificationStorage } from '@/utils/notificationStorage';
 import { getSessionFromRequest } from '@/lib/session';
+import { sendEmail } from '@/lib/email';
 
 export default async function handler(
   req: NextApiRequest,
@@ -31,38 +32,53 @@ export default async function handler(
     } = req.body;
 
     // Validate required fields
-    if (!toEmail || !fromEmail || !subject || !body) {
+    if (!toEmail || !subject || !body) {
       return res.status(400).json({
-        error: 'Missing required fields: toEmail, fromEmail, subject, body'
+        error: 'Missing required fields: toEmail, subject, body'
       });
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(toEmail) || !emailRegex.test(fromEmail)) {
+    if (!emailRegex.test(toEmail)) {
       return res.status(400).json({
         error: 'Invalid email format'
       });
     }
 
     if (sendImmediately) {
-      // TODO: Implement immediate email sending with nodemailer or similar
-      // For now, queue with high priority
-      const emailItem = await notificationStorage.queueEmail({
-        recipientEmail: toEmail,
-        recipientName: '',
+      // Send email immediately using nodemailer
+      const success = await sendEmail({
+        to: toEmail,
         subject,
-        htmlContent: htmlBody || body,
-        textContent: body,
-        priority: '10', // Highest priority
-        scheduledFor: new Date().toISOString() // Send now
+        text: body,
+        html: htmlBody || body,
+        from: fromEmail,
       });
 
-      return res.status(200).json({
-        success: true,
-        emailId: emailItem.id,
-        message: 'Email queued with highest priority for immediate sending'
-      });
+      if (success) {
+        return res.status(200).json({
+          success: true,
+          message: 'Email sent successfully'
+        });
+      } else {
+        // If immediate send fails, queue it as fallback
+        const emailItem = await notificationStorage.queueEmail({
+          recipientEmail: toEmail,
+          recipientName: '',
+          subject,
+          htmlContent: htmlBody || body,
+          textContent: body,
+          priority: '10',
+          scheduledFor: new Date().toISOString()
+        });
+
+        return res.status(202).json({
+          success: true,
+          emailId: emailItem.id,
+          message: 'Email queued for retry (initial send failed)'
+        });
+      }
     } else {
       // Queue for background processing
       const emailItem = await notificationStorage.queueEmail({
