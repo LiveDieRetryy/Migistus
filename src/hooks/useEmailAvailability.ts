@@ -14,7 +14,7 @@ export function useEmailAvailability(email: string, debounceMs: number = 500): E
     message: ''
   });
   
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     // Clear previous timeout

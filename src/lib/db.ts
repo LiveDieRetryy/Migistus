@@ -2892,12 +2892,13 @@ export const db = {
   async searchContent(searchTerm: string, entityTypes?: string[], limit: number = 20) {
     let query;
     if (entityTypes && entityTypes.length > 0) {
+      const typesArray = `{${entityTypes.join(',')}}`;
       query = sql`
         SELECT *, 
           ts_rank(search_vector, plainto_tsquery('english', ${searchTerm})) as rank
         FROM search_index
         WHERE search_vector @@ plainto_tsquery('english', ${searchTerm})
-          AND entity_type = ANY(${entityTypes})
+          AND entity_type = ANY(${typesArray}::text[])
         ORDER BY rank DESC, indexed_at DESC
         LIMIT ${limit}
       `;

@@ -84,7 +84,7 @@ export default function ChatMessenger({
     try {
       const formData = new FormData();
       formData.append('content', newMessage.trim());
-      formData.append('senderId', user?.id || '');
+      formData.append('senderId', user?.id ? String(user.id) : '');
       formData.append('senderName', user?.username || 'Anonymous');
       
       // Add files if any
@@ -234,7 +234,7 @@ export default function ChatMessenger({
           </div>
         ) : (
           messages.map((message, index) => {
-            const isOwnMessage = message.senderId === user?.id;
+            const isOwnMessage = message.senderId === String(user?.id);
             const showAvatar = index === 0 || messages[index - 1].senderId !== message.senderId;
 
             return (

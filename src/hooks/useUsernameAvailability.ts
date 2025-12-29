@@ -14,7 +14,7 @@ export function useUsernameAvailability(username: string, debounceMs: number = 5
   const [available, setAvailable] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(false);
   const [message, setMessage] = useState('');
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const checkAvailability = useCallback(async (usernameToCheck: string) => {
     if (!usernameToCheck || usernameToCheck.length < 3) {

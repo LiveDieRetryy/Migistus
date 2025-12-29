@@ -39,7 +39,7 @@ export default function LoginPage() {
           }));
         }
         
-        setUser(adminResponse.user);
+        setUser({ ...adminResponse.user, sessionId: adminResponse.session?.sessionId || '' });
         setIsAuthenticated(true);
         router.push("/kingdom");
         return;
@@ -64,7 +64,7 @@ export default function LoginPage() {
         }));
       }
 
-      setUser(response.user);
+      setUser({ ...response.user, sessionId: response.session?.sessionId || '' });
       setIsAuthenticated(true);
       
       // Update activity tracker

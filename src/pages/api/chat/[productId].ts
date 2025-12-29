@@ -77,12 +77,15 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       fs.writeFileSync(filePath, JSON.stringify(messages, null, 2));
       
       // Emit real-time message via Socket.IO
-      const conversationId = `product-${productId}`;
-      emitChatMessage(conversationId, {
+      emitChatMessage({
         id: newMessage.id,
+        conversationId: `product-${productId}`,
         senderId: message.senderId || 0,
+        senderName: message.senderName || 'Anonymous',
+        senderAvatar: null,
         content: filteredMessage,
-        timestamp: newMessage.timestamp
+        createdAt: newMessage.timestamp,
+        read: false
       });
       
       res.status(201).json({ success: true, message: newMessage });

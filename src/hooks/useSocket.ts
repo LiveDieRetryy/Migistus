@@ -249,7 +249,10 @@ export function useChatSocket(conversationId?: string) {
 
     const handleTyping = (data: { userId: number; isTyping: boolean }) => {
       if (data.isTyping) {
-        setTypingUsers(prev => [...new Set([...prev, data.userId])]);
+        setTypingUsers(prev => {
+          const newSet = new Set([...prev, data.userId]);
+          return Array.from(newSet);
+        });
       } else {
         setTypingUsers(prev => prev.filter(id => id !== data.userId));
       }

@@ -206,13 +206,26 @@ export default function UserProfilePage() {
   const [wishlist, setWishlist] = useState<any[]>([]);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
-  const handlePostCreated = (newPost: SocialPost) => {
-    setPosts(prevPosts => [newPost, ...prevPosts]);
+  const handlePostCreated = (newPost: any) => {
+    // Convert Post type to SocialPost type if needed
+    const socialPost: SocialPost = {
+      ...newPost,
+      userId: newPost.userId || newPost.authorId,
+      username: newPost.username || newPost.author || profile?.username || '',
+      userAvatar: newPost.userAvatar || newPost.avatar || profile?.avatar || '',
+      timestamp: newPost.timestamp || newPost.createdAt || new Date().toISOString(),
+      likes: newPost.likes || 0,
+      comments: newPost.comments || 0,
+      shares: newPost.shares || 0,
+      likedBy: newPost.likedBy || [],
+      commentsList: newPost.commentsList || []
+    };
+    setPosts(prevPosts => [socialPost, ...prevPosts]);
   };
 
-  const handlePostUpdated = (updatedPost: SocialPost) => {
+  const handlePostUpdated = (updatedPost: any) => {
     setPosts(prevPosts => prevPosts.map(post => 
-      post.id === updatedPost.id ? updatedPost : post
+      post.id === updatedPost.id ? { ...post, ...updatedPost } : post
     ));
   };
   const handlePostDeleted = (postId: number) => {
@@ -522,12 +535,12 @@ export default function UserProfilePage() {
       }
     };
 
-    window.addEventListener('followerUpdate', handleFollowerUpdate as EventListener);
-    window.addEventListener('followingUpdate', handleFollowingUpdate as EventListener);
+    window.addEventListener('followerUpdate', handleFollowerUpdate as any);
+    window.addEventListener('followingUpdate', handleFollowingUpdate as any);
     
     return () => {
-      window.removeEventListener('followerUpdate', handleFollowerUpdate as EventListener);
-      window.removeEventListener('followingUpdate', handleFollowingUpdate as EventListener);
+      window.removeEventListener('followerUpdate', handleFollowerUpdate as any);
+      window.removeEventListener('followingUpdate', handleFollowingUpdate as any);
     };
   }, [profile?.id]);
 
@@ -980,7 +993,7 @@ export default function UserProfilePage() {
                       posts.map(post => (
                         <PostCard
                           key={post.id}
-                          post={post}
+                          post={post as any}
                           onUpdate={handlePostUpdated}
                           onDelete={handlePostDeleted}
                         />

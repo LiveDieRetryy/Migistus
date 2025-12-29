@@ -213,7 +213,7 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
       {/* Post Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <Link href={`/account/profile/${createSlug(localPost.username)}`}>
+          <Link href={`/account/profile/${createSlug(localPost.username || 'user')}`}>
             <div className="w-12 h-12 rounded-full border-2 border-yellow-400/30 hover:border-yellow-400/50 transition-colors overflow-hidden bg-zinc-700 cursor-pointer">
               <Image
                 src={localPost.userAvatar || "/Icons/New Member.png"}

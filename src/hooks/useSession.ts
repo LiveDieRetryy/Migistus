@@ -44,8 +44,8 @@ export function useSession(options: UseSessionOptions = {}): UseSessionReturn {
   const [loading, setLoading] = useState(true);
   const [isExpiring, setIsExpiring] = useState(false);
   const [timeUntilExpiration, setTimeUntilExpiration] = useState<number | null>(null);
-  const refreshTimerRef = useRef<NodeJS.Timeout>();
-  const expirationTimerRef = useRef<NodeJS.Timeout>();
+  const refreshTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const expirationTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Calculate time until session expires
   const calculateTimeUntilExpiration = useCallback((expiresAt: string): number => {

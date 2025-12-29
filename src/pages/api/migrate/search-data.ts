@@ -1,6 +1,7 @@
 // src/pages/api/migrate/search-data.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSessionFromRequest } from '@/lib/session';
+import { sql } from '@vercel/postgres';
 import fs from 'fs';
 import path from 'path';
 import { db } from '@/lib/db';

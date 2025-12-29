@@ -19,6 +19,7 @@ export interface RegisterData {
   zipCode?: string;
   phoneNumber?: string;
   referralSource?: string;
+  agreeToTerms?: boolean;
   agreeToMarketing?: boolean;
   preferredLanguage?: string;
   timezone?: string;
