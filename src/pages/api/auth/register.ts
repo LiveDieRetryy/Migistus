@@ -226,6 +226,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
+  // Hash password for development file storage only
+  // Production database hashing is handled in db.createUser
   const hash = await bcrypt.hash(password, 10);
   
   // Process avatar file if uploaded
@@ -321,7 +323,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     savedUser = await db.createUser({
       username,
       email,
-      password: hash,
+      password: password,
       tier: "Initiate",
       firstName,
       lastName,
