@@ -115,6 +115,16 @@ export default async function handler(
         return res.status(400).json({ error: 'Email is already verified' });
       }
 
+      // Clean up old tokens for this email before creating a new one
+      if (isProduction()) {
+        try {
+          await db.cleanupExpiredTokens();
+          console.log('✅ Cleaned up expired tokens');
+        } catch (cleanupError) {
+          console.error('⚠️ Failed to cleanup tokens:', cleanupError);
+        }
+      }
+
       // Generate and store token
       const code = generateVerificationToken();
       
@@ -122,6 +132,8 @@ export default async function handler(
         console.log('🔐 Production mode: Storing verification token in database');
         try {
           const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+          // Delete any existing tokens for this email first
+          await sql`DELETE FROM verification_tokens WHERE email = ${email.toLowerCase()}`;
           await db.createVerificationToken(email.toLowerCase(), code, expiresAt);
           console.log('✅ Verification token stored in database');
         } catch (dbError) {

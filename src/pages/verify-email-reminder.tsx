@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Head from 'next/head';
@@ -19,6 +19,24 @@ export default function VerifyEmailReminder() {
   const [loginPassword, setLoginPassword] = useState('');
   const [loggingIn, setLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [cooldown, setCooldown] = useState(0);
+  const [initialSent, setInitialSent] = useState(false);
+
+  // Automatically send verification email on mount
+  useEffect(() => {
+    if (email && !initialSent) {
+      setInitialSent(true);
+      handleResendEmail();
+    }
+  }, [email, initialSent]);
+
+  // Countdown timer for resend button
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
 
   const handleResendEmail = async () => {
     if (!email) {
@@ -41,6 +59,7 @@ export default function VerifyEmailReminder() {
 
       if (response.ok) {
         setMessage('✅ Verification code sent! Check your inbox.');
+        setCooldown(5); // Start 5-second cooldown
       } else {
         setError(data.error || 'Failed to send verification code');
       }
@@ -200,12 +219,12 @@ export default function VerifyEmailReminder() {
                 <div className="space-y-3">
                   <button
                     onClick={handleResendEmail}
-                    disabled={resending}
+                    disabled={resending || cooldown > 0}
                     className={`w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold py-3 px-4 rounded-lg transition-all duration-300 ${
-                      resending ? 'opacity-50 cursor-not-allowed' : ''
+                      (resending || cooldown > 0) ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
-                    {resending ? 'Sending...' : '📧 Resend Code'}
+                    {resending ? 'Sending...' : cooldown > 0 ? `Resend Code (${cooldown}s)` : '📧 Resend Code'}
                   </button>
 
                   <Link 
