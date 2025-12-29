@@ -537,11 +537,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       sessionId: sessionToken,
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
     },
-    requiresVerification: true,
-    message: "Welcome to MIGISTUS! Please check your email to verify your account."
-  });
-  } catch (error: any) {
-    console.error('❌ Registration error:', error);
+    requiresVerification: shouldVerify,
+    message: shouldVerify 
+      ? "Welcome to MIGISTUS! Please check your email to verify your account."
+      : "Welcome to MIGISTtrue,
+    message: "Welcome to MIGISTUS! Please check your email to verify your account.tion error:', error);
     return res.status(500).json({ error: error.message || 'Registration failed' });
   }
 }

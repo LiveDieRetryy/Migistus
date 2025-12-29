@@ -153,15 +153,26 @@ export default async function handler(
       const template = emailTemplates.emailVerification(user.username, code, 60);
       
       try {
-        await sendEmail({
+        const emailSent = await sendEmail({
           to: user.email,
           subject: template.subject,
           text: template.text,
           html: template.html,
         });
-        console.log(`Verification email sent to ${user.email}`);
+        
+        if (emailSent) {
+          console.log(`✅ Verification email sent successfully to ${user.email}`);
+        } else {
+          console.error(`❌ Failed to send verification email to ${user.email}`);
+        }
       } catch (emailError) {
-        console.error('Failed to send verification email:', emailError);
+        console.error('❌ Email sending error:', emailError);
+        console.error('Email config check:', {
+          hasHost: !!process.env.SMTP_HOST,
+          hasPort: !!process.env.SMTP_PORT,
+          hasUser: !!process.env.SMTP_USER,
+          hasPass: !!process.env.SMTP_PASS,
+        });
         // Don't fail the request if email fails
       }
 
