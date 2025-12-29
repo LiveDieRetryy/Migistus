@@ -203,16 +203,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "You must be at least 13 years old to register" });
   }
 
-  const users = readUsers();
-  
-  // Check for existing email
-  if (users.some((u: any) => u.email === email)) {
-    return res.status(400).json({ error: "Email already registered" });
-  }
+  // Check for existing users (database in production, files in development)
+  if (isProduction()) {
+    console.log("🔐 Production mode: Checking for existing users in database");
+    try {
+      const existingEmail = await db.getUser(email);
+      if (existingEmail) {
+        return res.status(400).json({ error: "Email already registered" });
+      }
 
-  // Check for existing username
-  if (users.some((u: any) => u.username === username)) {
-    return res.status(400).json({ error: "Username already taken" });
+      const existingUsername = await db.getUserByUsername(username);
+      if (existingUsername) {
+        return res.status(400).json({ error: "Username already taken" });
+      }
+    } catch (dbError) {
+      console.error("❌ Database error, falling back to file check:", dbError);
+      // Fallback to file-based check
+      const users = readUsers();
+      if (users.some((u: any) => u.email === email)) {
+        return res.status(400).json({ error: "Email already registered" });
+      }
+      if (users.some((u: any) => u.username === username)) {
+        return res.status(400).json({ error: "Username already taken" });
+      }
+    }
+  } else {
+    console.log("🔓 Development mode: Checking for existing users in files");
+    const users = readUsers();
+    if (users.some((u: any) => u.email === email)) {
+      return res.status(400).json({ error: "Email already registered" });
+    }
+    if (users.some((u: any) => u.username === username)) {
+      return res.status(400).json({ error: "Username already taken" });
+    }
   }
 
   const hash = await bcrypt.hash(password, 10);
@@ -297,37 +320,139 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   };
 
   console.log("📝 Registering new user:", {
-    username: newUser.username,
-    email: newUser.email,
-    id: newUser.id
+    username,
+    email,
+    useDatabase: isProduction()
   });
 
-  users.push(newUser);
-  
-  console.log(`💾 Writing ${users.length} users to file...`);
-  
-  try {
+  let savedUser: any;
+
+  // Save user to database (production) or file (development)
+  if (isProduction()) {
+    console.log("🔐 Production mode: Creating user in database");
+    try {
+      savedUser = await db.createUser({
+        username,
+        email,
+        password: hash,
+        tier: "Initiate",
+        firstName,
+        lastName,
+        dateOfBirth,
+        country,
+        state: state || null,
+        city: city || null,
+        phoneNumber: phoneNumber || null,
+        referralSource: referralSource || null,
+        agreeToMarketing: agreeToMarketing || false
+      });
+      console.log("✅ User created in database:", savedUser.id);
+    } catch (dbError) {
+      console.error("❌ Database error, falling back to file storage:", dbError);
+      // Fallback to file-based
+      const users = readUsers();
+      const newUser = {
+        id: Date.now(),
+        username,
+        email,
+        password: hash,
+        tier: "New Member",
+        banned: false,
+        verified: false,
+        email_verified: false,
+        joinDate: new Date().toISOString().split('T')[0],
+        lastLogin: null,
+        wallet: 0,
+        guildCoins: 100,
+        guildTokens: 100,
+        firstName,
+        lastName,
+        dateOfBirth,
+        country,
+        state: state || null,
+        city: city || null,
+        phoneNumber: phoneNumber || null,
+        referralSource: referralSource || null,
+        avatar: avatarPath,
+        bio: "",
+        agreeToMarketing: agreeToMarketing || false,
+        emailNotifications: true,
+        pushNotifications: false,
+        theme: "dark",
+        language: "en",
+        totalPledges: 0,
+        totalVotes: 0,
+        dropsJoined: 0,
+        followers: 0,
+        following: 0,
+        profileViews: 0,
+        createdAt: new Date().toISOString(),
+        loginCount: 0,
+        marketingEmails: agreeToMarketing || false,
+        productUpdates: true,
+        orderUpdates: true,
+        updatedAt: new Date().toISOString()
+      };
+      users.push(newUser);
+      writeUsers(users);
+      savedUser = newUser;
+    }
+  } else {
+    console.log("🔓 Development mode: Creating user in files");
+    const users = readUsers();
+    const newUser = {
+      id: Date.now(),
+      username,
+      email,
+      password: hash,
+      tier: "New Member",
+      banned: false,
+      verified: false,
+      email_verified: false,
+      joinDate: new Date().toISOString().split('T')[0],
+      lastLogin: null,
+      wallet: 0,
+      guildCoins: 100,
+      guildTokens: 100,
+      firstName,
+      lastName,
+      dateOfBirth,
+      country,
+      state: state || null,
+      city: city || null,
+      phoneNumber: phoneNumber || null,
+      referralSource: referralSource || null,
+      avatar: avatarPath,
+      bio: "",
+      agreeToMarketing: agreeToMarketing || false,
+      emailNotifications: true,
+      pushNotifications: false,
+      theme: "dark",
+      language: "en",
+      totalPledges: 0,
+      totalVotes: 0,
+      dropsJoined: 0,
+      followers: 0,
+      following: 0,
+      profileViews: 0,
+      createdAt: new Date().toISOString(),
+      loginCount: 0,
+      marketingEmails: agreeToMarketing || false,
+      productUpdates: true,
+      orderUpdates: true,
+      updatedAt: new Date().toISOString()
+    };
+    users.push(newUser);
     writeUsers(users);
-    console.log("✅ User data written successfully");
-  } catch (error) {
-    console.error("❌ Failed to write user data:", error);
-    return res.status(500).json({ error: "Failed to save user account. Please try again." });
+    savedUser = newUser;
+    console.log("✅ User created in files:", savedUser.id);
   }
-  
-  // Verify the write was successful by reading back
-  const verifyUsers = readUsers();
-  const savedUser = verifyUsers.find((u: any) => u.id === newUser.id);
-  if (!savedUser) {
-    console.error("❌ User was not found after write - file write may have failed!");
-    return res.status(500).json({ error: "Account creation verification failed. Please contact support." });
-  }
-  console.log("✅ User verified in database:", savedUser.username);
   
   // Create server-side session for auto-login
-  const sessionToken = await createSession(newUser.id, newUser.username, newUser.email, newUser.tier);
+  const sessionToken = await createSession(savedUser.id, savedUser.username, savedUser.email, savedUser.tier);
   setSessionCookie(res, sessionToken);
   
-  console.log("✅ Session created for new user:", newUser.username);
+  console.log("✅ Session created for new user:", savedUser.username);
   console.log("📢 Registration complete - client should dispatch 'newUserRegistered' event");
   
   // Generate verification token and send email (don't block registration if it fails)
@@ -339,7 +464,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         // Store in database
         const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-        await db.createVerificationToken(newUser.email, verificationCode, expiresAt);
+        await db.createVerificationToken(savedUser.email, verificationCode, expiresAt);
         console.log("✅ Verification token stored in database");
       } catch (dbError) {
         console.error("❌ Database error, falling back to file storage:", dbError);
@@ -367,15 +492,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       writeVerificationTokens(filteredTokens);
     }
     
-    const template = emailTemplates.emailVerification(newUser.username, verificationCode, 60);
+    const template = emailTemplates.emailVerification(savedUser.username, verificationCode, 60);
     
     await sendEmail({
-      to: newUser.email,
+      to: savedUser.email,
       subject: template.subject,
       text: template.text,
       html: template.html,
     });
-    console.log("✅ Verification email sent to:", newUser.email);
+    console.log("✅ Verification email sent to:", savedUser.email);
   } catch (emailError) {
     console.error("⚠️ Failed to send verification email:", emailError);
     // Continue - don't fail registration because email failed
@@ -383,25 +508,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   // Return the new user object for localStorage (without sensitive data)
   const userResponse = {
-    id: newUser.id,
-    username: newUser.username,
-    email: newUser.email,
-    tier: newUser.tier,
-    firstName: newUser.firstName,
-    lastName: newUser.lastName,
-    country: newUser.country,
-    state: newUser.state,
-    city: newUser.city,
-    avatar: newUser.avatar,
-    bio: newUser.bio,
-    joinDate: newUser.joinDate,
-    totalPledges: newUser.totalPledges,
-    totalVotes: newUser.totalVotes,
-    dropsJoined: newUser.dropsJoined,
-    followers: newUser.followers,
-    following: newUser.following,
-    guildCoins: newUser.guildCoins,
-    guildTokens: newUser.guildTokens
+    id: savedUser.id,
+    username: savedUser.username,
+    email: savedUser.email,
+    tier: savedUser.tier,
+    firstName: savedUser.first_name || savedUser.firstName,
+    lastName: savedUser.last_name || savedUser.lastName,
+    country: savedUser.country,
+    state: savedUser.state,
+    city: savedUser.city,
+    avatar: savedUser.avatar,
+    bio: savedUser.bio || "",
+    joinDate: savedUser.join_date || savedUser.joinDate,
+    totalPledges: savedUser.totalPledges || 0,
+    totalVotes: savedUser.totalVotes || 0,
+    dropsJoined: savedUser.dropsJoined || 0,
+    followers: savedUser.followers || 0,
+    following: savedUser.following || 0,
+    guildCoins: savedUser.guildCoins || 100,
+    guildTokens: savedUser.guildTokens || 100
   };
 
   res.status(201).json({ 
