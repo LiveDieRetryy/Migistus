@@ -1,154 +1,59 @@
 // pages/api/products/index.ts
-import fs from "fs";
-import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { productStorage } from '@/utils/productStorageV2';
 import { processLifecycleTransitions, DEFAULT_LIFECYCLE_CONFIG } from "@/utils/productLifecycle";
 
-const filePath = path.resolve("public/data/products.json");
-
-function readData() {
-  if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, "[]");
-  const json = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(json);
-}
-
-function writeData(data: any) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
-
-function getDefaultProducts() {
-  return [
-    {
-      id: 1,
-      name: "Gilded Vanguard Headset",
-      image: "https://placehold.co/400x400.png?text=Headset",
-      description: "Premium gaming headset with surround sound",
-      goal: 100,
-      link: "https://example.com/headset",
-      timeframe: "30 days",
-      category: "Electronics",
-      votes: 73,
-      featured: true,
-      pledges: 0,
-      pricingTiers: [],
-      slug: "gilded-vanguard-headset"
-    },
-    {
-      id: 2,
-      name: "Wireless Mouse Pro",
-      image: "https://placehold.co/400x400.png?text=Mouse",
-      description: "High-precision wireless gaming mouse",
-      goal: 75,
-      link: "https://example.com/mouse",
-      timeframe: "45 days",
-      category: "Electronics",
-      votes: 42,
-      featured: false,
-      pledges: 0,
-      pricingTiers: [],
-      slug: "wireless-mouse-pro"
-    },
-    {
-      id: 3,
-      name: "Mechanical Keyboard",
-      image: "https://placehold.co/400x400.png?text=Keyboard",
-      description: "RGB backlit mechanical keyboard",
-      goal: 120,
-      link: "https://example.com/keyboard",
-      timeframe: "60 days",
-      category: "Electronics",
-      votes: 89,
-      featured: true,
-      pledges: 0,
-      pricingTiers: [],
-      slug: "mechanical-keyboard"
-    }
-    // ...add more if desired
-  ];
-}
-
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    let data = readData();
-
-    // Auto-add default products if empty and GET
-    if (req.method === "GET" && Array.isArray(data) && data.length === 0) {
-      data = getDefaultProducts();
-      writeData(data);
-    }
-    
-    if (req.method === "GET") {
-      // Process lifecycle transitions automatically
-      try {
-        const processedData = processLifecycleTransitions(data, DEFAULT_LIFECYCLE_CONFIG);
-        
-        // Save updated products if any transitions occurred
-        if (JSON.stringify(processedData) !== JSON.stringify(data)) {
-          writeData(processedData);
-          data = processedData;
-          console.log('✅ API: Lifecycle transitions processed and saved');
-          
-          // Log what changed
-          processedData.forEach((product: any, index: number) => {
-            if (product.stage !== data[index]?.stage) {
-              console.log(`  → Product "${product.name}" transitioned: ${data[index]?.stage || 'voting'} → ${product.stage}`);
-            }
-          });
-        }
-      } catch (lifecycleError) {
-        console.error('❌ API: Lifecycle processing error:', lifecycleError);
-        // Continue without lifecycle processing if it fails
-      }
+    if (req.method === 'GET') {
+      const { stage, category, featured } = req.query;
       
-      console.log('API: Returning products:', data.length);
-      console.log('API: Pending review products:', data.filter((p: any) => p.status === 'pending-review').length);
-      console.log('API: Stage breakdown:', {
-        voting: data.filter((p: any) => (p.stage || 'voting') === 'voting').length,
-        comingSoon: data.filter((p: any) => p.stage === 'coming-soon').length,
-        communityDrops: data.filter((p: any) => p.stage === 'community-drops').length,
-        recentlyCompleted: data.filter((p: any) => p.stage === 'recently-completed').length
-      });
-      res.status(200).json({ products: data, totalProducts: data.length });
+      const filters: any = {};
+      if (stage) filters.stage = stage as string;
+      if (category) filters.category = category as string;
+      if (featured !== undefined) filters.featured = featured === 'true';
 
-    } else if (req.method === "POST") {
-      const newProduct = req.body;
-      newProduct.pledges = typeof newProduct.pledges === "number" ? newProduct.pledges : 0;
-      newProduct.pricingTiers = Array.isArray(newProduct.pricingTiers) ? newProduct.pricingTiers : [];
-      // If editing, replace; else, add
-      const idx = data.findIndex((p: any) => p.id === newProduct.id);
-      let updated;
-      if (idx !== -1) {
-        updated = data.map((p: any) => p.id === newProduct.id ? newProduct : p);
-      } else {
-        updated = [...data, newProduct];
-      }
-      writeData(updated);
-      res.status(201).json({ success: true, product: newProduct });
-
-    } else if (req.method === "PUT") {
-      const updatedProduct = req.body;
-      updatedProduct.pledges = typeof updatedProduct.pledges === "number" ? updatedProduct.pledges : 0;
-      updatedProduct.pricingTiers = Array.isArray(updatedProduct.pricingTiers) ? updatedProduct.pricingTiers : [];
-      const updated = data.map((p: any) =>
-        p.id === updatedProduct.id ? { ...p, ...updatedProduct } : p
-      );
-      writeData(updated);
-      res.status(200).json({ success: true });
-
-    } else if (req.method === "DELETE") {
-      const { id } = req.query;
-      if (!id) return res.status(400).json({ error: "Missing ID to delete" });
-
-      const filtered = data.filter((p: any) => p.id.toString() !== id.toString());
-      writeData(filtered);
-      res.status(200).json({ success: true });
-
-    } else {
-      res.setHeader("Allow", ["GET", "POST", "PUT", "DELETE"]);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
+      const products = await productStorage.getProducts(filters);
+      
+      console.log('API: Returning products:', products.length);
+      console.log('API: Pending review products:', 0);
+      
+      const stages = {
+        voting: products.filter((p: any) => p.stage === 'voting').length,
+        comingSoon: products.filter((p: any) => p.stage === 'coming-soon').length,
+        communityDrops: products.filter((p: any) => p.stage === 'community-drops').length,
+        recentlyCompleted: products.filter((p: any) => p.stage === 'recently-completed').length
+      };
+      console.log('API: Stage breakdown:', stages);
+      
+      // Return in the format the frontend expects
+      return res.status(200).json({ products, totalProducts: products.length });
     }
-  } catch (err) {
-    console.error("API error:", err);
-    res.status(500).json({ error: "Failed to handle products.json" });
+
+    if (req.method === 'POST') {
+      const newProduct = await productStorage.createProduct(req.body);
+      return res.status(201).json({ success: true, product: newProduct });
+    }
+
+    if (req.method === 'PUT') {
+      const { id, ...updateData } = req.body;
+      if (!id) return res.status(400).json({ error: 'Product ID required' });
+      
+      const updated = await productStorage.updateProduct(id, updateData);
+      return res.status(200).json({ success: true, product: updated });
+    }
+
+    if (req.method === 'DELETE') {
+      const { id } = req.query;
+      if (!id) return res.status(400).json({ error: 'Missing ID to delete' });
+      
+      await productStorage.deleteProduct(parseInt(id as string));
+      return res.status(200).json({ success: true });
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (error: any) {
+    console.error('Products API error:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
   }
 }

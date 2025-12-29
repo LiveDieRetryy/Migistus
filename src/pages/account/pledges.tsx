@@ -31,6 +31,24 @@ export default function PledgesPage() {
   const [pledges, setPledges] = useState<Pledge[]>([]);
   const [pledgeLoading, setPledgeLoading] = useState(true);
 
+  // Account navigation items
+  const getProfileSlug = () => {
+    if (!user?.username) return "/account/profile";
+    return `/account/profile/${user.username.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")}`;
+  };
+
+  const accountNav = [
+    { label: "Account Overview", href: "/account", icon: "🏠" },
+    { label: "Notifications", href: "/notifications", icon: "🔔" },
+    { label: "My Current Pledges", href: "/account/pledges", icon: "🤝" },
+    { label: "My Orders", href: "/account/orders", icon: "📦" },
+    { label: "My Wishlist", href: "/account/wishlist", icon: "❤️" },
+    { label: "My Votes", href: "/account/votes", icon: "🗳️" },
+    { label: "Wallet", href: "/wallet", icon: "💰" },
+    { label: "View Profile", href: getProfileSlug(), icon: "👤" },
+    { label: "Account Settings", href: "/account/settings", icon: "⚙️" },
+  ];
+
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       router.push('/login');
@@ -121,17 +139,64 @@ export default function PledgesPage() {
       </Head>
       <MainNavbar />
       
-      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white py-12 px-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white">
+        <div className="flex flex-col lg:flex-row max-w-7xl mx-auto px-4 py-12 gap-8">
           
-          {/* Header */}
-          <div className="mb-8">
-            <Link href="/account" className="text-yellow-400 hover:text-yellow-300 mb-4 inline-block">
+          {/* Back Link - Mobile */}
+          <div className="lg:hidden mb-4">
+            <Link href="/account" className="text-yellow-400 hover:text-yellow-300">
               ← Back to Account
             </Link>
-            <h1 className="text-3xl font-bold text-yellow-400 mb-2">My Pledges</h1>
-            <p className="text-gray-400">Track and manage your product pledges</p>
           </div>
+
+          {/* Sidebar */}
+          <aside className="lg:w-80">
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-6 sticky top-8">
+              <div className="hidden lg:block mb-6">
+                <Link href="/account" className="text-yellow-400 hover:text-yellow-300">
+                  ← Back to Account
+                </Link>
+              </div>
+              
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center text-2xl">
+                  👤
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-yellow-400">
+                    Account Menu
+                  </h2>
+                  <p className="text-sm text-gray-400">{user?.username}</p>
+                </div>
+              </div>
+              
+              <ul className="space-y-2">
+                {accountNav.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                        router.pathname === item.href
+                          ? "bg-yellow-400 text-black font-semibold"
+                          : "text-yellow-300 hover:bg-yellow-400/10 hover:text-yellow-400"
+                      }`}
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </aside>
+
+          {/* Main Content */}
+          <main className="flex-1">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-yellow-400 mb-2">My Pledges</h1>
+              <p className="text-gray-400">Track and manage your product pledges</p>
+            </div>
 
           {/* Pledges List */}
           {pledgeLoading ? (
@@ -195,6 +260,7 @@ export default function PledgesPage() {
               ))}
             </div>
           )}
+          </main>
         </div>
       </div>
     </>

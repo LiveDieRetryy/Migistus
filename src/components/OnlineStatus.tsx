@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useOnlineUsers } from '@/hooks/useOnlineUsers';
 
 interface OnlineStatusProps {
   userId: number;
@@ -7,29 +7,8 @@ interface OnlineStatusProps {
 }
 
 export default function OnlineStatus({ userId, showText = false, size = 'md' }: OnlineStatusProps) {
-  const [isOnline, setIsOnline] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkOnlineStatus = async () => {
-      try {
-        const response = await fetch(`/api/users/online?userId=${userId}`);
-        const data = await response.json();
-        setIsOnline(data.online);
-      } catch (error) {
-        console.error('Error checking online status:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkOnlineStatus();
-    
-    // Poll every 30 seconds to update status
-    const interval = setInterval(checkOnlineStatus, 30000);
-    
-    return () => clearInterval(interval);
-  }, [userId]);
+  const { isUserOnline } = useOnlineUsers();
+  const isOnline = isUserOnline(userId);
 
   const sizeClasses = {
     sm: 'w-3 h-3',
@@ -42,10 +21,6 @@ export default function OnlineStatus({ userId, showText = false, size = 'md' }: 
     md: 'text-sm',
     lg: 'text-base'
   };
-
-  if (loading) {
-    return null;
-  }
 
   return (
     <div className="flex items-center gap-1.5">

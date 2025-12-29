@@ -43,6 +43,27 @@ export default async function handler(
       console.error('Error saving invisible preference to profile:', error);
     }
 
+    // Broadcast visibility change via Socket.IO
+    try {
+      const io = (global as any).io;
+      if (io) {
+        console.log(`[Visibility API] User ${session.userId} changed to ${invisible ? 'invisible' : 'visible'}`);
+        if (invisible) {
+          // User went invisible - broadcast user-offline to remove from online lists
+          console.log(`[Visibility API] Broadcasting user-offline for user ${session.userId}`);
+          io.emit('user-offline', { userId: session.userId });
+        } else {
+          // User became visible - broadcast user-online to add to online lists
+          console.log(`[Visibility API] Broadcasting user-online for user ${session.userId}`);
+          io.emit('user-online', { userId: session.userId });
+        }
+      } else {
+        console.log('[Visibility API] Socket.IO instance not found in global');
+      }
+    } catch (error) {
+      console.error('Error broadcasting visibility change:', error);
+    }
+
     return res.status(200).json({ 
       success: true,
       userId: session.userId,

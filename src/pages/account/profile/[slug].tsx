@@ -7,11 +7,13 @@ import { UserStorage3 as UserStorage } from "@/utils/userStorage";
 import Image from "next/image";
 import Link from "next/link";
 import FollowButton from '@/components/FollowButton';
+import MessageButton from '@/components/messaging/MessageButton';
 import FollowersModal from '@/components/FollowersModal';
 import CreatePost from '@/components/social/CreatePost';
 import PostCard from '@/components/social/PostCard';
 import { SocialPostsStorage, SocialPost } from '@/utils/socialPostsStorage';
 import OnlineStatus from '@/components/OnlineStatus';
+import { useOnlineUsers } from '@/hooks/useOnlineUsers';
 import { Shield, Award, Star, TrendingUp, Users as UsersIcon, Heart, MessageCircle, Share2, Zap, Eye, Target, Clock, Activity, ChevronDown, ExternalLink } from "lucide-react";
 
 interface UserProfile {
@@ -38,45 +40,21 @@ interface UserProfile {
 
 // Live Profile Status Component
 function LiveProfileStatus({ userId, isOwnProfile }: { userId: number; isOwnProfile: boolean }) {
-  const [isOnline, setIsOnline] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { isUserOnline } = useOnlineUsers();
   const [isInvisible, setIsInvisible] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  useEffect(() => {
-    const checkOnlineStatus = async () => {
-      try {
-        // When viewing own profile, we need to check actual online status
-        // regardless of visibility preference
-        const response = await fetch(`/api/users/online?userId=${userId}${isOwnProfile ? '&ignoreInvisible=true' : ''}`);
-        const data = await response.json();
-        setIsOnline(data.online);
-        
-        // Check if user has invisible mode enabled
-        if (isOwnProfile) {
-          // First check localStorage for immediate feedback
-          const localInvisible = localStorage.getItem(`invisible_${userId}`);
-          if (localInvisible !== null) {
-            setIsInvisible(localInvisible === 'true');
-          } else {
-            // If not in localStorage, check from profile data
-            // This will be set from the profile prop
-            setIsInvisible(false);
-          }
-        }
-      } catch (error) {
-        console.error('Error checking online status:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Check if user is online via Socket.IO
+  const isOnline = isUserOnline(userId);
 
-    checkOnlineStatus();
-    
-    // Poll every 30 seconds to update status
-    const interval = setInterval(checkOnlineStatus, 30000);
-    
-    return () => clearInterval(interval);
+  useEffect(() => {
+    // Check if user has invisible mode enabled
+    if (isOwnProfile) {
+      const localInvisible = localStorage.getItem(`invisible_${userId}`);
+      if (localInvisible !== null) {
+        setIsInvisible(localInvisible === 'true');
+      }
+    }
   }, [userId, isOwnProfile]);
 
   // Close dropdown when clicking outside
@@ -109,21 +87,12 @@ function LiveProfileStatus({ userId, isOwnProfile }: { userId: number; isOwnProf
         credentials: 'include',
         body: JSON.stringify({ invisible: newInvisibleState })
       });
-      
-      // Force refresh the online status to reflect the change immediately
-      const response = await fetch(`/api/users/online?userId=${userId}&ignoreInvisible=true`);
-      const data = await response.json();
-      setIsOnline(data.online);
     } catch (error) {
       console.error('Error updating visibility:', error);
     }
     
     setShowDropdown(false);
   };
-
-  if (loading) {
-    return null;
-  }
 
   // Show offline if user is actually offline OR if they're invisible
   const displayOnline = isOnline && !isInvisible;
@@ -137,15 +106,31 @@ function LiveProfileStatus({ userId, isOwnProfile }: { userId: number; isOwnProf
       } ${isOwnProfile ? 'cursor-pointer hover:scale-105' : ''}`}
       onClick={() => isOwnProfile && setShowDropdown(!showDropdown)}
       >
-        <div className="relative">
-          <div className={`w-3 h-3 rounded-full ${displayOnline ? 'bg-green-400 animate-pulse' : 'bg-zinc-500'}`}></div>
-          {displayOnline && (
-            <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
+        {/* Status Indicator */}
+        <div className="relative flex items-center justify-center">
+          {displayOnline ? (
+            <>
+              <div className="w-3 h-3 bg-green-400 rounded-full shadow-lg shadow-green-400/50"></div>
+              <div className="absolute w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
+            </>
+          ) : (
+            <div className="w-3 h-3 bg-zinc-500 rounded-full"></div>
           )}
         </div>
-        <span className={`text-sm font-semibold ${displayOnline ? 'text-green-300' : 'text-zinc-400'}`}>
-          {displayOnline ? 'Online Now' : isInvisible ? 'Invisible' : 'Offline'}
-        </span>
+
+        {/* Status Text */}
+        <div className="flex items-center gap-2">
+          <span className={`text-sm font-bold ${displayOnline ? 'text-green-300' : 'text-zinc-400'}`}>
+            {displayOnline ? 'Online' : 'Offline'}
+          </span>
+          {isInvisible && isOwnProfile && (
+            <span className="text-xs bg-zinc-700 px-2 py-0.5 rounded text-zinc-300">
+              Invisible Mode
+            </span>
+          )}
+        </div>
+
+        {/* Dropdown Arrow (only for own profile) */}
         {isOwnProfile && (
           <ChevronDown className={`w-4 h-4 ${displayOnline ? 'text-green-300' : 'text-zinc-400'} transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
         )}
@@ -275,9 +260,25 @@ export default function UserProfilePage() {
   useEffect(() => {
     if (!profile) return;
     
-    const updateLiveStats = () => {
+    const updateLiveStats = async () => {
       const stats = UserStorage.calculateUserStats(profile.id);
-      const pledges = UserStorage.getUserPledges(profile.id);      setLiveStats({
+      const pledges = UserStorage.getUserPledges(profile.id);
+      
+      // Fetch follower counts from API
+      let followers = 0;
+      let following = 0;
+      try {
+        const response = await fetch(`/api/followers?userId=${profile.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          followers = data.followersCount || 0;
+          following = data.followingCount || 0;
+        }
+      } catch (error) {
+        console.error('Failed to fetch follower counts:', error);
+      }
+      
+      setLiveStats({
         activePledges: pledges.filter((p: any) => p.status === 'active').length,
         completedPledges: pledges.filter((p: any) => p.status === 'completed').length,
         totalPledgeAmount: pledges.reduce((sum: number, p: any) => sum + (p.amount || 0), 0),
@@ -286,8 +287,8 @@ export default function UserProfilePage() {
         profileViews: UserStorage.getUserProfileViews(profile.id),
         interactions: UserStorage.getUserInteractions(profile.id),
         reputation: UserStorage.getUserReputation(profile.id),
-        followers: UserStorage.getUserFollowers(profile.id) || 0,
-        following: UserStorage.getUserFollowing(profile.id) || 0,
+        followers: followers,
+        following: following,
         lastActive: new Date().toISOString()
       });
     };
@@ -479,27 +480,45 @@ export default function UserProfilePage() {
   useEffect(() => {
     if (!profile?.id) return;
 
-    const handleFollowerUpdate = (event: CustomEvent) => {
+    const handleFollowerUpdate = async (event: CustomEvent) => {
       const { targetUserId, isFollowing } = event.detail;
       
       // If this profile is being followed/unfollowed
       if (targetUserId === profile.id) {
-        setLiveStats(prev => ({
-          ...prev,
-          followers: UserStorage.getUserFollowers(profile.id) || 0,
-          lastActive: new Date().toISOString()
-        }));
+        // Fetch updated count from API
+        try {
+          const response = await fetch(`/api/followers?userId=${profile.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            setLiveStats(prev => ({
+              ...prev,
+              followers: data.followersCount || 0,
+              lastActive: new Date().toISOString()
+            }));
+          }
+        } catch (error) {
+          console.error('Failed to fetch updated follower count:', error);
+        }
       }
     };
 
     // Also listen for when this user follows/unfollows others (to update following count)
-    const handleFollowingUpdate = () => {
+    const handleFollowingUpdate = async () => {
       if (profile?.id) {
-        setLiveStats(prev => ({
-          ...prev,
-          following: UserStorage.getUserFollowing(profile.id) || 0,
-          lastActive: new Date().toISOString()
-        }));
+        // Fetch updated count from API
+        try {
+          const response = await fetch(`/api/followers?userId=${profile.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            setLiveStats(prev => ({
+              ...prev,
+              following: data.followingCount || 0,
+              lastActive: new Date().toISOString()
+            }));
+          }
+        } catch (error) {
+          console.error('Failed to fetch updated following count:', error);
+        }
       }
     };
 
@@ -815,26 +834,47 @@ export default function UserProfilePage() {
                         <FollowButton
                           targetUserId={profile.id}
                           targetUsername={profile.username}
-                          initialFollowersCount={UserStorage.getUserFollowers(profile.id)}
-                          onFollowChange={(isFollowing, newCount) => {
-                            // Update local profile state when follow status changes
-                            setProfile(prev => prev ? {
-                              ...prev,
-                              followers: newCount
-                            } : null);                            // Update live stats
-                            setLiveStats(prev => ({
-                              ...prev,
-                              followers: newCount,
-                              lastActive: new Date().toISOString()
-                            }));
+                          initialFollowersCount={liveStats.followers}
+                          onFollowChange={async (isFollowing, newCount) => {
+                            // Fetch actual count from API for accuracy
+                            try {
+                              const response = await fetch(`/api/followers?userId=${profile.id}`);
+                              if (response.ok) {
+                                const data = await response.json();
+                                const actualCount = data.followersCount || 0;
+                                
+                                // Update local profile state with API count
+                                setProfile(prev => prev ? {
+                                  ...prev,
+                                  followers: actualCount
+                                } : null);
+                                
+                                // Update live stats with API count
+                                setLiveStats(prev => ({
+                                  ...prev,
+                                  followers: actualCount,
+                                  lastActive: new Date().toISOString()
+                                }));
+                              }
+                            } catch (error) {
+                              console.error('Failed to fetch updated count:', error);
+                              // Fallback to optimistic update
+                              setLiveStats(prev => ({
+                                ...prev,
+                                followers: newCount,
+                                lastActive: new Date().toISOString()
+                              }));
+                            }
                           }}
                           size="lg"
                           variant="default"
                         />
-                        <button className="flex items-center justify-center gap-2 bg-gradient-to-r from-zinc-700 to-zinc-600 hover:from-zinc-600 hover:to-zinc-500 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-bold transition-all hover:scale-105 text-sm sm:text-base w-full">
-                          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                          Message
-                        </button>
+                        <MessageButton
+                          userId={profile.id}
+                          username={profile.username}
+                          variant="secondary"
+                          className="flex-1 px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base"
+                        />
                       </div>
                     )}
                   </div>

@@ -2,16 +2,15 @@
   {
     "id": 1,
     "name": "Oture G2000 Stereo Gaming Headset with Noise Cancelling Mic & LED Light - Orange",
-    "image": "blob:http://localhost:3000/870a98d7-8ba2-4bc2-b05f-fe21ef3ef02d",
+    "image": "/images/uploads/image-1754683221504-485082060.avif",
     "images": [
-      "blob:http://localhost:3000/870a98d7-8ba2-4bc2-b05f-fe21ef3ef02d",
-      "blob:http://localhost:3000/73f464b7-df9d-440e-8684-f94bea2ac771",
-      "blob:http://localhost:3000/5af955ce-fb1c-4901-8e1c-595ace7785de",
-      "blob:http://localhost:3000/e1ded920-e3f4-4385-b7a9-e53d2f91bd56",
-      "blob:http://localhost:3000/d5cd6288-c6ad-423d-a821-8933d310e9e4",
-      "blob:http://localhost:3000/2ae48031-2103-41be-b459-78de9358cef5"
+      "/images/uploads/image-1754683221504-485082060.avif",
+      "/images/uploads/image-1754683224889-851355336.avif",
+      "/images/uploads/image-1754683228384-312494387.avif",
+      "/images/uploads/image-1754683230563-27801700.avif",
+      "/images/uploads/image-1754683235203-886538227.avif"
     ],
-    "description": "Premium gaming headset with surround sound and crystal-clear communication\n\n## Specifications at a glance\n• Connection\n• 3.5 mm Jack\n## Works with\nMac, Laptop Computers, iPads, Desktop Computers, Tablet Computers, Video Game Consoles, Smart Phones",
+    "description": "Premium gaming headset with surround sound and crystal-clear communication\n\nSpecifications at a glance\nConnection\n3.5 mm Jack\nWorks with\nMac, Laptop Computers, iPads, Desktop Computers, Tablet Computers, Video Game Consoles, Smart Phones\nHeadphone style\nOver-Ear\nWireless\nNone\nHeadset type\nHeadphones\nBrand\nPVUEL",
     "fullDescription": "Experience immersive gaming like never before with the Gilded Vanguard Headset. Featuring advanced 7.1 surround sound technology, noise-canceling microphone, and premium comfort padding for extended gaming sessions. Built with durable materials and backed by our community-driven quality assurance.",
     "goal": 100,
     "link": "https://example.com/headset",
@@ -19,10 +18,14 @@
     "category": "electronics",
     "price": 149.99,
     "originalPrice": 149.99,
-    "votes": 3,
+    "votes": 73,
     "featured": true,
     "pledges": 42,
     "pledgeGoal": 100,
+    "stock": 100,
+    "stockAvailable": 58,
+    "lowStockThreshold": 20,
+    "maxPerGuildMember": 50,
     "pricingTiers": [
       {
         "quantity": 10,
@@ -44,8 +47,9 @@
       }
     ],
     "slug": "gilded-vanguard-headset",
-    "stage": "voting",
-    "stageEnteredAt": "2025-12-05T07:01:21.093Z",
+    "stage": "community-drops",
+    "stageEnteredAt": "2024-01-15T10:00:00.000Z",
+    "promotedAt": "2024-01-08T15:30:00.000Z",
     "features": [
       "Multiplatform Compatibility",
       "Flexible Boom Mic",
@@ -58,26 +62,15 @@
       "rating": 4.8,
       "verified": true,
       "location": "California, USA"
-    },
-    "createdAt": "2025-08-08T23:21:47.159Z",
-    "videos": [],
-    "pledgeTarget": 100,
-    "currentPledges": 42,
-    "minimumOrderQuantity": 58,
-    "maxDiscountPercent": 7,
-    "nextPriceDropTier": 120.99,
-    "nextPriceDropAmount": 500,
-    "status": "staff-pick",
-    "stock": 10000,
-    "maxOrderQuantity": 25
+    }
   },
   {
     "id": 2,
     "name": "LED Headlamp",
-    "image": "blob:http://localhost:3000/cf28dd11-10cc-4d45-b737-dd7c7b4ec295",
+    "image": "/images/headlamp.png",
     "images": [
-      "blob:http://localhost:3000/cf28dd11-10cc-4d45-b737-dd7c7b4ec295",
-      "blob:http://localhost:3000/9094c7f0-ac9d-49fa-83e9-a6aee51d1620"
+      "/images/headlamp.png",
+      "/images/electronics.png"
     ],
     "description": "Professional-grade LED headlamp for outdoor activities and work",
     "fullDescription": "Illuminate your path with the Warehouse-15 LED Headlamp. Features adjustable brightness levels, long battery life, and weather-resistant construction perfect for camping, hiking, or professional use.",
@@ -87,7 +80,7 @@
     "category": "electronics",
     "price": 89.99,
     "originalPrice": 89.99,
-    "votes": 2,
+    "votes": 45,
     "featured": false,
     "pledges": 28,
     "pledgeGoal": 75,
@@ -100,8 +93,9 @@
       }
     ],
     "slug": "warehouse-15-led-headlamp",
-    "stage": "voting",
-    "stageEnteredAt": "2025-12-05T07:01:21.093Z",
+    "stage": "live-drops",
+    "stageEnteredAt": "2024-01-20T14:00:00.000Z",
+    "promotedAt": "2024-01-18T09:15:00.000Z",
     "features": [
       "Adjustable Brightness",
       "Weather Resistant",
@@ -133,12 +127,10 @@
   {
     "id": 3,
     "name": "Wireless Mouse Pro",
-    "image": "blob:http://localhost:3000/dcb0d707-4575-4efe-a005-998f64776581",
+    "image": "/images/Computer.png",
     "images": [
-      "blob:http://localhost:3000/dcb0d707-4575-4efe-a005-998f64776581",
-      "blob:http://localhost:3000/5f7e998b-1601-4ed4-986d-ef5678bf5e65",
-      "blob:http://localhost:3000/7da451d0-3c75-4dda-b086-c70b57e09833",
-      "blob:http://localhost:3000/d4e7d1e7-0186-4a9f-98ca-9012b0ae3831"
+      "/images/Computer.png",
+      "/images/electronics.png"
     ],
     "description": "High-precision wireless gaming mouse with RGB lighting",
     "fullDescription": "Enhance your gaming performance with the Wireless Mouse Pro. Features high-DPI sensor, customizable RGB lighting, and ergonomic design for competitive gaming.",
@@ -148,7 +140,7 @@
     "category": "electronics",
     "price": 79.99,
     "originalPrice": 79.99,
-    "votes": 1,
+    "votes": 38,
     "featured": false,
     "pledges": 15,
     "pledgeGoal": 50,
@@ -161,8 +153,9 @@
       }
     ],
     "slug": "wireless-mouse-pro",
-    "stage": "voting",
-    "stageEnteredAt": "2025-12-05T07:01:21.093Z",
+    "stage": "coming-soon",
+    "stageEnteredAt": "2024-01-25T11:00:00.000Z",
+    "promotedAt": null,
     "features": [
       "High-DPI Sensor",
       "RGB Lighting",
@@ -194,9 +187,9 @@
   {
     "id": 4,
     "name": "Smart Home Security Camera",
-    "image": "blob:http://localhost:3000/0d08be0d-e6fa-4c75-a874-a273c1c06e8c",
+    "image": "/images/smarthome.png",
     "images": [
-      "blob:http://localhost:3000/0d08be0d-e6fa-4c75-a874-a273c1c06e8c"
+      "/images/smarthome.png"
     ],
     "description": "AI-powered security camera with night vision and mobile alerts",
     "fullDescription": "Protect your home with this advanced security camera featuring AI motion detection, crystal-clear night vision, and instant mobile notifications. Easy setup and cloud storage included.",
@@ -206,7 +199,7 @@
     "category": "electronics",
     "price": 199.99,
     "originalPrice": 199.99,
-    "votes": 1,
+    "votes": 29,
     "featured": false,
     "pledges": 12,
     "pledgeGoal": 60,
@@ -220,7 +213,8 @@
     ],
     "slug": "smart-home-security-camera",
     "stage": "voting",
-    "stageEnteredAt": "2025-12-05T07:01:21.093Z",
+    "stageEnteredAt": "2024-01-28T16:00:00.000Z",
+    "promotedAt": null,
     "features": [
       "AI Motion Detection",
       "Night Vision",
@@ -251,9 +245,9 @@
   {
     "id": 5,
     "name": "Bluetooth Portable Speaker",
-    "image": "blob:http://localhost:3000/a2919866-bc1c-4f1a-a194-1d102866230e",
+    "image": "/images/electronics.png",
     "images": [
-      "blob:http://localhost:3000/a2919866-bc1c-4f1a-a194-1d102866230e"
+      "/images/electronics.png"
     ],
     "description": "Waterproof portable speaker with 360° sound and 20-hour battery",
     "fullDescription": "Take your music anywhere with this rugged, waterproof Bluetooth speaker. Features 360-degree sound technology, 20-hour battery life, and voice assistant integration.",
@@ -263,7 +257,7 @@
     "category": "electronics",
     "price": 129.99,
     "originalPrice": 129.99,
-    "votes": 1,
+    "votes": 51,
     "featured": false,
     "pledges": 8,
     "pledgeGoal": 40,
@@ -277,7 +271,8 @@
     ],
     "slug": "bluetooth-portable-speaker",
     "stage": "voting",
-    "stageEnteredAt": "2025-12-05T07:01:21.093Z",
+    "stageEnteredAt": "2024-01-30T12:00:00.000Z",
+    "promotedAt": null,
     "features": [
       "360° Sound",
       "Waterproof Design",

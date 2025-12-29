@@ -7,10 +7,14 @@ import { useAuth } from "@/context/AuthContext";
 import { UserStorage3 as UserStorage } from '@/utils/userStorage';
 import { activityTracker } from "@/utils/activityTracker";
 import { ChevronDown } from "lucide-react";
+import NotificationCenter from "@/components/notifications/NotificationCenter";
+import { useMessageNotifications } from "@/hooks/useMessageNotifications";
 
 export default function MainNavbar() {
   const { user, logout, isAuthenticated, login } = useAuth();
-  const router = useRouter();  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const router = useRouter();
+  const { unreadCount, requestPermission } = useMessageNotifications();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLiveDropsOpen, setIsLiveDropsOpen] = useState(false);
   const [isMobileLiveDropsOpen, setIsMobileLiveDropsOpen] = useState(false);
@@ -196,6 +200,7 @@ export default function MainNavbar() {
   const accountMenuItems = [
     { name: "My Account", href: "/account", icon: "🏠" },
     { name: "Profile", href: getUserProfileUrl(), icon: "👤" },
+    { name: "Messages", href: "/messages", icon: "💬" },
     { name: "Wallet", href: "/wallet", icon: "💰" },    { name: "Pledges", href: "/account/pledges", icon: "🤝" },
     { name: "Settings", href: "/account/settings", icon: "⚙️" },    // Admin menu items - The King's Domain
     ...(user?.email === 'admin@migistus.com' ? [
@@ -677,6 +682,11 @@ export default function MainNavbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-3">
+            {isAuthenticated && (
+              /* Notification Bell */
+              <NotificationCenter />
+            )}
+            
             {isAuthenticated ? (
               /* User Dropdown */
               <div className="relative">
@@ -707,7 +717,7 @@ export default function MainNavbar() {
                   <ChevronDown className={`w-4 h-4 ml-1 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-yellow-400/30 rounded-xl shadow-xl z-50 overflow-hidden">
+                  <div className="absolute right-0 mt-2 w-56 max-h-[70vh] overflow-y-auto bg-zinc-900 border border-yellow-400/30 rounded-xl shadow-xl z-50">
                     {accountMenuItems.map((item) => (
                       <Link
                         key={item.name}
@@ -716,7 +726,12 @@ export default function MainNavbar() {
                         className="flex items-center gap-3 px-4 py-3 text-yellow-300 hover:text-yellow-400 hover:bg-yellow-400/5 transition-all duration-200 border-b border-zinc-800 last:border-b-0"
                       >
                         <span className="text-lg">{item.icon}</span>
-                        <span className="font-medium">{item.name}</span>
+                        <span className="font-medium flex-1">{item.name}</span>
+                        {item.name === "Messages" && unreadCount > 0 && (
+                          <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                          </span>
+                        )}
                       </Link>
                     ))}
                     <button
@@ -740,18 +755,18 @@ export default function MainNavbar() {
             ) : (
               /* Login/Register Buttons */
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => openLoginModal(false)}
+                <Link
+                  href="/login"
                   className="px-4 py-2 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 rounded-lg transition-all duration-200 font-medium"
                 >
                   Sign In
-                </button>
-                <button
-                  onClick={() => openLoginModal(true)}
+                </Link>
+                <Link
+                  href="/register"
                   className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black font-semibold px-6 py-2 rounded-lg transition-all duration-200"
                 >
                   Join The Guild
-                </button>
+                </Link>
               </div>
             )}
           </div>
@@ -812,7 +827,12 @@ export default function MainNavbar() {
                     className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 rounded-lg transition-colors"
                   >
                     <span className="text-lg">{item.icon}</span>
-                    <span className="font-medium">{item.name}</span>
+                    <span className="font-medium flex-1">{item.name}</span>
+                    {item.name === "Messages" && unreadCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
                   </Link>
                 ))}
                 <button
@@ -834,26 +854,22 @@ export default function MainNavbar() {
               </div>
             ) : (
               <div className="space-y-2 mb-4 pb-4 border-b border-zinc-700/50">
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    openLoginModal(false);
-                  }}
+                <Link
+                  href="/login"
+                  onClick={() => setIsMenuOpen(false)}
                   className="w-full flex items-center justify-center gap-3 px-4 py-3 text-gray-300 hover:text-yellow-300 hover:bg-yellow-400/5 rounded-lg transition-colors border border-zinc-700"
                 >
                   <span className="text-lg">🔑</span>
                   <span className="font-medium">Sign In</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    openLoginModal(true);
-                  }}
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setIsMenuOpen(false)}
                   className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-yellow-400 text-black hover:bg-yellow-300 rounded-lg transition-colors font-semibold"
                 >
                   <span className="text-lg">⭐</span>
                   <span>Join The Guild</span>
-                </button>
+                </Link>
               </div>
             )}
 

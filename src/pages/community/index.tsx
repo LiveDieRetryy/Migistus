@@ -197,16 +197,52 @@ export default function CommunityPage() {
       }
       
       // Update local state immediately with UserStorage data
+      // Fetch actual counts from API for affected users
+      const fetchUpdatedCounts = async (userId: number) => {
+        try {
+          const response = await fetch(`/api/followers?userId=${userId}`);
+          if (response.ok) {
+            const data = await response.json();
+            return {
+              followers: data.followersCount || 0,
+              following: data.followingCount || 0
+            };
+          }
+        } catch (error) {
+          console.error('Failed to fetch follower counts:', error);
+        }
+        return { followers: 0, following: 0 };
+      };
+      
+      // Fetch updated counts for both users
+      const [followerCounts, followingCounts] = await Promise.all([
+        fetchUpdatedCounts(followerId),
+        fetchUpdatedCounts(followingId)
+      ]);
+      
       const updateMemberStats = (members: any[]) => {
         return members.map(member => {
           // Update stats for both the follower and the person being followed
-          if (member.id === followerId || member.id === followingId) {
+          if (member.id === followerId) {
             return {
               ...member,
               stats: {
                 ...member.stats,
-                followers: UserStorage.getUserFollowers(member.id) || 0,
-                following: UserStorage.getUserFollowing(member.id) || 0,
+                followers: followerCounts.followers,
+                following: followerCounts.following,
+                totalVotes: member.stats?.totalVotes || 0,
+                totalPledges: member.stats?.totalPledges || 0,
+                dropsJoined: member.stats?.dropsJoined || 0
+              }
+            };
+          }
+          if (member.id === followingId) {
+            return {
+              ...member,
+              stats: {
+                ...member.stats,
+                followers: followingCounts.followers,
+                following: followingCounts.following,
                 totalVotes: member.stats?.totalVotes || 0,
                 totalPledges: member.stats?.totalPledges || 0,
                 dropsJoined: member.stats?.dropsJoined || 0
@@ -230,17 +266,39 @@ export default function CommunityPage() {
           const data = await response.json();
           
           if (data.users && Array.isArray(data.users)) {
-            // Update newUsers with fresh data from USERSTORAGE (source of truth)
+            // Fetch follower counts from API for all affected users
+            const userIds = [followerId, followingId];
+            const followerCountsMap = new Map();
+            
+            await Promise.all(
+              userIds.map(async (userId) => {
+                try {
+                  const response = await fetch(`/api/followers?userId=${userId}`);
+                  if (response.ok) {
+                    const followerData = await response.json();
+                    followerCountsMap.set(userId, {
+                      followers: followerData.followersCount || 0,
+                      following: followerData.followingCount || 0
+                    });
+                  }
+                } catch (error) {
+                  console.error(`Failed to fetch counts for user ${userId}:`, error);
+                }
+              })
+            );
+            
+            // Update newUsers with fresh data from API
             setNewUsers(prevUsers => 
               prevUsers.map(member => {
                 const updatedUser = data.users.find((u: any) => u.id === member.id);
+                const counts = followerCountsMap.get(member.id);
                 if (updatedUser) {
                   return {
                     ...member,
                     stats: {
-                      // Use UserStorage for followers/following (same as profile page)
-                      followers: UserStorage.getUserFollowers(updatedUser.id) || 0,
-                      following: UserStorage.getUserFollowing(updatedUser.id) || 0,
+                      // Use API counts if available, otherwise keep existing
+                      followers: counts?.followers ?? member.stats?.followers ?? 0,
+                      following: counts?.following ?? member.stats?.following ?? 0,
                       // Use API for other stats
                       totalVotes: updatedUser.totalVotes || 0,
                       totalPledges: updatedUser.totalPledges || 0,
@@ -252,17 +310,18 @@ export default function CommunityPage() {
               })
             );
             
-            // Update allMembers with fresh data from USERSTORAGE (source of truth)
+            // Update allMembers with fresh data from API
             setAllMembers(prevMembers => 
               prevMembers.map(member => {
                 const updatedUser = data.users.find((u: any) => u.id === member.id);
+                const counts = followerCountsMap.get(member.id);
                 if (updatedUser) {
                   return {
                     ...member,
                     stats: {
-                      // Use UserStorage for followers/following (same as profile page)
-                      followers: UserStorage.getUserFollowers(updatedUser.id) || 0,
-                      following: UserStorage.getUserFollowing(updatedUser.id) || 0,
+                      // Use API counts if available, otherwise keep existing
+                      followers: counts?.followers ?? member.stats?.followers ?? 0,
+                      following: counts?.following ?? member.stats?.following ?? 0,
                       // Use API for other stats
                       totalVotes: updatedUser.totalVotes || 0,
                       totalPledges: updatedUser.totalPledges || 0,
@@ -278,12 +337,13 @@ export default function CommunityPage() {
             setSuppliers(prevSuppliers => 
               prevSuppliers.map(supplier => {
                 const updatedUser = data.users.find((u: any) => u.id === supplier.id);
+                const counts = followerCountsMap.get(supplier.id);
                 if (updatedUser) {
                   return {
                     ...supplier,
                     stats: {
-                      followers: UserStorage.getUserFollowers(updatedUser.id) || 0,
-                      following: UserStorage.getUserFollowing(updatedUser.id) || 0,
+                      followers: counts?.followers ?? supplier.stats?.followers ?? 0,
+                      following: counts?.following ?? supplier.stats?.following ?? 0,
                       totalVotes: updatedUser.totalVotes || 0,
                       totalPledges: updatedUser.totalPledges || 0,
                       dropsJoined: updatedUser.dropsJoined || 0
@@ -294,7 +354,7 @@ export default function CommunityPage() {
               })
             );
             
-            console.log(`✅ Refreshed follower counts from UserStorage after ${action}`);
+            console.log(`✅ Refreshed follower counts from API after ${action}`);
           }
         }
       } catch (error) {
@@ -321,11 +381,29 @@ export default function CommunityPage() {
           console.log(`✅ Reloaded ${data.users?.length || 0} users after new registration`);
           
           if (data.users && Array.isArray(data.users) && data.users.length > 0) {
+            // Fetch follower counts from API for all users
+            const followerCountsMap = new Map();
+            await Promise.all(
+              data.users.map(async (u: any) => {
+                try {
+                  const response = await fetch(`/api/followers?userId=${u.id}`);
+                  if (response.ok) {
+                    const followerData = await response.json();
+                    followerCountsMap.set(u.id, {
+                      followers: followerData.followersCount || 0,
+                      following: followerData.followingCount || 0
+                    });
+                  }
+                } catch (error) {
+                  // Silently fail, will use 0 as default
+                }
+              })
+            );
+            
             const apiMembers: User[] = data.users
               .filter((u: any) => !u.banned)
               .map((u: any) => {
-                const userStorageFollowers = UserStorage.getUserFollowers(u.id) || 0;
-                const userStorageFollowing = UserStorage.getUserFollowing(u.id) || 0;
+                const counts = followerCountsMap.get(u.id) || { followers: 0, following: 0 };
                 
                 return {
                   id: u.id,
@@ -336,8 +414,8 @@ export default function CommunityPage() {
                   bio: u.bio || "",
                   joinedDate: u.joinDate || u.createdAt?.split('T')[0] || new Date().toISOString().split('T')[0],
                   stats: {
-                    followers: userStorageFollowers,
-                    following: userStorageFollowing,
+                    followers: counts.followers,
+                    following: counts.following,
                     totalVotes: u.totalVotes || 0,
                     totalPledges: u.totalPledges || 0,
                     dropsJoined: u.dropsJoined || 0
@@ -443,8 +521,6 @@ export default function CommunityPage() {
             } else {
               // Create new supplier entry
               const supplierId = parseInt(s.id) || Date.now();
-              const userStorageFollowers = UserStorage.getUserFollowers(supplierId) || 0;
-              const userStorageFollowing = UserStorage.getUserFollowing(supplierId) || 0;
               
               return {
                 id: supplierId,
@@ -459,8 +535,8 @@ export default function CommunityPage() {
                   country: s.address?.split(',').pop()?.trim() || 'Unknown'
                 },
                 stats: {
-                  followers: userStorageFollowers,
-                  following: userStorageFollowing,
+                  followers: 0,
+                  following: 0,
                   totalVotes: 0,
                   totalPledges: 0,
                   dropsJoined: s.totalProducts || 0
@@ -535,13 +611,31 @@ export default function CommunityPage() {
           console.log(`✅ API returned ${data.users?.length || 0} users`);
           
           if (data.users && Array.isArray(data.users) && data.users.length > 0) {
-            // Convert API users to User format (display data only, no auto-creation)
+            // Fetch follower counts from API for all users
+            const followerCountsMap = new Map();
+            await Promise.all(
+              data.users.map(async (u: any) => {
+                try {
+                  const response = await fetch(`/api/followers?userId=${u.id}`);
+                  if (response.ok) {
+                    const followerData = await response.json();
+                    followerCountsMap.set(u.id, {
+                      followers: followerData.followersCount || 0,
+                      following: followerData.followingCount || 0
+                    });
+                  }
+                } catch (error) {
+                  // Silently fail, will use 0 as default
+                }
+              })
+            );
+            
+            // Convert API users to User format with actual follower counts
             const apiMembers: User[] = data.users
               .filter((u: any) => !u.banned) // Filter out banned users
               .map((u: any) => {
-                // Use UserStorage as the SOURCE OF TRUTH for follower counts (same as profile page)
-                const userStorageFollowers = UserStorage.getUserFollowers(u.id) || 0;
-                const userStorageFollowing = UserStorage.getUserFollowing(u.id) || 0;
+                // Use API follower counts
+                const counts = followerCountsMap.get(u.id) || { followers: 0, following: 0 };
                 
                 return {
                   id: u.id,
@@ -552,9 +646,9 @@ export default function CommunityPage() {
                   bio: u.bio || "",
                   joinedDate: u.joinDate || u.createdAt?.split('T')[0] || new Date().toISOString().split('T')[0],
                   stats: {
-                    // Use UserStorage for followers/following (same source as profile page)
-                    followers: userStorageFollowers,
-                    following: userStorageFollowing,
+                    // Use API for follower counts
+                    followers: counts.followers,
+                    following: counts.following,
                     // Use API for other stats
                     totalVotes: u.totalVotes || 0,
                     totalPledges: u.totalPledges || 0,
@@ -563,7 +657,7 @@ export default function CommunityPage() {
                 };
               });
             
-            console.log(`✅ Converted ${apiMembers.length} API users to members (using UserStorage for follower counts)`);
+            console.log(`✅ Converted ${apiMembers.length} API users to members (using API for follower counts)`);
             setAllMembers(apiMembers);
             
             // Load suppliers - combine API users with 'Supplier' tier and suppliers.json

@@ -37,34 +37,32 @@ export default function FollowersModal({ userId, username, type, isOpen, onClose
   const loadUsers = async () => {
     setLoading(true);
     try {
-      // Get the list of user IDs based on type
-      const userIds = type === 'followers' 
-        ? UserStorage.getFollowersList(userId).map(f => f.userId)
-        : UserStorage.getFollowingList(userId).map(f => f.userId);
-
-      // Get user profiles for each ID
-      const userProfiles: UserPreview[] = [];
+      // Call the API to get followers or following list
+      const response = await fetch(`/api/followers?userId=${userId}&type=${type}`, {
+        credentials: 'include'
+      });
       
-      for (const id of userIds) {
-        const profile = UserStorage.getUserProfile(id);
-        if (profile) {
-          const followersCount = UserStorage.getUserFollowers(id);
-          const isFollowing = currentUser ? UserStorage.isFollowing(currentUser.id, id) : false;
-          
-          userProfiles.push({
-            id: profile.id,
-            username: profile.username,
-            avatar: profile.avatar,
-            tier: profile.tier || 'Initiate',
-            followers: followersCount,
-            isFollowing
-          });
-        }
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
       }
+      
+      const data = await response.json();
+      const userList = type === 'followers' ? data.followers : data.following;
+      
+      // Map to UserPreview format
+      const userProfiles: UserPreview[] = (userList || []).map((user: any) => ({
+        id: user.id,
+        username: user.username,
+        avatar: user.avatar,
+        tier: user.tier || 'Initiate',
+        followers: user.followers || 0,
+        isFollowing: currentUser ? user.isFollowing : false
+      }));
 
       setUsers(userProfiles);
     } catch (error) {
       console.error('Failed to load users:', error);
+      setUsers([]);
     } finally {
       setLoading(false);
     }

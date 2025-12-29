@@ -3,33 +3,43 @@ import Head from 'next/head';
 import MainNavbar from '@/components/nav/MainNavbar';
 import CreatePost from '@/components/social/CreatePost';
 import PostCard from '@/components/social/PostCard';
-import { SocialPostsStorage, SocialPost } from '@/utils/socialPostsStorage';
+import { socialAPI, Post } from '@/lib/socialAPI';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 
 export default function CommunitySocialPage() {
   const { user, isAuthenticated } = useAuth();
-  const [posts, setPosts] = useState<SocialPost[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'following' | 'explore'>('following');
   const [searchQuery, setSearchQuery] = useState('');
+  const [stats, setStats] = useState({ totalPosts: 0, totalLikes: 0, totalComments: 0, activeUsers: 0 });
 
   useEffect(() => {
     loadPosts();
   }, [activeTab, user]);
 
-  const loadPosts = () => {
+  const loadPosts = async () => {
     setLoading(true);
     try {
-      let loadedPosts: SocialPost[] = [];
+      const options = activeTab === 'following' && user
+        ? { feed: true, limit: 50 } // Personalized feed
+        : { limit: 50 }; // Public posts
       
-      if (activeTab === 'following' && user) {
-        loadedPosts = SocialPostsStorage.getFollowingPosts(user.id);
-      } else {
-        loadedPosts = SocialPostsStorage.getExplorePosts(user?.id);
-      }
-      
+      const { posts: loadedPosts } = await socialAPI.getPosts(options);
       setPosts(loadedPosts);
+      
+      // Calculate stats
+      const totalLikes = loadedPosts.reduce((sum, p) => sum + (p.likes_count || 0), 0);
+      const totalComments = loadedPosts.reduce((sum, p) => sum + (p.comments_count || 0), 0);
+      const uniqueUsers = new Set(loadedPosts.map(p => p.user_id)).size;
+      
+      setStats({
+        totalPosts: loadedPosts.length,
+        totalLikes,
+        totalComments,
+        activeUsers: uniqueUsers
+      });
     } catch (error) {
       console.error('Failed to load posts:', error);
     } finally {
@@ -37,22 +47,35 @@ export default function CommunitySocialPage() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) {
       loadPosts();
       return;
     }
     
-    const searchResults = SocialPostsStorage.searchPosts(searchQuery, user?.id);
-    setPosts(searchResults);
+    // For now, just filter client-side. Can add search API later
+    setLoading(true);
+    try {
+      const { posts: allPosts } = await socialAPI.getPosts({ limit: 200 });
+      const filtered = allPosts.filter(post =>
+        post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.username?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setPosts(filtered);
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handlePostCreated = (newPost: SocialPost) => {
+  const handlePostCreated = (newPost: Post) => {
     setPosts(prev => [newPost, ...prev]);
+    setStats(prev => ({ ...prev, totalPosts: prev.totalPosts + 1 }));
   };
 
-  const handlePostUpdated = (updatedPost: SocialPost) => {
+  const handlePostUpdated = (updatedPost: Post) => {
     setPosts(prev => prev.map(post => 
       post.id === updatedPost.id ? updatedPost : post
     ));
@@ -60,9 +83,8 @@ export default function CommunitySocialPage() {
 
   const handlePostDeleted = (postId: number) => {
     setPosts(prev => prev.filter(post => post.id !== postId));
+    setStats(prev => ({ ...prev, totalPosts: prev.totalPosts - 1 }));
   };
-
-  const stats = SocialPostsStorage.getPostStats();
 
   return (
     <>
@@ -240,18 +262,17 @@ export default function CommunitySocialPage() {
                 <div className="space-y-3">
                   {posts
                     .reduce((acc: any[], post) => {
-                      const existing = acc.find(u => u.userId === post.userId);
+                      const existing = acc.find(u => u.userId === post.user_id);
                       if (existing) {
                         existing.posts++;
-                        existing.engagement += post.likes + post.comments + post.shares;
+                        existing.engagement += (post.likes_count || 0) + (post.comments_count || 0);
                       } else {
                         acc.push({
-                          userId: post.userId,
+                          userId: post.user_id,
                           username: post.username,
                           userAvatar: post.userAvatar,
-                          userTier: post.userTier,
                           posts: 1,
-                          engagement: post.likes + post.comments + post.shares
+                          engagement: (post.likes_count || 0) + (post.comments_count || 0)
                         });
                       }
                       return acc;
@@ -268,7 +289,7 @@ export default function CommunitySocialPage() {
                           />
                         </div>
                         <div className="flex-1">
-                          <div className="font-semibold text-white text-sm">{member.username}</div>
+                          <div className="font-semibold text-white text-sm">{member.username || 'User'}</div>
                           <div className="text-xs text-gray-400">{member.posts} posts</div>
                         </div>
                         <div className="text-yellow-400 font-bold">#{index + 1}</div>

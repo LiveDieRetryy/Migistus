@@ -2,13 +2,17 @@ import { useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { authAPI } from "@/lib/authAPI";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const { setUser, setIsAuthenticated } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -17,43 +21,60 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    // Try admin login first (username or email)
-    let adminRes = await fetch("/api/auth/admin-login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: form.email,
-        password: form.password,
-      }),
-    });
-    if (adminRes.ok) {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("isAdmin", "true");
-        localStorage.setItem("isSignedIn", "true");
-        localStorage.removeItem("userId");
+    setLoading(true);
+
+    try {
+      // Try admin login first
+      try {
+        const adminResponse = await authAPI.adminLogin(form.email, form.password);
+        
+        // Store admin session
+        if (typeof window !== "undefined") {
+          localStorage.setItem("isAdmin", "true");
+          localStorage.setItem("isSignedIn", "true");
+          localStorage.setItem("userId", String(adminResponse.user.id));
+          localStorage.setItem("userSession", JSON.stringify({
+            user: adminResponse.user,
+            sessionId: adminResponse.session?.sessionId || '',
+          }));
+        }
+        
+        setUser(adminResponse.user);
+        setIsAuthenticated(true);
+        router.push("/kingdom");
+        return;
+      } catch (adminError) {
+        // Not an admin, try regular user login
       }
-      router.push("/kingdom");
-      return;
-    }
-    // If not admin, try regular user login
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    if (res.ok) {
-      const data = await res.json();
+
+      // Regular user login
+      const response = await authAPI.login({
+        email: form.email,
+        password: form.password
+      });
+
+      // Store user session
       if (typeof window !== "undefined") {
         localStorage.setItem("isSignedIn", "true");
         localStorage.removeItem("isAdmin");
-        if (data.user && data.user.id) {
-          localStorage.setItem("userId", String(data.user.id));
-        }
+        localStorage.setItem("userId", String(response.user.id));
+        localStorage.setItem("userSession", JSON.stringify({
+          user: response.user,
+          sessionId: response.session?.sessionId || '',
+        }));
       }
+
+      setUser(response.user);
+      setIsAuthenticated(true);
+      
+      // Update activity tracker
+      await authAPI.updateActivity('/');
+      
       router.push("/");
-    } else {
-      const data = await res.json();
-      setError(data.error || "Login failed");
+    } catch (err: any) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -102,9 +123,11 @@ export default function LoginPage() {
           </div>
           <button
             type="submit"
-            className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2 rounded transition"
+            disabled={loading}
+            className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-500/50 disabled:cursor-not-allowed text-black font-bold py-2 rounded flex items-center justify-center gap-2 transition-colors"
           >
-            Sign In
+            {loading && <Loader2 className="w-5 h-5 animate-spin" />}
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
           <div className="mt-4 text-center text-gray-400">
             Don&apos;t have an account?{" "}

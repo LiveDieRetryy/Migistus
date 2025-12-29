@@ -3,10 +3,12 @@ import Head from "next/head";
 import MainNavbar from "@/components/nav/MainNavbar";
 import { UserStorage3 as UserStorage } from "@/utils/userStorage";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/router";
 import Link from "next/link";
 
 export default function WalletPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [balance, setBalance] = useState<number>(0);
   const [guildCoins, setGuildCoins] = useState<number>(0);
   const [amount, setAmount] = useState<number>(0);
@@ -17,6 +19,24 @@ export default function WalletPage() {
   const [mounted, setMounted] = useState(false);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
+
+  // Account navigation items
+  const getProfileSlug = () => {
+    if (!user?.username) return "/account/profile";
+    return `/account/profile/${user.username.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")}`;
+  };
+
+  const accountNav = [
+    { label: "Account Overview", href: "/account", icon: "🏠" },
+    { label: "Notifications", href: "/notifications", icon: "🔔" },
+    { label: "My Current Pledges", href: "/account/pledges", icon: "🤝" },
+    { label: "My Orders", href: "/account/orders", icon: "📦" },
+    { label: "My Wishlist", href: "/account/wishlist", icon: "❤️" },
+    { label: "My Votes", href: "/account/votes", icon: "🗳️" },
+    { label: "Wallet", href: "/wallet", icon: "💰" },
+    { label: "View Profile", href: getProfileSlug(), icon: "👤" },
+    { label: "Account Settings", href: "/account/settings", icon: "⚙️" },
+  ];
 
   useEffect(() => {
     setMounted(true);
@@ -149,29 +169,62 @@ export default function WalletPage() {
       <MainNavbar />
       
       <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white">
-        <div className="px-4 sm:px-6 lg:px-8 py-12">
-          <div className="max-w-4xl mx-auto">
-            {/* Return Button */}
-            <div className="mb-8">
-              <Link href="/account">
-                <button className="group flex items-center gap-2 px-6 py-3 bg-zinc-900/50 hover:bg-zinc-800/50 border border-yellow-500/20 hover:border-yellow-500/40 rounded-xl text-gray-300 hover:text-yellow-400 font-semibold transition-all duration-300 shadow-lg hover:shadow-yellow-500/10">
-                  <span className="text-xl group-hover:-translate-x-1 transition-transform duration-300">←</span>
-                  <span>Return to My Account</span>
-                </button>
-              </Link>
-            </div>
+        <div className="flex flex-col lg:flex-row max-w-7xl mx-auto px-4 py-12 gap-8">
+          
+          {/* Back Link - Mobile */}
+          <div className="lg:hidden mb-4">
+            <Link href="/account" className="text-yellow-400 hover:text-yellow-300">
+              ← Back to Account
+            </Link>
+          </div>
 
-            {/* Header */}
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center text-2xl shadow-lg">
-                  💰
-                </div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-300 bg-clip-text text-transparent">
-                  My Wallet
-                </h1>
+          {/* Sidebar */}
+          <aside className="lg:w-80">
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-6 sticky top-8">
+              <div className="hidden lg:block mb-6">
+                <Link href="/account" className="text-yellow-400 hover:text-yellow-300">
+                  ← Back to Account
+                </Link>
               </div>
-              <p className="text-gray-400 text-lg">Manage your balance and Guild Coins</p>
+              
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center text-2xl">
+                  👤
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-yellow-400">
+                    Account Menu
+                  </h2>
+                  <p className="text-sm text-gray-400">{user?.username}</p>
+                </div>
+              </div>
+              
+              <ul className="space-y-2">
+                {accountNav.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                        router.pathname === item.href
+                          ? "bg-yellow-400 text-black font-semibold"
+                          : "text-yellow-300 hover:bg-yellow-400/10 hover:text-yellow-400"
+                      }`}
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </aside>
+
+          {/* Main Content */}
+          <main className="flex-1">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-yellow-400 mb-2">My Wallet</h1>
+              <p className="text-gray-400">Manage your balance and Guild Coins</p>
             </div>
 
             {/* Balance Cards */}
@@ -333,27 +386,7 @@ export default function WalletPage() {
                 </div>
               )}
             </div>
-
-            {/* Quick Stats */}
-            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="bg-zinc-900/30 border border-zinc-700/30 rounded-xl p-6 text-center">
-                <div className="text-2xl font-bold text-blue-400 mb-1">${(balance + guildCoins).toFixed(2)}</div>
-                <div className="text-sm text-gray-400">Total Value</div>
-              </div>
-              <div className="bg-zinc-900/30 border border-zinc-700/30 rounded-xl p-6 text-center">
-                <div className="text-2xl font-bold text-green-400 mb-1">{balance > 0 ? "✅" : "💤"}</div>
-                <div className="text-sm text-gray-400">USD Status</div>
-              </div>
-              <div className="bg-zinc-900/30 border border-zinc-700/30 rounded-xl p-6 text-center">
-                <div className="text-2xl font-bold text-yellow-400 mb-1">{guildCoins > 0 ? "🪙" : "🔒"}</div>
-                <div className="text-sm text-gray-400">Coins Status</div>
-              </div>
-              <div className="bg-zinc-900/30 border border-zinc-700/30 rounded-xl p-6 text-center">
-                <div className="text-2xl font-bold text-purple-400 mb-1">🎯</div>
-                <div className="text-sm text-gray-400">Member</div>
-              </div>
-            </div>
-          </div>
+          </main>
         </div>
       </div>
     </>

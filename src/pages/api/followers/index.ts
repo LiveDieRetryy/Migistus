@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { getSessionFromRequest } from '@/lib/session';
 import fs from 'fs';
 import path from 'path';
 
@@ -49,7 +50,17 @@ function updateUserFollowerCounts(userId: number, followers: number, following: 
   }
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+function readUsers(): User[] {
+  try {
+    const data = fs.readFileSync(USERS_FILE, 'utf-8');
+    const json = JSON.parse(data);
+    return json.users || [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     // Get followers for a user
     const { userId, type } = req.query;
@@ -60,25 +71,42 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     try {
       const followData = readFollowers();
+      const users = readUsers();
       
       if (type === 'followers') {
         // Get users following this user
-        const followers = followData
+        const followerIds = followData
           .filter((follow: FollowData) => follow.followingId === parseInt(userId as string))
-          .map((follow: FollowData) => ({
-            userId: follow.followerId,
-            timestamp: follow.timestamp
-          }));
+          .map((follow: FollowData) => follow.followerId);
+        
+        // Get full user details for followers
+        const followers = followerIds.map(followerId => {
+          const user = users.find(u => u.id === followerId);
+          return user ? {
+            id: user.id,
+            username: user.username,
+            avatar: user.avatar,
+            online: false // TODO: Implement online status tracking
+          } : null;
+        }).filter(Boolean);
         
         return res.status(200).json({ followers, count: followers.length });
       } else if (type === 'following') {
         // Get users this user is following
-        const following = followData
+        const followingIds = followData
           .filter((follow: FollowData) => follow.followerId === parseInt(userId as string))
-          .map((follow: FollowData) => ({
-            userId: follow.followingId,
-            timestamp: follow.timestamp
-          }));
+          .map((follow: FollowData) => follow.followingId);
+        
+        // Get full user details for following
+        const following = followingIds.map(followingId => {
+          const user = users.find(u => u.id === followingId);
+          return user ? {
+            id: user.id,
+            username: user.username,
+            avatar: user.avatar,
+            online: false // TODO: Implement online status tracking
+          } : null;
+        }).filter(Boolean);
         
         return res.status(200).json({ following, count: following.length });
       } else {
@@ -99,10 +127,17 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   if (req.method === 'POST') {
     // Follow/unfollow a user
-    const { followerId, followingId, action } = req.body;
+    const session = await getSessionFromRequest(req);
     
-    if (!followerId || !followingId) {
-      return res.status(400).json({ error: 'followerId and followingId are required' });
+    if (!session || !session.userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    const { followingId, action } = req.body;
+    const followerId = session.userId;
+    
+    if (!followingId) {
+      return res.status(400).json({ error: 'followingId is required' });
     }
 
     if (followerId === followingId) {

@@ -30,6 +30,20 @@ export default function SupplierLoginPage() {  const [form, setForm] = useState(
       if (res.ok) {
         const data = await res.json();
         if (typeof window !== "undefined") {
+          // Store session for persistence
+          const userSession = {
+            user: {
+              id: data.supplier.id,
+              username: data.supplier.name || data.supplier.email?.split('@')[0] || 'supplier',
+              email: form.email,
+              sessionId: data.session?.sessionId || data.sessionId || '',
+              tier: 'Supplier'
+            },
+            sessionId: data.session?.sessionId || data.sessionId || ''
+          };
+          localStorage.setItem("userSession", JSON.stringify(userSession));
+          
+          // Store supplier-specific flags
           localStorage.setItem("isSupplier", "true");
           localStorage.setItem("isSignedIn", "true");
           localStorage.setItem("supplierId", String(data.supplier.id));

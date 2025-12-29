@@ -1,0 +1,32 @@
+# Vercel Ignore File
+# Exclude these from deployment
+
+# Development files
+node_modules/
+.next/
+.git/
+.vscode/
+
+# Backups
+backups/
+socket-io-backup/
+
+# Environment (will be set in Vercel dashboard)
+.env.local
+.env*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Documentation (optional - include if you want)
+*.md
+!README.md
+
+# Server file (not used on Vercel)
+server.js
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts

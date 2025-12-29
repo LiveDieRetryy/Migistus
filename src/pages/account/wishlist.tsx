@@ -26,6 +26,24 @@ export default function WishlistPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'masonry' | 'grid'>('masonry');
 
+  // Account navigation items
+  const getProfileSlug = () => {
+    if (!user?.username) return "/account/profile";
+    return `/account/profile/${user.username.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")}`;
+  };
+
+  const accountNav = [
+    { label: "Account Overview", href: "/account", icon: "🏠" },
+    { label: "Notifications", href: "/notifications", icon: "🔔" },
+    { label: "My Current Pledges", href: "/account/pledges", icon: "🤝" },
+    { label: "My Orders", href: "/account/orders", icon: "📦" },
+    { label: "My Wishlist", href: "/account/wishlist", icon: "❤️" },
+    { label: "My Votes", href: "/account/votes", icon: "🗳️" },
+    { label: "Wallet", href: "/wallet", icon: "💰" },
+    { label: "View Profile", href: getProfileSlug(), icon: "👤" },
+    { label: "Account Settings", href: "/account/settings", icon: "⚙️" },
+  ];
+
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       router.push('/');
@@ -94,19 +112,67 @@ export default function WishlistPage() {
       <MainNavbar />
       
       {/* Pinterest-Style Wishlist Board */}
-      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white py-12 px-4">
-        <div className="w-full max-w-7xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white">
+        <div className="flex flex-col lg:flex-row max-w-7xl mx-auto px-4 py-12 gap-8">
+          
+          {/* Back Link - Mobile */}
+          <div className="lg:hidden mb-4">
+            <Link href="/account" className="text-yellow-400 hover:text-yellow-300">
+              ← Back to Account
+            </Link>
+          </div>
+
+          {/* Sidebar */}
+          <aside className="lg:w-80">
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-6 sticky top-8">
+              <div className="hidden lg:block mb-6">
+                <Link href="/account" className="text-yellow-400 hover:text-yellow-300">
+                  ← Back to Account
+                </Link>
+              </div>
+              
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center text-2xl">
+                  👤
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-yellow-400">
+                    Account Menu
+                  </h2>
+                  <p className="text-sm text-gray-400">{user?.username}</p>
+                </div>
+              </div>
+              
+              <ul className="space-y-2">
+                {accountNav.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                        router.pathname === item.href
+                          ? "bg-yellow-400 text-black font-semibold"
+                          : "text-yellow-300 hover:bg-yellow-400/10 hover:text-yellow-400"
+                      }`}
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </aside>
+
+          {/* Main Content */}
+          <main className="flex-1">
           
           {/* Header Section */}
           <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Heart className="w-8 h-8 text-pink-500 fill-pink-500" />
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-yellow-400 text-transparent bg-clip-text">
-                  My Wishlist
-                </h1>
-              </div>
-              <p className="text-zinc-400 ml-11">
+              <h1 className="text-3xl font-bold text-yellow-400 mb-2">
+                My Wishlist
+              </h1>
+              <p className="text-gray-400">
                 {wishlist.length} {wishlist.length === 1 ? 'product' : 'products'} saved for later
               </p>
             </div>
@@ -117,7 +183,7 @@ export default function WishlistPage() {
                 onClick={() => setViewMode('masonry')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
                   viewMode === 'masonry' 
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white' 
+                    ? 'bg-yellow-400 text-black' 
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
@@ -128,7 +194,7 @@ export default function WishlistPage() {
                 onClick={() => setViewMode('grid')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
                   viewMode === 'grid' 
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white' 
+                    ? 'bg-yellow-400 text-black' 
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
@@ -141,26 +207,23 @@ export default function WishlistPage() {
           {/* Loading State */}
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <Sparkles className="w-12 h-12 text-pink-400 animate-pulse mb-4" />
+              <div className="animate-spin w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full mb-4"></div>
               <p className="text-zinc-400 text-lg">Loading your wishlist...</p>
             </div>
             
           ) : wishlist.length === 0 ? (
             
             /* Empty State */
-            <div className="flex flex-col items-center justify-center py-20 px-4">
-              <div className="relative mb-6">
-                <Heart className="w-24 h-24 text-zinc-700" />
-                <Sparkles className="w-8 h-8 text-pink-400 absolute -top-2 -right-2 animate-pulse" />
-              </div>
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-12 text-center">
+              <Heart className="w-16 h-16 mx-auto mb-4 text-zinc-600" />
               <h2 className="text-2xl font-bold text-white mb-3">Your wishlist is empty</h2>
-              <p className="text-zinc-400 mb-6 text-center max-w-md">
+              <p className="text-gray-400 mb-6 max-w-md mx-auto">
                 Start adding products you love! Browse our curated collection and save items to view later.
               </p>
-              <div className="flex gap-4">
+              <div className="flex gap-4 justify-center">
                 <Link
                   href="/voting"
-                  className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold px-6 py-3 rounded-lg transition-all shadow-lg hover:shadow-pink-500/50"
+                  className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-3 rounded-lg transition-all"
                 >
                   <Sparkles className="w-4 h-4" />
                   Discover Products
@@ -186,7 +249,7 @@ export default function WishlistPage() {
               {wishlist.map((item) => (
                 <div
                   key={item.id}
-                  className={`group relative bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden hover:border-pink-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-pink-500/20 ${
+                className={`group relative bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden hover:border-yellow-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/20 ${
                     viewMode === 'masonry' ? 'break-inside-avoid mb-4' : ''
                   }`}
                 >
@@ -210,7 +273,7 @@ export default function WishlistPage() {
                       <div className="flex gap-2">
                         <Link
                           href={`/products/${item.productSlug || item.productId}`}
-                          className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold px-4 py-2 rounded-lg transition-all text-sm"
+                          className="flex-1 flex items-center justify-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-black font-semibold px-4 py-2 rounded-lg transition-all text-sm"
                         >
                           <ExternalLink className="w-4 h-4" />
                           View
@@ -227,7 +290,7 @@ export default function WishlistPage() {
                     
                     {/* Category Badge */}
                     {item.productCategory && (
-                      <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-pink-300 border border-pink-500/30">
+                      <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-yellow-300 border border-yellow-500/30">
                         {item.productCategory}
                       </div>
                     )}
@@ -235,13 +298,13 @@ export default function WishlistPage() {
                   
                   {/* Product Info */}
                   <div className="p-4">
-                    <h3 className="font-bold text-white mb-2 line-clamp-2 group-hover:text-pink-400 transition-colors">
+                    <h3 className="font-bold text-white mb-2 line-clamp-2 group-hover:text-yellow-400 transition-colors">
                       {item.productName}
                     </h3>
                     
                     <div className="flex items-center justify-between">
                       {item.productPrice && (
-                        <p className="text-lg font-bold bg-gradient-to-r from-yellow-400 to-pink-400 text-transparent bg-clip-text">
+                        <p className="text-lg font-bold text-yellow-400">
                           ${item.productPrice.toFixed(2)}
                         </p>
                       )}
@@ -257,18 +320,7 @@ export default function WishlistPage() {
               ))}
             </div>
           )}
-          
-          {/* Footer */}
-          {wishlist.length > 0 && (
-            <div className="mt-12 text-center border-t border-zinc-800 pt-8">
-              <Link 
-                href="/account" 
-                className="inline-flex items-center gap-2 text-pink-400 hover:text-pink-300 font-medium transition-colors"
-              >
-                ← Back to Account Overview
-              </Link>
-            </div>
-          )}
+          </main>
         </div>
       </div>
     </>

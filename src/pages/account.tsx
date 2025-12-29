@@ -3,13 +3,19 @@ import Head from "next/head";
 import MainNavbar from "@/components/nav/MainNavbar";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useAuth } from "@/context/AuthContext"; // Updated import
-import { UserStorage3 as UserStorage } from "@/utils/userStorage";
-import { activityTracker } from "@/utils/activityTracker";
+import { useAuth } from "@/context/AuthContext";
+import { userAPI } from "@/lib/userAPI";
+import { useSession } from "@/hooks/useSession";
+import { Upload, Edit, TrendingUp, Users, Heart, Vote, Clock, Award, Loader2, AlertCircle } from "lucide-react";
 
 export default function AccountPage() {
-  const { user, isAuthenticated, loading } = useAuth(); // Updated to use correct hook
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
+  
+  // Use session for display info only, don't redirect
+  const sessionInfo = useSession({ 
+    autoRefresh: false, // Disable auto-refresh for now
+  });
   
   // Generate profile slug from username
   const getProfileSlug = () => {
@@ -19,8 +25,9 @@ export default function AccountPage() {
 
   const accountNav = [
     { label: "Account Overview", href: "/account", icon: "🏠" },
+    { label: "Notifications", href: "/notifications", icon: "🔔" },
     { label: "My Current Pledges", href: "/account/pledges", icon: "🤝" },
-    { label: "Pledge History", href: "/account/pledge-history", icon: "📋" },
+    { label: "My Orders", href: "/account/orders", icon: "📦" },
     { label: "My Wishlist", href: "/account/wishlist", icon: "❤️" },
     { label: "My Votes", href: "/account/votes", icon: "🗳️" },
     { label: "Wallet", href: "/wallet", icon: "💰" },
@@ -28,16 +35,12 @@ export default function AccountPage() {
     { label: "Account Settings", href: "/account/settings", icon: "⚙️" },
   ];
   const [profile, setProfile] = useState<any>(null);
-  const [stats, setStats] = useState({
-    pledges: 0,
-    votes: 0,
-    guildCoins: 0,
-    walletBalance: 0,
-  });
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push("/login");
       return;
     }
@@ -45,56 +48,58 @@ export default function AccountPage() {
     if (user) {
       loadUserData();
     }
-  }, [user, isAuthenticated, loading, router]);
+  }, [user, isAuthenticated, authLoading, router]);
+
   const loadUserData = async () => {
     if (!user) return;
 
-    // Track account page access
-    activityTracker.trackPageView('/account');
-    activityTracker.trackAccountMenuAction('account_page_loaded', {
-      userId: user.id,
-      username: user.username
-    });
-
     try {
-      // Load profile data
-      const profileData = UserStorage.getUserProfile(user.id);
-      setProfile(profileData);
-
-      // Load wallet and coins
-      const walletBalance = UserStorage.getUserWalletBalance(user.id);
-      const guildCoins = UserStorage.getUserGuildCoins(user.id);
-
-      // Load pledges
-      const pledgesRes = await fetch(`/api/account/pledges?userId=${user.id}`);
-      const pledges = await pledgesRes.json();
-
-      // Load votes
-      const votesRes = await fetch(`/api/account/votes`);
-      if (votesRes.ok) {
-        const votesResult = await votesRes.json();
-        const userVotes = votesResult.success && Array.isArray(votesResult.data) ? votesResult.data : [];
-        
+      setLoading(true);
+      
+      // Load user stats via API with fallback
+      try {
+        const userStats = await userAPI.getStats(user.id);
+        setStats(userStats);
+      } catch (statsError) {
+        console.warn("Failed to load stats from API, using defaults:", statsError);
+        // Fallback to default stats
         setStats({
-          pledges: pledges.length,
-          votes: userVotes.length,
-          guildCoins,
-          walletBalance,
+          followers_count: 0,
+          following_count: 0,
+          total_votes: 0,
+          total_pledges: 0,
+          products_created: 0,
+          drops_participated: 0
         });
-      } else {
-        setStats({
-          pledges: pledges.length,
-          votes: 0,
-          guildCoins,
-          walletBalance,
+      }
+
+      // Load user profile with fallback
+      try {
+        const userProfile = await userAPI.getProfile(user.id);
+        setProfile(userProfile);
+      } catch (profileError) {
+        console.warn("Failed to load profile from API, using user data:", profileError);
+        setProfile({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          tier: user.tier || 'FREE',
+          created_at: new Date().toISOString()
         });
-      }      // Load recent activity - filter to only show votes, pledges, follows, likes, and comments
-      const activity = UserStorage.getUserActivity(user.id);
-      const allowedActivityTypes = ['vote', 'pledge', 'social', 'like', 'comment'];
-      const filteredActivity = activity.filter((a: any) => allowedActivityTypes.includes(a.type));
-      setRecentActivity(filteredActivity.slice(0, 5));
+      }
+
+      // Load recent activity with fallback
+      try {
+        const activity = await userAPI.getActivity(user.id, 10);
+        setRecentActivity(activity);
+      } catch (activityError) {
+        console.warn("Failed to load activity from API:", activityError);
+        setRecentActivity([]);
+      }
     } catch (error) {
       console.error("Failed to load user data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -166,14 +171,6 @@ export default function AccountPage() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      onClick={() => {
-                        // Track account page navigation
-                        activityTracker.trackAccountMenuAction('account_page_navigate', {
-                          destination: item.href,
-                          label: item.label,
-                          icon: item.icon
-                        });
-                      }}
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                         router.pathname === item.href
                           ? "bg-yellow-400 text-black font-semibold"
@@ -202,35 +199,93 @@ export default function AccountPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-xl p-6 text-center">
-                <div className="text-3xl mb-2">🤝</div>
-                <div className="text-2xl font-bold text-yellow-400">
-                  {stats.pledges}
-                </div>
-                <div className="text-sm text-gray-400">Active Pledges</div>
-              </div>              <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-xl p-6 text-center">
-                <div className="text-3xl mb-2">🗳️</div>
-                <div className="text-2xl font-bold text-blue-400">
-                  {UserStorage.getTodaysVoteCount(user.id)}
-                </div>
-                <div className="text-sm text-gray-400">Votes Today</div>
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-yellow-400" />
               </div>
-
-              <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-xl p-6 text-center">
-                <div className="text-3xl mb-2">🪙</div>
-                <div className="text-2xl font-bold text-yellow-400">
-                  {stats.guildCoins}
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-xl p-6 text-center hover:border-yellow-400/40 transition-colors">
+                  <div className="flex justify-center mb-3">
+                    <Users className="w-8 h-8 text-blue-400" />
+                  </div>
+                  <div className="text-3xl font-bold text-blue-400 mb-1">
+                    {stats?.followers_count || 0}
+                  </div>
+                  <div className="text-sm text-gray-400">Followers</div>
                 </div>
-                <div className="text-sm text-gray-400">Guild Coins</div>
+
+                <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-xl p-6 text-center hover:border-yellow-400/40 transition-colors">
+                  <div className="flex justify-center mb-3">
+                    <Vote className="w-8 h-8 text-purple-400" />
+                  </div>
+                  <div className="text-3xl font-bold text-purple-400 mb-1">
+                    {stats?.total_votes || 0}
+                  </div>
+                  <div className="text-sm text-gray-400">Total Votes</div>
+                </div>
+
+                <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-xl p-6 text-center hover:border-yellow-400/40 transition-colors">
+                  <div className="flex justify-center mb-3">
+                    <Heart className="w-8 h-8 text-red-400" />
+                  </div>
+                  <div className="text-3xl font-bold text-red-400 mb-1">
+                    {stats?.total_pledges || 0}
+                  </div>
+                  <div className="text-sm text-gray-400">Total Pledges</div>
+                </div>
+
+                <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-xl p-6 text-center hover:border-yellow-400/40 transition-colors">
+                  <div className="flex justify-center mb-3">
+                    <TrendingUp className="w-8 h-8 text-green-400" />
+                  </div>
+                  <div className="text-3xl font-bold text-green-400 mb-1">
+                    {profile?.tier || 'FREE'}
+                  </div>
+                  <div className="text-sm text-gray-400">Member Tier</div>
+                </div>
               </div>
+            )}
 
-              <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-xl p-6 text-center">
-                <div className="text-3xl mb-2">💰</div>
-                <div className="text-2xl font-bold text-green-400">
-                  ${stats.walletBalance.toFixed(2)}
-                </div>
-                <div className="text-sm text-gray-400">Wallet Balance</div>
+            {/* Quick Actions */}
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-6">
+              <h2 className="text-xl font-bold text-yellow-400 mb-4 flex items-center">
+                <Award className="w-6 h-6 mr-2" />
+                Quick Actions
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Link
+                  href="/account/settings"
+                  className="flex items-center p-4 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-colors group"
+                >
+                  <Upload className="w-5 h-5 text-yellow-400 mr-3 group-hover:scale-110 transition-transform" />
+                  <div>
+                    <div className="font-semibold text-white">Upload Avatar</div>
+                    <div className="text-xs text-gray-400">Update your profile picture</div>
+                  </div>
+                </Link>
+
+                <Link
+                  href={`/account/profile/${user?.username}`}
+                  className="flex items-center p-4 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-colors group"
+                >
+                  <Edit className="w-5 h-5 text-blue-400 mr-3 group-hover:scale-110 transition-transform" />
+                  <div>
+                    <div className="font-semibold text-white">Edit Profile</div>
+                    <div className="text-xs text-gray-400">Update your bio and info</div>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/account/settings"
+                  className="flex items-center p-4 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 rounded-lg transition-colors group"
+                >
+                  <Clock className="w-5 h-5 text-purple-400 mr-3 group-hover:scale-110 transition-transform" />
+                  <div>
+                    <div className="font-semibold text-white">Activity Log</div>
+                    <div className="text-xs text-gray-400">View your recent actions</div>
+                  </div>
+                </Link>
               </div>
             </div>
 
@@ -275,41 +330,58 @@ export default function AccountPage() {
 
             {/* Recent Activity */}
             <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-8">
-              <h2 className="text-2xl font-bold text-yellow-400 mb-6">
+              <h2 className="text-2xl font-bold text-yellow-400 mb-6 flex items-center">
+                <Clock className="w-6 h-6 mr-2" />
                 Recent Activity
               </h2>
               {recentActivity.length > 0 ? (
-                <div className="space-y-4">
-                  {recentActivity.map((activity, index) => (                    <div
+                <div className="space-y-3">
+                  {recentActivity.map((activity, index) => (
+                    <div
                       key={index}
-                      className="flex items-center gap-4 p-4 bg-zinc-800/50 rounded-lg"
+                      className="flex items-start gap-4 p-4 bg-zinc-800/50 hover:bg-zinc-800 rounded-lg transition-colors border border-zinc-700/50"
                     >
-                      <div className="text-2xl">
-                        {activity.type === 'vote' && '🗳️'}
-                        {activity.type === 'pledge' && '🤝'}
-                        {activity.type === 'social' && '👥'}
-                        {activity.type === 'like' && '❤️'}
+                      <div className="w-10 h-10 rounded-full bg-yellow-400/10 flex items-center justify-center flex-shrink-0">
+                        {activity.type === 'vote' && <Vote className="w-5 h-5 text-purple-400" />}
+                        {activity.type === 'pledge' && <Heart className="w-5 h-5 text-red-400" />}
+                        {activity.type === 'follow' && <Users className="w-5 h-5 text-blue-400" />}
                         {activity.type === 'comment' && '💬'}
-                        {!['vote', 'pledge', 'social', 'like', 'comment'].includes(activity.type) && (activity.icon || "📝")}
+                        {!['vote', 'pledge', 'follow', 'comment'].includes(activity.type) && '📝'}
                       </div>
-                      <div className="flex-1">
-                        <div className="text-white font-medium">{activity.action}</div>
-                        <div className="text-sm text-gray-400">
-                          {new Date(activity.timestamp).toLocaleDateString()}
-                        </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-white font-medium mb-1">
+                          {activity.description}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(activity.created_at).toLocaleDateString()} at{' '}
+                          {new Date(activity.created_at).toLocaleTimeString()}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
-              ) : (                <div className="text-center py-8">
-                  <div className="text-6xl mb-4 opacity-50">📊</div>
-                  <p className="text-gray-400">No recent activity</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Start voting, pledging, following users, liking, or commenting to see activity here
-                  </p>
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  <Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p>No recent activity yet</p>
+                  <p className="text-sm mt-1">Start exploring to see your activity here</p>
                 </div>
               )}
             </div>
+
+            {/* Session Info */}
+            {sessionInfo.isExpiring && sessionInfo.timeUntilExpiration && (
+              <div className="bg-orange-500/10 border border-orange-500 rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-orange-400 mb-2 flex items-center">
+                  <AlertCircle className="w-5 h-5 mr-2" />
+                  Session Expiring Soon
+                </h3>
+                <p className="text-sm text-orange-300">
+                  Your session will expire in {Math.floor(sessionInfo.timeUntilExpiration / 60)} minutes.
+                  Please save your work or refresh to extend your session.
+                </p>
+              </div>
+            )}
 
             {/* Quick Actions */}
             <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-8">

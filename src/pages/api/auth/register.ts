@@ -3,6 +3,14 @@ import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
 import { createSession, setSessionCookie } from "@/lib/session";
+import formidable from 'formidable';
+
+// Disable default body parser to handle FormData
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 const USERS_PATH = path.resolve("public/data/users.json");
 
@@ -56,30 +64,79 @@ function writeUsers(users: any[]) {
   }
 }
 
+// Parse FormData using formidable
+function parseForm(req: NextApiRequest): Promise<{ fields: any; files: any }> {
+  return new Promise((resolve, reject) => {
+    const form = formidable({
+      maxFileSize: 10 * 1024 * 1024, // 10MB
+      keepExtensions: true,
+    });
+
+    form.parse(req, (err, fields, files) => {
+      if (err) reject(err);
+      else resolve({ fields, files });
+    });
+  });
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST"]);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
-    const { 
-    username, 
-    email, 
-    password,
-    firstName,
-    lastName,
-    dateOfBirth,
-    country,
-    state,
-    city,
-    phoneNumber,
-    referralSource,
-    agreeToTerms,
-    agreeToMarketing
-  } = req.body;
+
+  try {
+    // Parse FormData
+    const { fields, files } = await parseForm(req);
+    
+    // Extract values (formidable returns arrays for fields)
+    const getValue = (field: any) => Array.isArray(field) ? field[0] : field;
+    
+    const username = getValue(fields.username);
+    const email = getValue(fields.email);
+    const password = getValue(fields.password);
+    const firstName = getValue(fields.firstName);
+    const lastName = getValue(fields.lastName);
+    const dateOfBirth = getValue(fields.dateOfBirth);
+    const country = getValue(fields.country);
+    const state = getValue(fields.state);
+    const city = getValue(fields.city);
+    const zipCode = getValue(fields.zipCode);
+    const phoneNumber = getValue(fields.phoneNumber);
+    const referralSource = getValue(fields.referralSource);
+    const agreeToTermsValue = getValue(fields.agreeToTerms);
+    const agreeToMarketingValue = getValue(fields.agreeToMarketing);
+    const agreeToTerms = agreeToTermsValue === 'true' || agreeToTermsValue === true;
+    const agreeToMarketing = agreeToMarketingValue === 'true' || agreeToMarketingValue === true;
+    const preferredLanguage = getValue(fields.preferredLanguage);
+    const timezone = getValue(fields.timezone);
+    const gender = getValue(fields.gender);
+    const accountPurpose = getValue(fields.accountPurpose);
+    const avatarFile = files.avatar ? (Array.isArray(files.avatar) ? files.avatar[0] : files.avatar) : null;
+
+    console.log('📝 Registration data:', { 
+      username, 
+      email, 
+      firstName, 
+      lastName,
+      agreeToTerms,
+      agreeToTermsRaw: agreeToTermsValue,
+      hasAvatar: !!avatarFile 
+    });
   
   // Validate required fields
   if (!username || !email || !password || !firstName || !lastName || !dateOfBirth || !country) {
-    return res.status(400).json({ error: "Missing required fields" });
+    const missing = [];
+    if (!username) missing.push('username');
+    if (!email) missing.push('email');
+    if (!password) missing.push('password');
+    if (!firstName) missing.push('firstName');
+    if (!lastName) missing.push('lastName');
+    if (!dateOfBirth) missing.push('dateOfBirth');
+    if (!country) missing.push('country');
+    
+    console.log('❌ Missing required fields:', missing);
+    return res.status(400).json({ error: `Missing required fields: ${missing.join(', ')}` });
   }
 
   // Validate terms agreement
@@ -119,7 +176,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const hash = await bcrypt.hash(password, 10);
-    const newUser = {
+  
+  // Process avatar file if uploaded
+  let avatarPath = null;
+  if (avatarFile) {
+    try {
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'avatars');
+      
+      // Create directory if it doesn't exist
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      
+      // Generate unique filename
+      const timestamp = Date.now();
+      const ext = path.extname(avatarFile.originalFilename || '.jpg');
+      const filename = `${username.toLowerCase()}_${timestamp}${ext}`;
+      const destPath = path.join(uploadDir, filename);
+      
+      // Copy file from temp location to uploads folder
+      const fileData = fs.readFileSync(avatarFile.filepath);
+      fs.writeFileSync(destPath, fileData);
+      
+      // Set avatar path (relative to public folder)
+      avatarPath = `/uploads/avatars/${filename}`;
+      
+      console.log('✅ Avatar uploaded:', avatarPath);
+    } catch (err) {
+      console.error('❌ Avatar upload failed:', err);
+      // Continue registration without avatar
+    }
+  }
+  
+  const newUser = {
     id: Date.now(),
     username,
     email,
@@ -142,7 +231,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     phoneNumber: phoneNumber || null,
     referralSource: referralSource || null,
     // Profile information
-    avatar: null,
+    avatar: avatarPath,
     bio: "",
     // Preferences
     agreeToMarketing: agreeToMarketing || false,
@@ -226,6 +315,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   res.status(201).json({ 
     success: true, 
     user: userResponse,
+    session: {
+      user: userResponse,
+      sessionId: sessionToken,
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
+    },
     message: "Welcome to MIGISTUS! Your account has been created successfully."
   });
+  } catch (error: any) {
+    console.error('❌ Registration error:', error);
+    return res.status(500).json({ error: error.message || 'Registration failed' });
+  }
 }

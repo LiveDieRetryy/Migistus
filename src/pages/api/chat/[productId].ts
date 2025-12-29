@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { emitChatMessage } from '@/utils/socketEmitter';
 
 const MODERATION_PATH = path.resolve("public/data/moderation.json");
 
@@ -63,14 +64,28 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       if (filtered) {
         filteredMessage = filterProfanity(filteredMessage, profanityList);
       }
-      messages.push({
+      const newMessage = {
         ...message,
-        id: Date.now(),
+        id: Date.now().toString(),
         message: filteredMessage,
-        filtered
-      });
+        content: filteredMessage,
+        filtered,
+        timestamp: new Date().toISOString()
+      };
+      
+      messages.push(newMessage);
       fs.writeFileSync(filePath, JSON.stringify(messages, null, 2));
-      res.status(201).json({ success: true });
+      
+      // Emit real-time message via Socket.IO
+      const conversationId = `product-${productId}`;
+      emitChatMessage(conversationId, {
+        id: newMessage.id,
+        senderId: message.senderId || 0,
+        content: filteredMessage,
+        timestamp: newMessage.timestamp
+      });
+      
+      res.status(201).json({ success: true, message: newMessage });
     } catch (err) {
       res.status(500).json({ error: "Failed to save message" });
     }

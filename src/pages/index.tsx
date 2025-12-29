@@ -233,35 +233,17 @@ export default function HomePage() {
             </div>
 
             {/* Value Proposition */}
-            <p className="text-xl sm:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed font-light animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              Where <span className="text-yellow-400 font-semibold">your voice shapes the marketplace</span>, 
-              <span className="text-yellow-400 font-semibold"> collective action</span> drives down prices, and every purchase 
-              <span className="text-yellow-400 font-semibold"> strengthens the community</span>.
+            <blockquote className="text-2xl sm:text-3xl text-yellow-200 mb-6 max-w-3xl mx-auto leading-relaxed italic animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              "Alone, you're just a buyer. Together, you're a guild."
+            </blockquote>
+            <p className="text-lg sm:text-xl text-gray-300 mb-10 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.5s' }}>
+              Join the first democratic marketplace where your voice shapes what products get offered. Experience the power of collective buying with thousands of guild members.
             </p>
 
-            {/* Unique Selling Points */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-4xl mx-auto animate-fade-in" style={{ animationDelay: '0.6s' }}>
-              <div className="bg-zinc-900/60 backdrop-blur-sm border border-yellow-400/20 rounded-xl p-6 hover:border-yellow-400/40 transition-all hover:scale-105 hover:shadow-xl hover:shadow-yellow-400/10">
-                <div className="text-4xl mb-3">🗳️</div>
-                <h3 className="text-lg font-bold text-yellow-400 mb-2">Democratic Catalog</h3>
-                <p className="text-zinc-300 text-sm">You vote, we source. Every product is chosen by the community.</p>
-              </div>
-              <div className="bg-zinc-900/60 backdrop-blur-sm border border-yellow-400/20 rounded-xl p-6 hover:border-yellow-400/40 transition-all hover:scale-105 hover:shadow-xl hover:shadow-yellow-400/10">
-                <div className="text-4xl mb-3">💰</div>
-                <h3 className="text-lg font-bold text-yellow-400 mb-2">Bulk Power Pricing</h3>
-                <p className="text-zinc-300 text-sm">Unite for massive discounts. More members = lower prices.</p>
-              </div>
-              <div className="bg-zinc-900/60 backdrop-blur-sm border border-yellow-400/20 rounded-xl p-6 hover:border-yellow-400/40 transition-all hover:scale-105 hover:shadow-xl hover:shadow-yellow-400/10">
-                <div className="text-4xl mb-3">🏆</div>
-                <h3 className="text-lg font-bold text-yellow-400 mb-2">Member Rewards</h3>
-                <p className="text-zinc-300 text-sm">Earn tiers, unlock perks, amplify your voting power.</p>
-              </div>
-            </div>
-
             {/* Primary CTAs */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16 animate-fade-in" style={{ animationDelay: '0.8s' }}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12 animate-fade-in" style={{ animationDelay: '0.6s' }}>
               <Link href="/register" legacyBehavior>
-                <a className="group relative overflow-hidden font-bold px-10 py-5 rounded-2xl transition-all duration-300 text-xl bg-gradient-to-r from-yellow-400 to-yellow-500 text-black hover:from-yellow-300 hover:to-yellow-400 shadow-2xl shadow-yellow-400/30 hover:shadow-yellow-400/50 hover:scale-105 transform">
+                <a className="group relative overflow-hidden font-bold px-10 py-4 rounded-xl transition-all duration-300 text-lg bg-gradient-to-r from-yellow-400 to-yellow-500 text-black hover:from-yellow-300 hover:to-yellow-400 shadow-xl shadow-yellow-400/30 hover:shadow-yellow-400/50 hover:scale-105 transform">
                   <span className="relative z-10 flex items-center gap-2">
                     ⚔️ Join the Guild
                     <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
@@ -269,7 +251,7 @@ export default function HomePage() {
                 </a>
               </Link>
               <Link href="/voting" legacyBehavior>
-                <a className="group font-bold px-10 py-5 rounded-2xl transition-all duration-300 text-xl border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400/10 hover:scale-105 shadow-lg hover:shadow-yellow-400/20">
+                <a className="group font-bold px-10 py-4 rounded-xl transition-all duration-300 text-lg border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400/10 hover:scale-105">
                   <span className="flex items-center gap-2">
                     🗳️ Start Voting
                     <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
@@ -279,243 +261,299 @@ export default function HomePage() {
             </div>
 
             {/* Live Stats with Animation */}
-            <div className="flex flex-wrap justify-center gap-8 lg:gap-16 animate-fade-in" style={{ animationDelay: '1s' }}>
-              <div className="text-center group">
-                <div className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-yellow-200 to-yellow-500 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform">
+            <div className="flex flex-wrap justify-center gap-8 lg:gap-12 text-center animate-fade-in" style={{ animationDelay: '0.7s' }}>
+              <div className="group">
+                <div className="text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-yellow-200 to-yellow-500 bg-clip-text text-transparent mb-1 group-hover:scale-110 transition-transform">
                   {totalUsers.toLocaleString()}+
                 </div>
-                <div className="text-gray-300 text-sm uppercase tracking-wider font-semibold">Guild Members</div>
+                <div className="text-gray-400 text-xs uppercase tracking-wider">Guild Members</div>
               </div>
-              <div className="hidden sm:block w-px h-16 bg-gradient-to-b from-transparent via-yellow-400/30 to-transparent self-center"></div>
-              <div className="text-center group">
-                <div className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-yellow-200 to-yellow-500 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform">
-                  {totalVotes.toLocaleString()}+
+              <div className="hidden sm:block w-px h-12 bg-yellow-400/20 self-center"></div>
+              <div className="group">
+                <div className="text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-yellow-200 to-yellow-500 bg-clip-text text-transparent mb-1 group-hover:scale-110 transition-transform">
+                  {totalVotes.toLocaleString()}
                 </div>
-                <div className="text-gray-300 text-sm uppercase tracking-wider font-semibold">Democratic Votes</div>
+                <div className="text-gray-400 text-xs uppercase tracking-wider">Democratic Votes</div>
               </div>
-              <div className="hidden sm:block w-px h-16 bg-gradient-to-b from-transparent via-yellow-400/30 to-transparent self-center"></div>
-              <div className="text-center group">
-                <div className="text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-yellow-200 to-yellow-500 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform">
-                  50+
+              <div className="hidden sm:block w-px h-12 bg-yellow-400/20 self-center"></div>
+              <div className="group">
+                <div className="text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-yellow-200 to-yellow-500 bg-clip-text text-transparent mb-1 group-hover:scale-110 transition-transform">
+                  {liveProducts.length}
                 </div>
-                <div className="text-gray-300 text-sm uppercase tracking-wider font-semibold">Community Drops</div>
+                <div className="text-gray-400 text-xs uppercase tracking-wider">Community Drops</div>
               </div>
             </div>
           </div>
           
-          {/* Scroll Indicator - positioned at section border */}
-          <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer z-10" onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}>
-            <div className="flex flex-col items-center gap-2">
-              <div className="text-yellow-400/70 text-sm font-semibold">Explore</div>
-              <div className="w-6 h-10 border-2 border-yellow-400/50 rounded-full flex justify-center items-start">
-                <div className="w-1 h-3 bg-yellow-400 rounded-full mt-2 animate-pulse"></div>
-              </div>
+          {/* Scroll Indicator */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer" onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}>
+            <div className="w-6 h-10 border-2 border-yellow-400/50 rounded-full flex justify-center pt-2">
+              <div className="w-1.5 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
             </div>
           </div>
         </section>
 
-        {/* Guild Product Journey Section */}
-        <section className="relative py-20 px-4 sm:px-6 bg-gradient-to-b from-transparent to-zinc-900/50 border-t border-yellow-400/10">
+        {/* Product Lifecycle Section */}
+        <section className="relative py-20 px-4 sm:px-6 border-t border-yellow-400/10">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold text-yellow-400 mb-4">The Guild's Product Journey</h2>
-              <p className="text-lg text-zinc-300 max-w-3xl mx-auto mb-8">
-                Every product in our guild follows a democratic path from idea to your doorstep. 
-                Your voice shapes what we offer, and collective action unlocks the best prices.
+              <h2 className="text-4xl sm:text-5xl font-bold mb-6 bg-gradient-to-r from-yellow-200 to-yellow-500 bg-clip-text text-transparent playfair-heading">
+                The Guild's Product Lifecycle
+              </h2>
+              <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
+                Every product moves through the guild's democratic process - from voting to final delivery.
               </p>
+              
+              {/* Info box */}
+              <div className="max-w-4xl mx-auto bg-gradient-to-br from-zinc-900/80 to-zinc-800/60 border border-yellow-400/20 rounded-xl p-6 mb-12">
+                <div className="flex flex-col md:flex-row justify-around gap-6 text-center">
+                  <div>
+                    <div className="text-sm text-gray-500 mb-1">Voting Duration</div>
+                    <div className="text-2xl font-bold text-yellow-400">7 Days</div>
+                  </div>
+                  <div className="hidden md:block w-px bg-yellow-400/20"></div>
+                  <div>
+                    <div className="text-sm text-gray-500 mb-1">Stage Advance</div>
+                    <div className="text-2xl font-bold text-yellow-400">Every Friday</div>
+                  </div>
+                  <div className="hidden md:block w-px bg-yellow-400/20"></div>
+                  <div>
+                    <div className="text-sm text-gray-500 mb-1">Your Power</div>
+                    <div className="text-2xl font-bold text-yellow-400">Set The Price</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            {/* Product Lifecycle Flow */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-16">
-              {/* Stage 1: Voting */}
-              <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/20 border border-blue-400/30 rounded-2xl p-6 shadow-lg relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-blue-400/10 rounded-full -mr-10 -mt-10"></div>
-                <div className="relative z-10">
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center text-xl font-bold mr-4">🗳️</div>
-                    <div>
-                      <h3 className="text-lg font-bold text-blue-300">Vote & Discover</h3>
-                      <div className="text-sm text-blue-200/70">Stage 1</div>
+
+            {/* Visual Progress Line */}
+            <div className="relative mb-12 hidden lg:block">
+              <div className="absolute top-10 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-yellow-500 to-green-500 rounded-full opacity-30"></div>
+            </div>
+
+            {/* Three Stages Grid */}
+            <div className="grid md:grid-cols-3 gap-8 relative">
+              {/* Stage 1: Vote & Discover */}
+              <div className="relative group">
+                <div className="bg-gradient-to-br from-blue-900/40 to-zinc-900/60 border-2 border-blue-500/30 rounded-2xl p-8 h-full hover:border-blue-400/60 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20">
+                  {/* Stage Badge */}
+                  <div className="absolute -top-3 left-6 flex items-center gap-2 bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-bold">
+                    <span>🗳️</span>
+                    <span>STAGE 1</span>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <h3 className="text-2xl font-bold text-blue-400 mb-4">Vote & Discover</h3>
+                    <p className="text-gray-300 mb-6 leading-relaxed">
+                      Browse products proposed by the community. Vote for what you want to see offered. The guild decides what moves forward together.
+                    </p>
+                    
+                    {/* Status Box */}
+                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6">
+                      <div className="text-sm text-blue-300 mb-1">Currently Voting</div>
+                      <div className="text-3xl font-bold text-blue-400">{votingProducts.length} products</div>
                     </div>
+                    
+                    <Link href="/voting" legacyBehavior>
+                      <a className="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/30">
+                        Explore Voting →
+                      </a>
+                    </Link>
                   </div>
-                  <p className="text-zinc-300 text-sm leading-relaxed mb-4">
-                    Guild members vote on potential products. Most popular ideas advance to development.
-                  </p>
-                  <div className="text-blue-200/80 text-xs mb-3">
-                    Active votes: {votingProducts.length} products
-                  </div>
-                  <Link href="/voting" legacyBehavior>
-                    <a className="inline-block text-blue-300 hover:text-blue-200 text-sm font-semibold border-b border-blue-300/50 hover:border-blue-200">
-                      Explore Voting →
-                    </a>
-                  </Link>
+                </div>
+                
+                {/* Arrow to next stage (desktop only) */}
+                <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 text-4xl text-yellow-400 z-10">
+                  →
                 </div>
               </div>
 
               {/* Stage 2: Coming Soon */}
-              <div className="bg-gradient-to-br from-yellow-900/40 to-yellow-800/20 border border-yellow-400/30 rounded-2xl p-6 shadow-lg relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-yellow-400/10 rounded-full -mr-10 -mt-10"></div>
-                <div className="relative z-10">
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-yellow-500 text-black rounded-full flex items-center justify-center text-xl font-bold mr-4">⏳</div>
-                    <div>
-                      <h3 className="text-lg font-bold text-yellow-300">In Development</h3>
-                      <div className="text-sm text-yellow-200/70">Stage 2</div>
+              <div className="relative group">
+                <div className="bg-gradient-to-br from-yellow-900/40 to-zinc-900/60 border-2 border-yellow-500/30 rounded-2xl p-8 h-full hover:border-yellow-400/60 transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/20">
+                  {/* Stage Badge */}
+                  <div className="absolute -top-3 left-6 flex items-center gap-2 bg-yellow-500 text-black px-4 py-1 rounded-full text-sm font-bold">
+                    <span>⏳</span>
+                    <span>STAGE 2</span>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <h3 className="text-2xl font-bold text-yellow-400 mb-4">Coming Soon</h3>
+                    <p className="text-gray-300 mb-6 leading-relaxed">
+                      Top voted products enter the pipeline. We negotiate with suppliers and prepare for the big drop. Track the progress in real-time.
+                    </p>
+                    
+                    {/* Status Box */}
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-6">
+                      <div className="text-sm text-yellow-300 mb-1">In Pipeline</div>
+                      <div className="text-3xl font-bold text-yellow-400">{comingSoonProducts.length} products</div>
                     </div>
+                    
+                    <Link href="/coming-soon" legacyBehavior>
+                      <a className="block w-full text-center bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/30">
+                        See Progress →
+                      </a>
+                    </Link>
                   </div>
-                  <p className="text-zinc-300 text-sm leading-relaxed mb-4">
-                    Winning products enter development. Get early access and track progress.
-                  </p>
-                  <div className="text-yellow-200/80 text-xs mb-3">
-                    In pipeline: {comingSoonProducts.length} products
-                  </div>
-                  <Link href="/coming-soon" legacyBehavior>
-                    <a className="inline-block text-yellow-300 hover:text-yellow-200 text-sm font-semibold border-b border-yellow-300/50 hover:border-yellow-200">
-                      See Progress →
-                    </a>
-                  </Link>
+                </div>
+                
+                {/* Arrow to next stage (desktop only) */}
+                <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 text-4xl text-green-400 z-10">
+                  →
                 </div>
               </div>
 
-              {/* Stage 3: Live Drops */}
-              <div className="bg-gradient-to-br from-green-900/40 to-green-800/20 border border-green-400/30 rounded-2xl p-6 shadow-lg relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-green-400/10 rounded-full -mr-10 -mt-10"></div>
-                <div className="relative z-10">
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-green-500 text-black rounded-full flex items-center justify-center text-xl font-bold mr-4">⚔️</div>
-                    <div>
-                      <h3 className="text-lg font-bold text-green-300">Guild Drops</h3>
-                      <div className="text-sm text-green-200/70">Stage 3</div>
+              {/* Stage 3: Live Guild Drops */}
+              <div className="relative group">
+                <div className="bg-gradient-to-br from-green-900/40 to-zinc-900/60 border-2 border-green-500/30 rounded-2xl p-8 h-full hover:border-green-400/60 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/20">
+                  {/* Stage Badge */}
+                  <div className="absolute -top-3 left-6 flex items-center gap-2 bg-green-500 text-black px-4 py-1 rounded-full text-sm font-bold">
+                    <span>⚔️</span>
+                    <span>STAGE 3</span>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <h3 className="text-2xl font-bold text-green-400 mb-4">Live Guild Drops</h3>
+                    <p className="text-gray-300 mb-6 leading-relaxed">
+                      Products go live at guild-negotiated prices. Buy with confidence knowing you're getting the best deal available anywhere.
+                    </p>
+                    
+                    {/* Status Box */}
+                    <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
+                      <div className="text-sm text-green-300 mb-1">Active Drops</div>
+                      <div className="text-3xl font-bold text-green-400">{liveProducts.length} live now</div>
                     </div>
-                  </div>
-                  <p className="text-zinc-300 text-sm leading-relaxed mb-4">
-                    Ready products launch as group buys. More members = bigger discounts for all.
-                  </p>
-                  <div className="text-green-200/80 text-xs mb-3">
-                    Live now: {liveProducts.length} active drops
-                  </div>
-                  <Link href="/community-drops" legacyBehavior>
-                    <a className="inline-block text-green-300 hover:text-green-200 text-sm font-semibold border-b border-green-300/50 hover:border-green-200">
-                      Join Drops →
-                    </a>
-                  </Link>
-                </div>
-              </div>
-
-              {/* Stage 4: Guild Favorites */}
-              <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/20 border border-purple-400/30 rounded-2xl p-6 shadow-lg relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-purple-400/10 rounded-full -mr-10 -mt-10"></div>
-                <div className="relative z-10">
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-purple-500 text-white rounded-full flex items-center justify-center text-xl font-bold mr-4">⭐</div>
-                    <div>
-                      <h3 className="text-lg font-bold text-purple-300">Guild Favorites</h3>
-                      <div className="text-sm text-purple-200/70">Hall of Fame</div>
-                    </div>
-                  </div>
-                  <p className="text-zinc-300 text-sm leading-relaxed mb-4">
-                    Proven successes become permanent guild offerings with ongoing member benefits.
-                  </p>
-                  <div className="text-purple-200/80 text-xs mb-3">
-                    Proven winners: {featuredProducts.length} favorites
-                  </div>
-                  <Link href="/staff-picks" legacyBehavior>
-                    <a className="inline-block text-purple-300 hover:text-purple-200 text-sm font-semibold border-b border-purple-300/50 hover:border-purple-200">
-                      Browse Favorites →
-                    </a>
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Guild Power Visualization */}
-            <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-800/60 border border-yellow-400/20 rounded-2xl p-8 text-center">
-              <h3 className="text-2xl font-bold text-yellow-400 mb-6">The Power of Guild Unity</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="flex flex-col items-center">
-                  <div className="text-4xl mb-3">👤</div>
-                  <div className="text-lg font-semibold text-red-300 mb-2">Shopping Alone</div>
-                  <div className="text-zinc-400 text-sm text-center">
-                    Pay full retail price<br/>
-                    Limited selection<br/>
-                    No community input<br/>
-                    No collective power
+                    
+                    <Link href="/community-drops" legacyBehavior>
+                      <a className="block w-full text-center bg-green-500 hover:bg-green-600 text-black font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-green-500/30">
+                        Join Drops →
+                      </a>
+                    </Link>
                   </div>
                 </div>
-                <div className="flex flex-col items-center">
-                  <div className="text-4xl mb-3">⚡</div>
-                  <div className="text-lg font-semibold text-yellow-300 mb-2">Guild Transformation</div>
-                  <div className="text-zinc-300 text-sm text-center">
-                    Democratic marketplace<br/>
-                    Collective negotiation<br/>
-                    Community-driven selection<br/>
-                    Shared prosperity
-                  </div>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="text-4xl mb-3">🏰</div>
-                  <div className="text-lg font-semibold text-green-300 mb-2">Guild Benefits</div>
-                  <div className="text-zinc-400 text-sm text-center">
-                    Up to 50% savings<br/>
-                    Curated by community<br/>
-                    Exclusive member perks<br/>
-                    Tier-based rewards
-                  </div>
+                
+                {/* Checkmark (desktop only) */}
+                <div className="hidden lg:block absolute top-1/2 -right-8 transform -translate-y-1/2 text-4xl text-green-400 z-10">
+                  ✓
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Why Choose MIGISTUS Section */}
-        <section className="relative py-16 px-4 sm:px-6 bg-gradient-to-b from-zinc-900/60 to-transparent border-t border-yellow-400/10">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-yellow-400 mb-4">Why Choose MIGISTUS?</h2>
-            <blockquote className="italic text-xl text-yellow-200 mb-6">"Alone, you're just a buyer. Together, you're a guild."</blockquote>
-            <p className="text-lg text-zinc-300 leading-relaxed">
-              Migistus challenges the standard retail model. It's a platform where demand shapes supply, community unlocks savings, and every purchase is a shared conquest.
-            </p>
+        {/* Power of Guild Unity Section */}
+        <section className="relative py-20 px-4 sm:px-6 border-t border-yellow-400/10 bg-gradient-to-b from-transparent to-zinc-950/50">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <blockquote className="text-3xl sm:text-4xl text-yellow-200 mb-6 italic playfair-heading-light">
+                "Alone, you're just a buyer. Together, you're a guild."
+              </blockquote>
+              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                Transform from an isolated shopper into a powerful collective with shared goals and unstoppable purchasing power.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Shopping Alone */}
+              <div className="bg-gradient-to-br from-red-900/20 to-zinc-900/40 border border-red-500/20 rounded-2xl p-8">
+                <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-6 mx-auto">
+                  <span className="text-3xl">👤</span>
+                </div>
+                <h3 className="text-2xl font-bold text-red-400 mb-4 text-center">Shopping Alone</h3>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3 text-gray-300">
+                    <span className="text-red-400 mt-1">✗</span>
+                    <span>Pay full retail prices</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-300">
+                    <span className="text-red-400 mt-1">✗</span>
+                    <span>Limited product selection</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-300">
+                    <span className="text-red-400 mt-1">✗</span>
+                    <span>No voice in what's offered</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-300">
+                    <span className="text-red-400 mt-1">✗</span>
+                    <span>No collective power</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Guild Transformation */}
+              <div className="bg-gradient-to-br from-yellow-900/30 to-zinc-900/40 border-2 border-yellow-500/40 rounded-2xl p-8 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 to-transparent"></div>
+                <div className="relative z-10">
+                  <div className="w-16 h-16 bg-yellow-500/30 rounded-full flex items-center justify-center mb-6 mx-auto animate-pulse-slow">
+                    <span className="text-3xl">⚡</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-yellow-400 mb-4 text-center">Guild Transformation</h3>
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-yellow-400 mt-1">→</span>
+                      <span>Democratic marketplace</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-yellow-400 mt-1">→</span>
+                      <span>Collective negotiation</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-yellow-400 mt-1">→</span>
+                      <span>Community-driven selection</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-200">
+                      <span className="text-yellow-400 mt-1">→</span>
+                      <span>Shared prosperity</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Guild Benefits */}
+              <div className="bg-gradient-to-br from-green-900/20 to-zinc-900/40 border border-green-500/20 rounded-2xl p-8">
+                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-6 mx-auto">
+                  <span className="text-3xl">🏰</span>
+                </div>
+                <h3 className="text-2xl font-bold text-green-400 mb-4 text-center">Guild Benefits</h3>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3 text-gray-300">
+                    <span className="text-green-400 mt-1">✓</span>
+                    <span>Save up to 50% on products</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-300">
+                    <span className="text-green-400 mt-1">✓</span>
+                    <span>Products curated by community</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-300">
+                    <span className="text-green-400 mt-1">✓</span>
+                    <span>Exclusive member perks</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-300">
+                    <span className="text-green-400 mt-1">✓</span>
+                    <span>Unlock tier rewards</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Guild Favorites Section */}
-        <section className="relative py-20 px-4 sm:px-6 bg-gradient-to-b from-zinc-900/50 to-transparent border-t border-yellow-400/10">
-          <div className="max-w-7xl mx-auto text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-bold text-yellow-400 mb-3">Guild Favorites</h2>
-            <p className="text-lg text-zinc-300 max-w-2xl mx-auto">Community-proven products that have earned their place in our guild's hall of fame.</p>
-          </div>
-          {featuredProducts.length > 0 ? (
-            <ProductGrid
-              products={featuredProducts as any[]}
-              columns={3}
-              gap="lg"
-              layout="card"
-              className="max-w-5xl mx-auto"
-              onProductClick={(product) => {
-                // Optional: Add click tracking or custom behavior
-                window.location.href = `/drops/${product.slug || slugify(product.name)}`;
-              }}
-            />
-          ) : (
-            <div className="text-zinc-400 text-lg">No guild favorites available yet. Help us build our first success stories!</div>
-          )}
-        </section>
-
-        {/* Guild Membership Call to Action */}
+        {/* Guild Membership CTA */}
         <section className="relative py-20 px-4 sm:px-6 border-t border-yellow-400/10">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-yellow-400 mb-3">Ready to Join the Guild?</h2>
-            <p className="text-lg text-zinc-300 mb-8">
-              Become part of the marketplace revolution. Your voice matters, your votes count, and your membership strengthens the entire guild.
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-white playfair-heading">
+              Ready to Join the Guild?
+            </h2>
+            <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
+              Be part of the marketplace revolution. Vote on products, save money, and experience the power of collective buying.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/register" legacyBehavior>
-                <a className="inline-block px-10 py-4 rounded-2xl bg-yellow-400 text-black font-extrabold text-xl shadow-lg hover:bg-yellow-300 transition">
+                <a className="inline-block font-bold px-12 py-4 rounded-xl bg-yellow-400 text-black hover:bg-yellow-300 transition-all text-lg shadow-xl shadow-yellow-400/30 hover:scale-105">
                   Join the Guild
                 </a>
               </Link>
               <Link href="/voting" legacyBehavior>
-                <a className="inline-block px-10 py-4 rounded-2xl border-2 border-yellow-400 text-yellow-400 font-bold text-xl hover:bg-yellow-400 hover:text-black transition">
+                <a className="inline-block font-bold px-12 py-4 rounded-xl border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400/10 transition-all text-lg">
                   Start Voting
                 </a>
               </Link>
@@ -523,171 +561,138 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Testimonials & Social Proof Section */}
-        <section className="relative py-20 px-4 sm:px-6 bg-gradient-to-b from-transparent via-zinc-900/30 to-transparent border-y border-yellow-400/10">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-14">
-              <h2 className="text-3xl sm:text-4xl font-bold text-yellow-400 mb-4">What Our Guild Members Say</h2>
-              <p className="text-lg text-zinc-300 max-w-2xl mx-auto">Real experiences from members who've discovered the power of collective commerce.</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Testimonial 1 */}
-              <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-800/40 border border-yellow-400/20 rounded-2xl p-8 hover:border-yellow-400/40 transition-all hover:scale-105">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-black font-bold text-xl">
-                    J
-                  </div>
-                  <div className="ml-4">
-                    <h4 className="text-white font-bold">Jessica M.</h4>
-                    <div className="text-yellow-400 text-sm">Guild Member</div>
-                  </div>
-                </div>
-                <div className="mb-4">
-                  <div className="text-yellow-400 text-2xl">"</div>
-                  <p className="text-zinc-300 leading-relaxed italic">
-                    I saved over $200 on my first guild drop! It's amazing to finally have a say in what products are offered instead of just accepting whatever stores decide to sell.
-                  </p>
-                  <div className="text-yellow-400 text-2xl text-right">"</div>
-                </div>
-                <div className="flex gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-yellow-400">⭐</span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Testimonial 2 */}
-              <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-800/40 border border-yellow-400/20 rounded-2xl p-8 hover:border-yellow-400/40 transition-all hover:scale-105">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                    M
-                  </div>
-                  <div className="ml-4">
-                    <h4 className="text-white font-bold">Marcus T.</h4>
-                    <div className="text-yellow-400 text-sm">Guild Elite</div>
-                  </div>
-                </div>
-                <div className="mb-4">
-                  <div className="text-yellow-400 text-2xl">"</div>
-                  <p className="text-zinc-300 leading-relaxed italic">
-                    This is the future of shopping. Voting on products before they're sourced means I actually want everything in the catalog. No more browsing through junk I'll never buy.
-                  </p>
-                  <div className="text-yellow-400 text-2xl text-right">"</div>
-                </div>
-                <div className="flex gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-yellow-400">⭐</span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Testimonial 3 */}
-              <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-800/40 border border-yellow-400/20 rounded-2xl p-8 hover:border-yellow-400/40 transition-all hover:scale-105">
-                <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                    S
-                  </div>
-                  <div className="ml-4">
-                    <h4 className="text-white font-bold">Sarah K.</h4>
-                    <div className="text-yellow-400 text-sm">Guild Member</div>
-                  </div>
-                </div>
-                <div className="mb-4">
-                  <div className="text-yellow-400 text-2xl">"</div>
-                  <p className="text-zinc-300 leading-relaxed italic">
-                    The tier system is genius. The more I participate, the more voting power I get. It makes me feel like I'm actually building something with the community.
-                  </p>
-                  <div className="text-yellow-400 text-2xl text-right">"</div>
-                </div>
-                <div className="flex gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-yellow-400">⭐</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Trust Indicators */}
-            <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-              <div>
-                <div className="text-4xl mb-2">✅</div>
-                <div className="text-yellow-400 font-bold text-2xl mb-1">100%</div>
-                <div className="text-zinc-400 text-sm">Secure Checkout</div>
-              </div>
-              <div>
-                <div className="text-4xl mb-2">🚚</div>
-                <div className="text-yellow-400 font-bold text-2xl mb-1">Free</div>
-                <div className="text-zinc-400 text-sm">Guild Shipping</div>
-              </div>
-              <div>
-                <div className="text-4xl mb-2">💬</div>
-                <div className="text-yellow-400 font-bold text-2xl mb-1">24/7</div>
-                <div className="text-zinc-400 text-sm">Member Support</div>
-              </div>
-              <div>
-                <div className="text-4xl mb-2">🛡️</div>
-                <div className="text-yellow-400 font-bold text-2xl mb-1">30 Day</div>
-                <div className="text-zinc-400 text-sm">Guild Guarantee</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Membership Tiers Section */}
-        <section className="relative py-20 px-4 sm:px-6 border-t border-yellow-400/10">
-          <div className="max-w-5xl mx-auto text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-bold text-yellow-400 mb-3">Guild Membership Tiers</h2>
-            <p className="text-lg text-zinc-300 max-w-2xl mx-auto">Level up your influence and unlock greater benefits as you contribute to the guild.</p>
-          </div>
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
-            {/* Initiate Tier */}
-            <div className="bg-zinc-900 border border-yellow-400/20 rounded-2xl p-10 flex flex-col items-center shadow-lg hover:scale-105 transition-transform">
-              <div className="mb-4"><Image src="/Icons/Initiate.png" alt="Initiate" width={56} height={56} /></div>
-              <h3 className="text-xl font-bold text-white mb-1">Guild Initiate</h3>
-              <div className="text-2xl font-bold text-yellow-400 mb-2">Free</div>
-              <ul className="text-zinc-200 text-base mb-6 space-y-2 text-left">
-                <li>✓ Access to guild drops</li>
-                <li>✓ 1x voting power</li>
-                <li>✓ Community forums</li>
-                <li>✓ Basic guild support</li>
-              </ul>
-              <button className="w-full border border-yellow-400 text-yellow-400 font-semibold py-3 rounded-lg hover:bg-yellow-400 hover:text-black transition">Join Free</button>
+        <section className="relative py-20 px-4 sm:px-6 border-t border-yellow-400/10 bg-gradient-to-b from-zinc-950/50 to-transparent">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl sm:text-5xl font-bold mb-6 bg-gradient-to-r from-yellow-200 to-yellow-500 bg-clip-text text-transparent playfair-heading">
+                Membership Tiers
+              </h2>
+              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                Choose the level that fits your needs. All tiers get access to guild pricing and voting rights.
+              </p>
             </div>
-            
-            {/* Guild Member */}
-            <div className="bg-zinc-900 border-2 border-purple-400 rounded-2xl p-10 flex flex-col items-center shadow-2xl relative hover:scale-105 transition-transform">
-              <div className="mb-4"><Image src="/Icons/guild.png" alt="Guild Member" width={56} height={56} /></div>
-              <h3 className="text-xl font-bold text-white mb-1">Guild Member</h3>
-              <div className="text-2xl font-bold text-yellow-400 mb-2">$9.99/mo</div>
-              <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-yellow-400 text-black text-xs font-bold px-4 py-1 rounded-full shadow">Most Popular</div>
-              <ul className="text-zinc-200 text-base mb-6 space-y-2 text-left">
-                <li>✓ All Initiate benefits</li>
-                <li>✓ 2x voting power</li>
-                <li>✓ Priority guild support</li>
-                <li>✓ 5% additional discount</li>
-                <li>✓ Early drop access</li>
-              </ul>
-              <button className="w-full bg-yellow-400 text-black font-semibold py-3 rounded-lg hover:bg-yellow-300 transition">Upgrade Guild Status</button>
-            </div>
-            
-            {/* Elite Member */}
-            <div className="bg-zinc-900 border-2 border-yellow-400 rounded-xl p-8 flex flex-col items-center shadow-2xl relative">
-              <div className="mb-4"><Image src="/Icons/staffpicks.png" alt="MIGISTUS Elite" width={56} height={56} /></div>
-              <h3 className="text-xl font-bold text-yellow-400 mb-1">MIGISTUS Elite</h3>
-              <div className="text-2xl font-bold text-yellow-400 mb-2">$19.99/mo</div>
-              <ul className="text-yellow-200 text-base mb-6 space-y-2 text-left">
-                <li>✓ All Member benefits</li>
-                <li>✓ 4x voting power</li>
-                <li>✓ VIP guild support</li>
-                <li>✓ 10% additional discount</li>
-                <li>✓ Exclusive elite drops</li>
-                <li>✓ Personal guild concierge</li>
-              </ul>
-              <button className="w-full border border-yellow-400 text-yellow-400 font-semibold py-3 rounded-lg hover:bg-yellow-400 hover:text-black transition">Achieve Elite Status</button>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Guild Initiate (Free) */}
+              <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-800/60 border border-zinc-700 rounded-2xl p-8 hover:border-zinc-600 transition-all">
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-zinc-700 rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <span className="text-3xl">🛡️</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Guild Initiate</h3>
+                  <div className="text-4xl font-bold text-white mb-1">Free</div>
+                  <div className="text-gray-500 text-sm">Forever</div>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-start gap-3 text-gray-300">
+                    <span className="text-green-400 mt-1">✓</span>
+                    <span>Access to guild pricing</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-300">
+                    <span className="text-green-400 mt-1">✓</span>
+                    <span>Voting rights on products</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-300">
+                    <span className="text-green-400 mt-1">✓</span>
+                    <span>Community forum access</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-300">
+                    <span className="text-green-400 mt-1">✓</span>
+                    <span>Basic support</span>
+                  </li>
+                </ul>
+                <Link href="/register" legacyBehavior>
+                  <a className="block w-full text-center bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-3 px-6 rounded-xl transition-all">
+                    Join Free
+                  </a>
+                </Link>
+              </div>
+
+              {/* Guild Member (Most Popular) */}
+              <div className="bg-gradient-to-br from-yellow-900/40 to-zinc-900/60 border-2 border-yellow-500/60 rounded-2xl p-8 relative hover:border-yellow-400/80 transition-all transform hover:scale-105">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-yellow-500 text-black px-4 py-1 rounded-full text-sm font-bold">
+                  MOST POPULAR
+                </div>
+                <div className="text-center mb-6 mt-2">
+                  <div className="w-16 h-16 bg-yellow-500/30 rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <span className="text-3xl">⚔️</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-yellow-400 mb-2">Guild Member</h3>
+                  <div className="text-4xl font-bold text-white mb-1">$9.99</div>
+                  <div className="text-gray-400 text-sm">per month</div>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-start gap-3 text-gray-200">
+                    <span className="text-yellow-400 mt-1">✓</span>
+                    <span><strong>Everything in Initiate</strong></span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-200">
+                    <span className="text-yellow-400 mt-1">✓</span>
+                    <span>Extra 5-10% discount on all drops</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-200">
+                    <span className="text-yellow-400 mt-1">✓</span>
+                    <span>Early access to new drops</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-200">
+                    <span className="text-yellow-400 mt-1">✓</span>
+                    <span>Priority support</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-200">
+                    <span className="text-yellow-400 mt-1">✓</span>
+                    <span>Member badge & perks</span>
+                  </li>
+                </ul>
+                <Link href="/register" legacyBehavior>
+                  <a className="block w-full text-center bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-yellow-500/30">
+                    Upgrade Now
+                  </a>
+                </Link>
+              </div>
+
+              {/* MIGISTUS Elite */}
+              <div className="bg-gradient-to-br from-purple-900/40 to-zinc-900/60 border border-purple-500/40 rounded-2xl p-8 hover:border-purple-400/60 transition-all">
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-purple-500/30 rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <span className="text-3xl">👑</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-purple-400 mb-2">MIGISTUS Elite</h3>
+                  <div className="text-4xl font-bold text-white mb-1">$19.99</div>
+                  <div className="text-gray-400 text-sm">per month</div>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-start gap-3 text-gray-200">
+                    <span className="text-purple-400 mt-1">✓</span>
+                    <span><strong>Everything in Guild Member</strong></span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-200">
+                    <span className="text-purple-400 mt-1">✓</span>
+                    <span>Maximum discounts (up to 50%)</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-200">
+                    <span className="text-purple-400 mt-1">✓</span>
+                    <span>Exclusive elite-only drops</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-200">
+                    <span className="text-purple-400 mt-1">✓</span>
+                    <span>VIP customer support</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-gray-200">
+                    <span className="text-purple-400 mt-1">✓</span>
+                    <span>Crown badge & premium perks</span>
+                  </li>
+                </ul>
+                <Link href="/register" legacyBehavior>
+                  <a className="block w-full text-center bg-purple-500 hover:bg-purple-400 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-purple-500/30">
+                    Go Elite
+                  </a>
+                </Link>
+              </div>
             </div>
           </div>
         </section>
+
       </div>
 
       <style jsx>{`

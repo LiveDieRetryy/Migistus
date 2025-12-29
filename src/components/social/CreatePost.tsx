@@ -1,11 +1,10 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { SocialPostsStorage } from '@/utils/socialPostsStorage';
-import { UserStorage3 as UserStorage } from '@/utils/userStorage';
+import { socialAPI, Post } from '@/lib/socialAPI';
 import Image from 'next/image';
 
 interface CreatePostProps {
-  onPostCreated?: (post: any) => void;
+  onPostCreated?: (post: Post) => void;
   placeholder?: string;
 }
 
@@ -16,6 +15,7 @@ export default function CreatePost({ onPostCreated, placeholder = "What's on you
   const [visibility, setVisibility] = useState<'public' | 'followers' | 'private'>('public');
   const [isPosting, setIsPosting] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,37 +43,30 @@ export default function CreatePost({ onPostCreated, placeholder = "What's on you
     if (!isAuthenticated || !user || !content.trim()) return;
 
     setIsPosting(true);
+    setError('');
     try {
-      const userProfile = UserStorage.getUserProfile(user.id);
-      
-      const newPost = SocialPostsStorage.createPost({
-        userId: user.id,
-        username: user.username,
-        userAvatar: userProfile?.avatar || null,
-        userTier: userProfile?.tier || 'Initiate',
+      const { post: newPost } = await socialAPI.createPost({
         content: content.trim(),
-        images: images.length > 0 ? images : undefined,
+        imageUrl: images[0], // Backend currently supports single image
         visibility,
-        tags: extractTags(content),
-        mentions: extractMentions(content)
+        type: 'post'
       });
 
       // Clear form
       setContent('');
       setImages([]);
       setVisibility('public');
-        // Notify parent component
-      onPostCreated?.(newPost);
       
-      // Emit global event for real-time updates in community feed
-      window.dispatchEvent(new CustomEvent('newSocialPost', { detail: newPost }));
+      // Notify parent component
+      onPostCreated?.(newPost);
       
       // Track activity
       const { activityTracker } = await import('@/utils/activityTracker');
       activityTracker.trackSocialPost(content, 'text');
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create post:', error);
+      setError(error.message || 'Failed to create post');
     } finally {
       setIsPosting(false);
     }
@@ -83,12 +76,6 @@ export default function CreatePost({ onPostCreated, placeholder = "What's on you
     const tagRegex = /#[\w]+/g;
     const matches = text.match(tagRegex);
     return matches ? matches.map(tag => tag.substring(1).toLowerCase()) : [];
-  };
-
-  const extractMentions = (text: string): string[] => {
-    const mentionRegex = /@[\w]+/g;
-    const matches = text.match(mentionRegex);
-    return matches ? matches.map(mention => mention.substring(1).toLowerCase()) : [];
   };
 
   const insertEmoji = (emoji: string) => {
@@ -106,6 +93,12 @@ export default function CreatePost({ onPostCreated, placeholder = "What's on you
 
   return (
     <div className="bg-zinc-900/50 border border-yellow-500/20 rounded-2xl p-6 shadow-lg">
+      {error && (
+        <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
+          {error}
+        </div>
+      )}
+      
       <div className="flex items-start gap-4">
         {/* User Avatar */}
         <div className="w-12 h-12 rounded-full border-2 border-yellow-400/30 overflow-hidden bg-zinc-700 flex-shrink-0">

@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext"; // Updated import
 import { UserStorage3 as UserStorage } from "@/utils/userStorage";
 import { activityTracker } from "@/utils/activityTracker";
 import { Eye, EyeOff } from "lucide-react";
+import NotificationPreferences from "@/components/notifications/NotificationPreferences";
 
 type UserSettings = {
   // Personal Information
@@ -122,6 +123,11 @@ export default function AccountSettingsPage() {
 
     if (user) {
       loadUserSettings();
+    }
+    
+    // Handle URL query parameter for section
+    if (router.query.section && typeof router.query.section === 'string') {
+      setActiveSection(router.query.section);
     }
   }, [user, isAuthenticated, router]);
 
@@ -491,6 +497,7 @@ export default function AccountSettingsPage() {
     { id: 'personal', name: 'Personal Information', icon: '👤' },
     { id: 'security', name: 'Security', icon: '🔒' },
     { id: 'privacy', name: 'Privacy & Communication', icon: '🔐' },
+    { id: 'notifications', name: 'Notifications', icon: '🔔' },
     { id: 'marketing', name: 'Marketing Preferences', icon: '📧' },
     { id: 'preferences', name: 'Preferences', icon: '⚙️' },
     { id: 'addresses', name: 'Addresses', icon: '📍' },
@@ -940,6 +947,37 @@ export default function AccountSettingsPage() {
                             </p>
                           </div>
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Notifications */}
+              {activeSection === 'notifications' && (
+                <div className="space-y-6">
+                  <div className="mb-6">
+                    <h3 className="text-2xl font-bold text-yellow-400 mb-2">Notification Settings</h3>
+                    <p className="text-gray-400">
+                      Manage how you receive notifications across different channels. 
+                      Control what alerts you see in-app, via email, and through push notifications.
+                    </p>
+                  </div>
+                  
+                  <NotificationPreferences />
+                  
+                  <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 mt-6">
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 mt-1">
+                        <span className="text-blue-400 text-lg">💡</span>
+                      </div>
+                      <div>
+                        <h6 className="font-semibold text-blue-400 mb-1">Tip</h6>
+                        <p className="text-gray-300 text-sm">
+                          You can customize notification settings for each type of activity. 
+                          In-app notifications appear in your notification center, email notifications are sent to your registered email, 
+                          and push notifications appear on your devices.
+                        </p>
                       </div>
                     </div>
                   </div>

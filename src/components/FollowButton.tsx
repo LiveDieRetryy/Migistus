@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { UserStorage3 as UserStorage } from '@/utils/userStorage';
+import { followersAPI } from '@/lib/followersAPI';
 
 interface FollowButtonProps {
-  targetUserId: number;
-  targetUsername: string;
+  userId?: number; // Alias for targetUserId
+  username?: string; // Alias for targetUsername
+  targetUserId?: number;
+  targetUsername?: string;
   initialFollowersCount?: number;
   onFollowChange?: (isFollowing: boolean, newCount: number) => void;
   size?: 'sm' | 'md' | 'lg';
@@ -12,6 +14,8 @@ interface FollowButtonProps {
 }
 
 export default function FollowButton({ 
+  userId,
+  username,
   targetUserId, 
   targetUsername,
   initialFollowersCount = 0,
@@ -19,6 +23,10 @@ export default function FollowButton({
   size = 'md',
   variant = 'default'
 }: FollowButtonProps) {
+  // Support both naming conventions
+  const actualUserId = targetUserId || userId;
+  const actualUsername = targetUsername || username;
+  
   const { user, isAuthenticated } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(initialFollowersCount);
@@ -30,98 +38,63 @@ export default function FollowButton({
   }, []);
 
   useEffect(() => {
-    if (mounted && user && user.id !== targetUserId) {
-      // Check if current user is following target user
-      const following = UserStorage.isFollowing(user.id, targetUserId);
+    if (mounted && user && actualUserId && user.id !== actualUserId) {
+      checkFollowStatus();
+    }
+  }, [mounted, user, actualUserId]);
+
+  const checkFollowStatus = async () => {
+    if (!user || !actualUserId) return;
+    
+    try {
+      const { isFollowing: following } = await followersAPI.isFollowing(actualUserId, user.id);
       setIsFollowing(following);
       
-      // Get current followers count
-      const count = UserStorage.getUserFollowers(targetUserId);
-      setFollowersCount(count);
+      const stats = await followersAPI.getFollowStats(actualUserId);
+      setFollowersCount(stats.followers);
+    } catch (error) {
+      console.error('Failed to check follow status:', error);
     }
-  }, [mounted, user, targetUserId]);
-
-  // Listen for live follower updates
-  useEffect(() => {
-    if (!mounted) return;
-
-    const handleFollowerUpdate = (event: CustomEvent) => {
-      const { followingId, action } = event.detail;
-      
-      if (followingId === targetUserId) {
-        // Update followers count for this user
-        const newCount = UserStorage.getUserFollowers(targetUserId);
-        setFollowersCount(newCount);
-        
-        // If current user was involved, update following status
-        if (user && event.detail.followerId === user.id) {
-          setIsFollowing(action === 'follow');
-          onFollowChange?.(action === 'follow', newCount);
-        }
-      }
-    };
-
-    window.addEventListener('followerUpdate', handleFollowerUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('followerUpdate', handleFollowerUpdate as EventListener);
-    };
-  }, [mounted, user, targetUserId, onFollowChange]);
+  };
 
   const handleFollowClick = async () => {
-    if (!isAuthenticated || !user || user.id === targetUserId || isLoading) return;
+    if (!isAuthenticated || !user || !actualUserId || user.id === actualUserId || isLoading) return;
 
     setIsLoading(true);
 
     try {
-      let success = false;
-      
       if (isFollowing) {
-        success = UserStorage.unfollowUser(user.id, targetUserId);
+        await followersAPI.unfollow(actualUserId);
+        setIsFollowing(false);
+        setFollowersCount(prev => Math.max(0, prev - 1));
       } else {
-        success = UserStorage.followUser(user.id, targetUserId);
-      }      if (success) {
-        const newIsFollowing = !isFollowing;
-        const newCount = UserStorage.getUserFollowers(targetUserId);
-        
-        setIsFollowing(newIsFollowing);
-        setFollowersCount(newCount);
-        onFollowChange?.(newIsFollowing, newCount);        // Dispatch follower update events for real-time UI updates
-        window.dispatchEvent(new CustomEvent('followerUpdate', {
-          detail: { 
-            followerId: user.id,
-            followingId: targetUserId,
-            action: newIsFollowing ? 'follow' : 'unfollow',
-            targetUserId, // Keep for backward compatibility
-            isFollowing: newIsFollowing,
-            newCount 
-          }
-        }));
+        await followersAPI.follow(actualUserId);
+        setIsFollowing(true);
+        setFollowersCount(prev => prev + 1);
+      }
+      
+      const newFollowing = !isFollowing;
+      const newCount = newFollowing ? followersCount + 1 : Math.max(0, followersCount - 1);
+      
+      onFollowChange?.(newFollowing, newCount);
 
-        // Also dispatch for following count updates
-        window.dispatchEvent(new CustomEvent('followingUpdate', {
-          detail: { 
-            userId: user.id,
-            targetUserId 
-          }
-        }));
-
-        // Trigger activity tracking with usernames
-        const { activityTracker } = await import('@/utils/activityTracker');
-        if (newIsFollowing) {
-          activityTracker.trackFollow(targetUserId, targetUsername);
-        } else {
-          activityTracker.trackUnfollow(targetUserId, targetUsername);
-        }
+      // Trigger activity tracking
+      const { activityTracker } = await import('@/utils/activityTracker');
+      if (newFollowing) {
+        activityTracker.trackFollow(actualUserId, actualUsername || 'User');
+      } else {
+        activityTracker.trackUnfollow(actualUserId, actualUsername || 'User');
       }
     } catch (error) {
       console.error('Failed to update follow status:', error);
+      // Revert state on error
+      checkFollowStatus();
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!mounted || !isAuthenticated || !user || user.id === targetUserId) {
+  if (!mounted || !isAuthenticated || !user || !actualUserId || user.id === actualUserId) {
     return null;
   }
 
@@ -169,7 +142,7 @@ export default function FollowButton({
         disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
         ${variant !== 'minimal' ? 'shadow-lg' : ''}
       `}
-      title={isFollowing ? `Unfollow ${targetUsername}` : `Follow ${targetUsername}`}
+      title={isFollowing ? `Unfollow ${actualUsername || 'user'}` : `Follow ${actualUsername || 'user'}`}
     >
       {buttonText()}
     </button>

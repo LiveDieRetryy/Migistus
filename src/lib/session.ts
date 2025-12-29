@@ -328,6 +328,34 @@ export async function extendSession(token: string): Promise<void> {
 }
 
 /**
+ * Update session activity (for online status tracking)
+ */
+export async function updateSessionActivity(userId: number, currentPage?: string): Promise<void> {
+  if (isProduction()) {
+    // Production: Update in database
+    try {
+      const db = await getDb();
+      await db.updateSessionActivity(userId, currentPage);
+    } catch (error) {
+      console.error('Error updating session activity:', error);
+    }
+  } else {
+    // Development: Update in file
+    const sessions = readSessionsFile();
+    const now = Date.now();
+    
+    for (const [token, session] of Object.entries(sessions)) {
+      if (session.userId === userId && session.expiresAt > now) {
+        session.lastActivity = now;
+        sessions[token] = session;
+      }
+    }
+    
+    writeSessionsFile(sessions);
+  }
+}
+
+/**
  * Cleanup expired sessions (for maintenance tasks)
  */
 export async function cleanupExpiredSessions(): Promise<void> {

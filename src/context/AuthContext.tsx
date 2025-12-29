@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { UserStorage3 as UserStorage } from '@/utils/userStorage';
 import { UserSyncService } from '@/utils/userSyncService';
+import { useSessionHeartbeat } from '@/hooks/useSessionHeartbeat';
 
 interface User {
   id: number;
@@ -29,6 +30,8 @@ interface AuthContextType {
   updateUser: (updates: Partial<User>) => void;
   isAuthenticated: boolean;
   loading: boolean;
+  setUser: (user: User | null) => void;
+  setIsAuthenticated: (isAuthenticated: boolean) => void;
 }
 
 // Add this export so AuthContext is available for import elsewhere
@@ -38,6 +41,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+
+  // Use session heartbeat hook
+  useSessionHeartbeat(!!user);
 
   useEffect(() => {
     setMounted(true);
@@ -58,9 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const session = JSON.parse(sessionData);
         const user = session.user;
         const sessionId = session.sessionId;
-        if (user && sessionId && user.id) {
+        if (user && user.id) {
           setUser(user);
-          console.log('Restored user session:', user);
           
           // Sync invisible preference from profile to localStorage
           try {
@@ -678,7 +683,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       updateUser,
       isAuthenticated: mounted ? !!user : false, // Prevent hydration mismatch
-      loading: !mounted || loading // Keep loading until mounted
+      loading: !mounted || loading, // Keep loading until mounted
+      setUser,
+      setIsAuthenticated: (isAuth: boolean) => {
+        if (!isAuth) {
+          setUser(null);
+        }
+      }
     }}>
       {children}
     </AuthContext.Provider>

@@ -668,7 +668,7 @@ export default function CommunityMembersListPage() {
                               <FollowButton
                                 targetUserId={profile.id}
                                 targetUsername={profile.username}
-                                initialFollowersCount={UserStorage.getUserFollowers(profile.id)}
+                                initialFollowersCount={profile.stats?.followers || 0}
                                 size="md"
                                 variant="default"
                               />
@@ -690,7 +690,7 @@ export default function CommunityMembersListPage() {
                             }}
                             className="text-blue-400 hover:text-blue-300 transition-colors hover:underline"
                           >
-                            👥 {UserStorage.getUserFollowers(profile.id)} followers
+                            👥 {profile.stats?.followers || 0} followers
                           </button>
                           <button
                             onClick={(e) => {
@@ -702,9 +702,9 @@ export default function CommunityMembersListPage() {
                                 username: profile.username
                               });
                             }}
-                            className="text-purple-400 hover:text-purple-300 transition-colors hover:underline"
+                            className="text-orange-400 hover:text-orange-300 transition-colors hover:underline"
                           >
-                            🔗 {UserStorage.getUserFollowing(profile.id)} following
+                            ⚡ {profile.stats?.following || 0} following
                           </button>
                         </div>
                       </div>

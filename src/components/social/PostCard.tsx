@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { SocialPost, SocialPostsStorage } from '@/utils/socialPostsStorage';
+import { socialAPI, Post, Comment } from '@/lib/socialAPI';
 import Image from 'next/image';
 import Link from 'next/link';
 import ImageModal from './ImageModal';
 
 interface PostCardProps {
-  post: SocialPost;
-  onUpdate?: (updatedPost: SocialPost) => void;
+  post: Post;
+  onUpdate?: (updatedPost: Post) => void;
   onDelete?: (postId: number) => void;
 }
 
@@ -15,8 +15,9 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
   const { user, isAuthenticated } = useAuth();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const [isLiked, setIsLiked] = useState(user ? post.likedBy.includes(user.id) : false);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [localPost, setLocalPost] = useState(post);
+  const [isLoading, setIsLoading] = useState(false);
   const [imageModal, setImageModal] = useState<{
     isOpen: boolean;
     images: string[];
@@ -51,95 +52,116 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
     }
   };
 
-  const handleLike = () => {
-    if (!isAuthenticated || !user) return;
+  // Load comments when toggled
+  useEffect(() => {
+    if (showComments && comments.length === 0) {
+      loadComments();
+    }
+  }, [showComments]);
 
-    const success = SocialPostsStorage.likePost(localPost.id, user.id);
-    if (success) {
-      const newIsLiked = !isLiked;
-      setIsLiked(newIsLiked);
-      
-      const updatedPost = {
-        ...localPost,
-        likes: newIsLiked ? localPost.likes + 1 : Math.max(0, localPost.likes - 1),
-        likedBy: newIsLiked 
-          ? [...localPost.likedBy, user.id]
-          : localPost.likedBy.filter(id => id !== user.id)
-      };
-      
-      setLocalPost(updatedPost);
-      onUpdate?.(updatedPost);
+  const loadComments = async () => {
+    try {
+      const { comments: loadedComments } = await socialAPI.getComments(localPost.id);
+      setComments(loadedComments);
+    } catch (error) {
+      console.error('Failed to load comments:', error);
     }
   };
 
-  const handleComment = (e: React.FormEvent) => {
+  const handleLike = async () => {
+    if (!isAuthenticated || !user) return;
+
+    setIsLoading(true);
+    try {
+      const isCurrentlyLiked = localPost.isLiked;
+      
+      if (isCurrentlyLiked) {
+        const { likesCount } = await socialAPI.unlikePost(localPost.id);
+        setLocalPost(prev => ({
+          ...prev,
+          likes_count: likesCount,
+          isLiked: false
+        }));
+      } else {
+        const { likesCount } = await socialAPI.likePost(localPost.id);
+        setLocalPost(prev => ({
+          ...prev,
+          likes_count: likesCount,
+          isLiked: true
+        }));
+      }
+      
+      onUpdate?.({ ...localPost, likes_count: localPost.likes_count });
+    } catch (error) {
+      console.error('Failed to like/unlike post:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAuthenticated || !user || !commentText.trim()) return;
 
-    const success = SocialPostsStorage.addComment(localPost.id, {
-      userId: user.id,
-      username: user.username,
-      content: commentText.trim()
-    });
+    setIsLoading(true);
+    try {
+      const { comment: newComment } = await socialAPI.createComment(
+        localPost.id,
+        commentText.trim()
+      );
 
-    if (success) {
-      const updatedPost = {
-        ...localPost,
-        comments: localPost.comments + 1,
-        commentsList: [
-          ...localPost.commentsList,
-          {
-            id: Date.now(),
-            userId: user.id,
-            username: user.username,
-            content: commentText.trim(),
-            timestamp: new Date().toISOString(),
-            likes: 0,
-            likedBy: [],
-            replies: []
-          }
-        ]
-      };
-      
-      setLocalPost(updatedPost);
+      setComments(prev => [...prev, newComment]);
+      setLocalPost(prev => ({
+        ...prev,
+        comments_count: prev.comments_count + 1
+      }));
       setCommentText('');
-      onUpdate?.(updatedPost);
+      
+      onUpdate?.({ ...localPost, comments_count: localPost.comments_count + 1 });
+    } catch (error) {
+      console.error('Failed to post comment:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleShare = () => {
+  const handleDeleteComment = async (commentId: number) => {
     if (!isAuthenticated || !user) return;
 
-    const success = SocialPostsStorage.sharePost(localPost.id, user.id);
-    if (success) {
-      const updatedPost = {
-        ...localPost,
-        shares: localPost.shares + 1,
-        sharedBy: [...localPost.sharedBy, user.id]
-      };
+    try {
+      await socialAPI.deleteComment(localPost.id, commentId);
+      setComments(prev => prev.filter(c => c.id !== commentId));
+      setLocalPost(prev => ({
+        ...prev,
+        comments_count: Math.max(0, prev.comments_count - 1)
+      }));
       
-      setLocalPost(updatedPost);
-      onUpdate?.(updatedPost);
+      onUpdate?.({ ...localPost, comments_count: Math.max(0, localPost.comments_count - 1) });
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
     }
   };
-  const handleDelete = () => {
-    if (!user || user.id !== localPost.userId) return;
+  
+  const handleDelete = async () => {
+    if (!user || user.id !== localPost.user_id) return;
     
     if (confirm('Are you sure you want to delete this post?')) {
-      const success = SocialPostsStorage.deletePost(localPost.id, user.id);
-      if (success) {
+      try {
+        await socialAPI.deletePost(localPost.id);
         onDelete?.(localPost.id);
+      } catch (error) {
+        console.error('Failed to delete post:', error);
       }
     }
   };
 
   const handleImageClick = (index: number) => {
-    if (!localPost.images || localPost.images.length === 0) return;
+    if (!localPost.image_url) return;
     
     setImageModal({
       isOpen: true,
-      images: localPost.images,
-      initialIndex: index
+      images: [localPost.image_url],
+      initialIndex: 0
     });
   };
 
@@ -195,7 +217,7 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
             <div className="w-12 h-12 rounded-full border-2 border-yellow-400/30 hover:border-yellow-400/50 transition-colors overflow-hidden bg-zinc-700 cursor-pointer">
               <Image
                 src={localPost.userAvatar || "/Icons/New Member.png"}
-                alt={localPost.username}
+                alt={localPost.username || 'User'}
                 width={48}
                 height={48}
                 className="w-full h-full object-cover"
@@ -205,21 +227,16 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
           <div>
             <div className="flex items-center gap-2">
               <Link 
-                href={`/account/profile/${createSlug(localPost.username)}`}
+                href={`/account/profile/${createSlug(localPost.username || 'user')}`}
                 className="font-semibold text-white hover:text-yellow-400 transition-colors"
               >
-                {localPost.username}
+                {localPost.username || 'User'}
               </Link>
-              <span className={`inline-flex items-center gap-1 px-2 py-1 bg-gradient-to-r ${getTierColor(localPost.userTier)} rounded-full text-xs font-semibold text-white`}>
-                {getTierIcon(localPost.userTier)} {localPost.userTier}
-              </span>
-              {localPost.pinned && (
-                <span className="text-yellow-400 text-sm" title="Pinned post">📌</span>
-              )}
+              <span className="text-yellow-400 text-xs">{getTierIcon('Initiate')}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-400">
-              <span>{formatTimeAgo(localPost.timestamp)}</span>
-              {localPost.edited && (
+              <span>{formatTimeAgo(localPost.created_at)}</span>
+              {localPost.updated_at && localPost.updated_at !== localPost.created_at && (
                 <span className="text-gray-500">(edited)</span>
               )}
               <span className="text-xs">
@@ -232,7 +249,7 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
         </div>
 
         {/* Post Options */}
-        {user && user.id === localPost.userId && (
+        {user && user.id === localPost.user_id && (
           <div className="flex items-center gap-2">
             <button
               onClick={handleDelete}
@@ -250,49 +267,26 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
         <p className="text-white leading-relaxed whitespace-pre-wrap">
           {renderContent(localPost.content)}
         </p>        {/* Post Images */}
-        {localPost.images && localPost.images.length > 0 && (
-          <div className={`mt-4 grid gap-3 ${
-            localPost.images.length === 1 ? 'grid-cols-1' :
-            localPost.images.length === 2 ? 'grid-cols-2' :
-            'grid-cols-2 md:grid-cols-3'
-          }`}>
-            {localPost.images.map((image, index) => (
-              <div 
-                key={index} 
-                className="relative group cursor-pointer overflow-hidden rounded-lg"
-                onClick={() => handleImageClick(index)}
-              >
-                <img
-                  src={image}
-                  alt={`Post image ${index + 1}`}
-                  className="w-full h-48 object-cover border border-zinc-600 hover:border-yellow-400/50 transition-all duration-200 group-hover:scale-105"
-                />
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/50 backdrop-blur-sm rounded-full p-3">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                    </svg>
-                  </div>
-                </div>                {/* Image counter for multiple images */}
-                {localPost.images && localPost.images.length > 1 && (
-                  <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
-                    {index + 1}/{localPost.images.length}
-                  </div>
-                )}
+        {localPost.image_url && (
+          <div className="mt-4">
+            <div 
+              className="relative group cursor-pointer overflow-hidden rounded-lg"
+              onClick={() => handleImageClick(0)}
+            >
+              <img
+                src={localPost.image_url}
+                alt="Post image"
+                className="w-full h-auto max-h-96 object-cover border border-zinc-600 hover:border-yellow-400/50 transition-all duration-200 group-hover:scale-105"
+              />
+              {/* Hover overlay */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/50 backdrop-blur-sm rounded-full p-3">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                  </svg>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* Tags */}
-        {localPost.tags.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {localPost.tags.map((tag, index) => (
-              <span key={index} className="px-2 py-1 bg-blue-600/20 border border-blue-500/30 rounded-full text-xs text-blue-400">
-                #{tag}
-              </span>
-            ))}
+            </div>
           </div>
         )}
       </div>
@@ -302,13 +296,13 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
         <div className="flex items-center gap-6">
           <button
             onClick={handleLike}
-            disabled={!isAuthenticated}
+            disabled={!isAuthenticated || isLoading}
             className={`flex items-center gap-2 text-sm transition-colors ${
-              isLiked ? 'text-red-400 hover:text-red-300' : 'text-gray-400 hover:text-red-400'
+              localPost.isLiked ? 'text-red-400 hover:text-red-300' : 'text-gray-400 hover:text-red-400'
             } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            <span className="text-lg">{isLiked ? '❤️' : '🤍'}</span>
-            <span>{localPost.likes}</span>
+            <span className="text-lg">{localPost.isLiked ? '❤️' : '🤍'}</span>
+            <span>{localPost.likes_count || 0}</span>
           </button>
 
           <button
@@ -316,21 +310,12 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
             className="flex items-center gap-2 text-sm text-gray-400 hover:text-blue-400 transition-colors"
           >
             <span className="text-lg">💬</span>
-            <span>{localPost.comments}</span>
-          </button>
-
-          <button
-            onClick={handleShare}
-            disabled={!isAuthenticated}
-            className="flex items-center gap-2 text-sm text-gray-400 hover:text-green-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <span className="text-lg">🔄</span>
-            <span>{localPost.shares}</span>
+            <span>{localPost.comments_count || 0}</span>
           </button>
         </div>
 
         <div className="text-xs text-gray-500">
-          {localPost.likes + localPost.comments + localPost.shares} engagements
+          {(localPost.likes_count || 0) + (localPost.comments_count || 0)} engagements
         </div>
       </div>
 
@@ -360,10 +345,10 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
                   />
                   <button
                     type="submit"
-                    disabled={!commentText.trim()}
+                    disabled={!commentText.trim() || isLoading}
                     className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 disabled:bg-gray-600 disabled:opacity-50 text-black font-semibold rounded-lg transition-colors text-sm"
                   >
-                    Post
+                    {isLoading ? 'Posting...' : 'Post'}
                   </button>
                 </div>
               </div>
@@ -372,12 +357,12 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
 
           {/* Comments List */}
           <div className="space-y-3">
-            {localPost.commentsList.slice(0, 5).map((comment) => (
+            {comments.slice(0, 5).map((comment) => (
               <div key={comment.id} className="flex gap-3">
                 <div className="w-8 h-8 rounded-full border border-yellow-400/30 overflow-hidden bg-zinc-700 flex-shrink-0">
                   <Image
                     src={comment.userAvatar || "/Icons/New Member.png"}
-                    alt={comment.username}
+                    alt={comment.username || 'User'}
                     width={32}
                     height={32}
                     className="w-full h-full object-cover"
@@ -385,9 +370,19 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
                 </div>
                 <div className="flex-1">
                   <div className="bg-zinc-800/50 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-white text-sm">{comment.username}</span>
-                      <span className="text-xs text-gray-400">{formatTimeAgo(comment.timestamp)}</span>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-white text-sm">{comment.username || 'User'}</span>
+                        <span className="text-xs text-gray-400">{formatTimeAgo(comment.created_at)}</span>
+                      </div>
+                      {user && user.id === comment.user_id && (
+                        <button
+                          onClick={() => handleDeleteComment(comment.id)}
+                          className="text-xs text-red-400 hover:text-red-300"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                     <p className="text-sm text-gray-300">{comment.content}</p>
                   </div>
@@ -395,10 +390,16 @@ export default function PostCard({ post, onUpdate, onDelete }: PostCardProps) {
               </div>
             ))}
             
-            {localPost.commentsList.length > 5 && (
+            {comments.length > 5 && (
               <button className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
-                View all {localPost.commentsList.length} comments
+                View all {comments.length} comments
               </button>
+            )}
+            
+            {comments.length === 0 && showComments && (
+              <p className="text-center text-gray-400 text-sm py-4">
+                No comments yet. Be the first to comment!
+              </p>
             )}
           </div>        </div>
       )}

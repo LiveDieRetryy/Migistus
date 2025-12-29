@@ -271,6 +271,7 @@ export default function SupplierPortal() {
 
   const handleLogout = () => {
     if (typeof window !== "undefined") {
+      localStorage.removeItem("userSession");
       localStorage.removeItem("isSupplier");
       localStorage.removeItem("isSignedIn");
       localStorage.removeItem("supplierId");
