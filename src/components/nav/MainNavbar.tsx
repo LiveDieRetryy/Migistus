@@ -203,16 +203,16 @@ export default function MainNavbar() {
     { name: "Messages", href: "/messages", icon: "💬" },
     { name: "Wallet", href: "/wallet", icon: "💰" },    { name: "Pledges", href: "/account/pledges", icon: "🤝" },
     { name: "Settings", href: "/account/settings", icon: "⚙️" },    // Admin menu items - The King's Domain
-    ...(user?.email === 'admin@migistus.com' ? [
+    ...(user?.tier === 'Admin' ? [
       { name: "─────────────", href: "#", icon: "" }, // Divider
-      { name: "👑 Kings Domain", href: "/admin", icon: "👑" },
-      { name: "🔄 Lifecycle Control", href: "/kingdom/lifecycle", icon: "�" },
-      { name: "User Management", href: "/admin/users", icon: "�" },
-      { name: "Royal Marketing", href: "/admin/marketing", icon: "�" },
-      { name: "Product Control", href: "/admin/products", icon: "📦" },
-      { name: "Content Management", href: "/admin/content", icon: "📝" },
-      { name: "Analytics", href: "/admin/analytics", icon: "📊" },
-      { name: "System Settings", href: "/admin/settings", icon: "⚙️" },
+      { name: "👑 Kings Domain", href: "/kingdom", icon: "👑" },
+      { name: "🔄 Lifecycle Control", href: "/kingdom/lifecycle", icon: "🔄" },
+      { name: "User Management", href: "/kingdom/users", icon: "👥" },
+      { name: "Royal Marketing", href: "/kingdom/marketing", icon: "📢" },
+      { name: "Product Control", href: "/kingdom/products", icon: "📦" },
+      { name: "Content Management", href: "/kingdom/content", icon: "📝" },
+      { name: "Analytics", href: "/kingdom/analytics", icon: "📊" },
+      { name: "System Settings", href: "/kingdom/settings", icon: "⚙️" },
     ] : []),
   ];
   useEffect(() => {

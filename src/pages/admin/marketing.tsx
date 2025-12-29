@@ -39,7 +39,7 @@ export default function AdminMarketingPage() {
   });
   // Load opted-in users and campaigns
   useEffect(() => {
-    if (!isAuthenticated || user?.email !== 'admin@migistus.com') return;
+    if (!isAuthenticated || user?.tier !== 'Admin') return;
     
     loadOptedInUsers();
     loadCampaigns();
@@ -146,7 +146,7 @@ export default function AdminMarketingPage() {
     'Admin': optedInUsers.filter(u => u.tier === 'Admin').length,
   };
 
-  if (!isAuthenticated || user?.email !== 'admin@migistus.com') {
+  if (!isAuthenticated || user?.tier !== 'Admin') {
     return (
       <div className="min-h-screen bg-gray-900 text-white">
         <MainNavbar />

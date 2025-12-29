@@ -374,7 +374,7 @@ export default function AdminUsersPage() {
     }
   };
 
-  if (!isAuthenticated || user?.email !== 'admin@migistus.com') {
+  if (!isAuthenticated || user?.tier !== 'Admin') {
     return (
       <>
         <Head>

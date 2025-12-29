@@ -53,20 +53,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (isProduction()) {
       console.log("🔐 Production mode: Using database authentication");
-      try {
-        user = await db.getUserByEmailOrUsername(email.toLowerCase());
-        console.log("✅ Database query successful, user found:", !!user);
-      } catch (dbError) {
-        console.error("❌ Database error:", dbError);
-        // Fallback to file-based if database fails
-        console.log("⚠️ Falling back to file-based authentication");
-        const users = readUsersFile();
-        const foundUser = users.find((u: any) => 
-          u.email?.toLowerCase() === email.toLowerCase() || 
-          u.username?.toLowerCase() === email.toLowerCase()
-        );
-        user = foundUser || null;
-      }
+      user = await db.getUserByEmailOrUsername(email.toLowerCase());
+      console.log("✅ Database query successful, user found:", !!user);
     } else {
       console.log("🔐 Development mode: Using file-based authentication");
       const users = readUsersFile();

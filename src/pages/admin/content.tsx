@@ -9,7 +9,7 @@ export default function AdminContentPage() {
   const [activeTab, setActiveTab] = useState<'announcements' | 'banners' | 'featured'>('announcements');
 
   useEffect(() => {
-    if (!isAuthenticated || user?.email !== 'admin@migistus.com') return;
+    if (!isAuthenticated || user?.tier !== 'Admin') return;
     setLoading(false);
   }, [isAuthenticated, user]);
 
@@ -23,7 +23,7 @@ export default function AdminContentPage() {
     );
   }
 
-  if (!isAuthenticated || user?.email !== 'admin@migistus.com') {
+  if (!isAuthenticated || user?.tier !== 'Admin') {
     return (
       <div className="min-h-screen bg-gray-900 text-white">
         <MainNavbar />

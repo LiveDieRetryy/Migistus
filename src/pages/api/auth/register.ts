@@ -206,26 +206,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Check for existing users (database in production, files in development)
   if (isProduction()) {
     console.log("🔐 Production mode: Checking for existing users in database");
-    try {
-      const existingEmail = await db.getUser(email);
-      if (existingEmail) {
-        return res.status(400).json({ error: "Email already registered" });
-      }
+    const existingEmail = await db.getUser(email);
+    if (existingEmail) {
+      return res.status(400).json({ error: "Email already registered" });
+    }
 
-      const existingUsername = await db.getUserByUsername(username);
-      if (existingUsername) {
-        return res.status(400).json({ error: "Username already taken" });
-      }
-    } catch (dbError) {
-      console.error("❌ Database error, falling back to file check:", dbError);
-      // Fallback to file-based check
-      const users = readUsers();
-      if (users.some((u: any) => u.email === email)) {
-        return res.status(400).json({ error: "Email already registered" });
-      }
-      if (users.some((u: any) => u.username === username)) {
-        return res.status(400).json({ error: "Username already taken" });
-      }
+    const existingUsername = await db.getUserByUsername(username);
+    if (existingUsername) {
+      return res.status(400).json({ error: "Username already taken" });
     }
   } else {
     console.log("🔓 Development mode: Checking for existing users in files");
@@ -330,73 +318,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Save user to database (production) or file (development)
   if (isProduction()) {
     console.log("🔐 Production mode: Creating user in database");
-    try {
-      savedUser = await db.createUser({
-        username,
-        email,
-        password: hash,
-        tier: "Initiate",
-        firstName,
-        lastName,
-        dateOfBirth,
-        country,
-        state: state || null,
-        city: city || null,
-        phoneNumber: phoneNumber || null,
-        referralSource: referralSource || null,
-        agreeToMarketing: agreeToMarketing || false
-      });
-      console.log("✅ User created in database:", savedUser.id);
-    } catch (dbError) {
-      console.error("❌ Database error, falling back to file storage:", dbError);
-      // Fallback to file-based
-      const users = readUsers();
-      const newUser = {
-        id: Date.now(),
-        username,
-        email,
-        password: hash,
-        tier: "New Member",
-        banned: false,
-        verified: false,
-        email_verified: false,
-        joinDate: new Date().toISOString().split('T')[0],
-        lastLogin: null,
-        wallet: 0,
-        guildCoins: 100,
-        guildTokens: 100,
-        firstName,
-        lastName,
-        dateOfBirth,
-        country,
-        state: state || null,
-        city: city || null,
-        phoneNumber: phoneNumber || null,
-        referralSource: referralSource || null,
-        avatar: avatarPath,
-        bio: "",
-        agreeToMarketing: agreeToMarketing || false,
-        emailNotifications: true,
-        pushNotifications: false,
-        theme: "dark",
-        language: "en",
-        totalPledges: 0,
-        totalVotes: 0,
-        dropsJoined: 0,
-        followers: 0,
-        following: 0,
-        profileViews: 0,
-        createdAt: new Date().toISOString(),
-        loginCount: 0,
-        marketingEmails: agreeToMarketing || false,
-        productUpdates: true,
-        orderUpdates: true,
-        updatedAt: new Date().toISOString()
-      };
-      users.push(newUser);
-      writeUsers(users);
-      savedUser = newUser;
-    }
+    savedUser = await db.createUser({
+      username,
+      email,
+      password: hash,
+      tier: "Initiate",
+      firstName,
+      lastName,
+      dateOfBirth,
+      country,
+      state: state || null,
+      city: city || null,
+      phoneNumber: phoneNumber || null,
+      referralSource: referralSource || null,
+      agreeToMarketing: agreeToMarketing || false
+    });
+    console.log("✅ User created in database:", savedUser.id);
   } else {
     console.log("🔓 Development mode: Creating user in files");
     const users = readUsers();

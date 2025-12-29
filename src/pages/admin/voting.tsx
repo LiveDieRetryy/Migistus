@@ -50,7 +50,7 @@ export default function AdminVotingPage() {
   });
 
   useEffect(() => {
-    if (!isAuthenticated || user?.email !== 'admin@migistus.com') return;
+    if (!isAuthenticated || user?.tier !== 'Admin') return;
     loadVotingData();
   }, [isAuthenticated, user]);
 
@@ -189,7 +189,7 @@ export default function AdminVotingPage() {
 
   const categories = ['General', 'Electronics', 'Home & Garden', 'Fashion', 'Sports & Outdoors', 'Automotive', 'Beauty', 'Food & Grocery'];
 
-  if (!isAuthenticated || user?.email !== 'admin@migistus.com') {
+  if (!isAuthenticated || user?.tier !== 'Admin') {
     return (
       <div className="min-h-screen bg-gray-900 text-white">
         <MainNavbar />

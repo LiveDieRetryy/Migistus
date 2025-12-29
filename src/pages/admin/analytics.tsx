@@ -8,7 +8,7 @@ export default function AdminAnalyticsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isAuthenticated || user?.email !== 'admin@migistus.com') return;
+    if (!isAuthenticated || user?.tier !== 'Admin') return;
     setLoading(false);
   }, [isAuthenticated, user]);
 
@@ -22,7 +22,7 @@ export default function AdminAnalyticsPage() {
     );
   }
 
-  if (!isAuthenticated || user?.email !== 'admin@migistus.com') {
+  if (!isAuthenticated || user?.tier !== 'Admin') {
     return (
       <div className="min-h-screen bg-gray-900 text-white">
         <MainNavbar />

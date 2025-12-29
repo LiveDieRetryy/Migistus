@@ -47,7 +47,7 @@ export default function AdminLiveDropsPage() {
   });
 
   useEffect(() => {
-    if (!isAuthenticated || user?.email !== 'admin@migistus.com') return;
+    if (!isAuthenticated || user?.tier !== 'Admin') return;
     loadLiveDropsData();
   }, [isAuthenticated, user]);
 
@@ -187,7 +187,7 @@ export default function AdminLiveDropsPage() {
     return Math.min((current / target) * 100, 100);
   };
 
-  if (!isAuthenticated || user?.email !== 'admin@migistus.com') {
+  if (!isAuthenticated || user?.tier !== 'Admin') {
     return (
       <div className="min-h-screen bg-gray-900 text-white">
         <MainNavbar />

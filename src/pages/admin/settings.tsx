@@ -70,7 +70,7 @@ export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState<'general' | 'voting' | 'products' | 'features'>('general');
 
   useEffect(() => {
-    if (!isAuthenticated || user?.email !== 'admin@migistus.com') return;
+    if (!isAuthenticated || user?.tier !== 'Admin') return;
     loadSettings();
   }, [isAuthenticated, user]);
   const loadSettings = async () => {
@@ -123,7 +123,7 @@ export default function AdminSettingsPage() {
     }));
   };
 
-  if (!isAuthenticated || user?.email !== 'admin@migistus.com') {
+  if (!isAuthenticated || user?.tier !== 'Admin') {
     return (
       <div className="min-h-screen bg-gray-900 text-white">
         <MainNavbar />

@@ -63,7 +63,7 @@ export default function LifecycleControlCenter() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    if (!isAuthenticated || user?.email !== 'admin@migistus.com') return;
+    if (!isAuthenticated || user?.tier !== 'Admin') return;
     loadLifecycleData();
     
     // Auto-refresh every 30 seconds
@@ -240,7 +240,7 @@ export default function LifecycleControlCenter() {
     }
   };
 
-  if (!isAuthenticated || user?.email !== 'admin@migistus.com') {
+  if (!isAuthenticated || user?.tier !== 'Admin') {
     return (
       <DashboardLayout>
         <div className="container mx-auto px-4 py-8">

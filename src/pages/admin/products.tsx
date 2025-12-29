@@ -52,7 +52,7 @@ export default function AdminProductsPage() {
   });
   useEffect(() => {
     console.log('Admin Products: Auth check', { isAuthenticated, user: user?.email });
-    if (!isAuthenticated || user?.email !== 'admin@migistus.com') return;
+    if (!isAuthenticated || user?.tier !== 'Admin') return;
     loadProductsData();
   }, [isAuthenticated, user]);
   const loadProductsData = async () => {
@@ -320,7 +320,7 @@ export default function AdminProductsPage() {
     'Automotive', 'Beauty', 'Food & Grocery', 'Toys', 'Books', 'Health'
   ];
 
-  if (!isAuthenticated || user?.email !== 'admin@migistus.com') {
+  if (!isAuthenticated || user?.tier !== 'Admin') {
     return (
       <div className="min-h-screen bg-gray-900 text-white">
         <MainNavbar />
