@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Head from 'next/head';
+import { Eye, EyeOff } from 'lucide-react';
 import { authAPI } from '@/lib/authAPI';
 import { useAuth } from '@/context/AuthContext';
 
@@ -21,6 +22,7 @@ export default function VerifyEmailReminder() {
   const [loginError, setLoginError] = useState('');
   const [cooldown, setCooldown] = useState(0);
   const [initialSent, setInitialSent] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Automatically send verification email on mount
   useEffect(() => {
@@ -265,16 +267,25 @@ export default function VerifyEmailReminder() {
                     <label htmlFor="password" className="block text-sm font-medium text-zinc-300 mb-2">
                       Password
                     </label>
-                    <input
-                      type="password"
-                      id="password"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-transparent"
-                      placeholder="Enter your password"
-                      required
-                      disabled={loggingIn}
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        id="password"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        className="w-full px-4 py-3 pr-12 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-transparent"
+                        placeholder="Enter your password"
+                        required
+                        disabled={loggingIn}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-100 transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
                   </div>
 
                   <button

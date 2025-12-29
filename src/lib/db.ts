@@ -34,6 +34,13 @@ export const db = {
     return result.rows[0] || null;
   },
 
+  async getAllUsers() {
+    const result = await sql`
+      SELECT * FROM users ORDER BY created_at DESC
+    `;
+    return result.rows;
+  },
+
   async createUser(data: {
     username: string;
     email: string;
@@ -89,6 +96,14 @@ export const db = {
     await sql`
       UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ${id}
     `;
+  },
+
+  async deleteUser(id: number) {
+    const result = await sql`
+      DELETE FROM users WHERE id = ${id}
+      RETURNING *
+    `;
+    return result.rows[0] || null;
   },
 
   async markUserAsVerified(email: string) {

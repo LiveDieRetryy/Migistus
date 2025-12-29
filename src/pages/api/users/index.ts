@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { db, isProduction } from '@/lib/db';
 
 const usersFilePath = path.resolve("public/data/users.json");
 
@@ -59,14 +60,26 @@ function writeUsers(data: any) {
   }
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log(`Users API: ${req.method} request received`);
 
   if (req.method === "GET") {
     try {
-      const data = readUsers();
-      console.log(`Users API GET: Returning ${data.users.length} users`);
-      return res.status(200).json(data);
+      if (isProduction()) {
+        console.log("🔐 Production mode: Fetching users from database");
+        const users = await db.getAllUsers();
+        console.log(`✅ Database returned ${users.length} users`);
+        return res.status(200).json({
+          users,
+          totalUsers: users.length,
+          lastUpdated: new Date().toISOString()
+        });
+      } else {
+        console.log("🔓 Development mode: Reading users from file");
+        const data = readUsers();
+        console.log(`Users API GET: Returning ${data.users.length} users`);
+        return res.status(200).json(data);
+      }
     } catch (error) {
       console.error('Users API GET error:', error);
       return res.status(500).json({ 
