@@ -36,7 +36,7 @@ export default async function handler(
     }
 
     try {
-      const { items, totalAmount, shippingAddress, billingAddress, paymentMethod, notes } = req.body;
+      const { items, totalAmount, shippingAddress, billingAddress, paymentMethod, notes, useWallet } = req.body;
 
       if (!items || !Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ error: 'Items are required' });
@@ -44,6 +44,18 @@ export default async function handler(
 
       if (!totalAmount || totalAmount <= 0) {
         return res.status(400).json({ error: 'Valid total amount is required' });
+      }
+
+      // If paying with wallet, verify sufficient balance
+      if (useWallet) {
+        const walletBalance = await db.getUserWalletBalance(session.userId);
+        if (Number(walletBalance) < Number(totalAmount)) {
+          return res.status(400).json({ 
+            error: 'Insufficient wallet balance',
+            required: totalAmount,
+            available: walletBalance
+          });
+        }
       }
 
       // Generate order number
@@ -55,9 +67,21 @@ export default async function handler(
         items,
         shippingAddress,
         billingAddress,
-        paymentMethod,
+        paymentMethod: useWallet ? 'wallet' : paymentMethod,
         notes
       });
+
+      // Deduct from wallet if used for payment
+      if (useWallet && order) {
+        await db.addWalletTransaction({
+          userId: session.userId,
+          amount: -Math.abs(totalAmount),
+          type: 'purchase',
+          description: `Order ${orderNumber}`,
+          relatedOrderId: order.id,
+          metadata: { orderNumber, itemCount: items.length }
+        });
+      }
 
       return res.status(201).json({ order });
     } catch (error) {

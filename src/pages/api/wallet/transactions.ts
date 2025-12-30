@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getSessionFromRequest } from '@/lib/session';
-import { paymentStorage } from '@/utils/paymentStorage';
+import { db, isProduction } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -19,13 +19,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const limitNum = Math.min(Math.max(parseInt(limit as string) || 50, 1), 100);
     const offsetNum = Math.max(parseInt(offset as string) || 0, 0);
 
-    const transactions = await paymentStorage.getWalletTransactions(
-      session.userId,
-      limitNum,
-      offsetNum
-    );
+    if (isProduction()) {
+      const transactions = await db.getWalletTransactions(
+        session.userId,
+        limitNum,
+        offsetNum
+      );
 
-    return res.status(200).json({ transactions });
+      return res.status(200).json({ transactions });
+    } else {
+      // Development mode - use file storage
+      const paymentStorage = (await import('@/utils/paymentStorage')).paymentStorage;
+      const transactions = await paymentStorage.getWalletTransactions(
+        session.userId,
+        limitNum,
+        offsetNum
+      );
+
+      return res.status(200).json({ transactions });
+    }
 
   } catch (error) {
     console.error('Wallet transactions API error:', error);

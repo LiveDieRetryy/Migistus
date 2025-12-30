@@ -3950,18 +3950,6 @@ export const db = {
     return result.rows[0];
   },
 
-  async getWalletTransactions(userId: number, limit: number = 50, offset: number = 0) {
-    const wallet = await db.getWallet(userId);
-    
-    const result = await sql`
-      SELECT * FROM wallet_transactions 
-      WHERE wallet_id = ${wallet.id}
-      ORDER BY created_at DESC
-      LIMIT ${limit} OFFSET ${offset}
-    `;
-    return result.rows;
-  },
-
   // Refunds
   async getAllRefunds() {
     const result = await sql`
@@ -5843,6 +5831,100 @@ export const db = {
 
     await this.updateAdminSettings(defaultSettings);
     return defaultSettings;
+  },
+
+  // Wallet Management Functions
+  async getUserWalletBalance(userId: number) {
+    const result = await sql`SELECT wallet FROM users WHERE id = ${userId}`;
+    return result.rows[0]?.wallet || 0;
+  },
+
+  async addWalletTransaction(data: {
+    userId: number;
+    amount: number;
+    type: 'deposit' | 'withdrawal' | 'purchase' | 'refund' | 'transfer_in' | 'transfer_out' | 'admin_adjustment' | 'reward';
+    description: string;
+    relatedOrderId?: number;
+    relatedUserId?: number;
+    metadata?: any;
+  }) {
+    // Get current balance
+    const currentBalance = await this.getUserWalletBalance(data.userId);
+    const newBalance = Number(currentBalance) + Number(data.amount);
+
+    // Update user's wallet balance
+    await sql`
+      UPDATE users 
+      SET wallet = ${newBalance}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${data.userId}
+    `;
+
+    // Record transaction
+    const result = await sql`
+      INSERT INTO wallet_transactions (
+        user_id, amount, transaction_type, description, balance_after,
+        related_order_id, related_user_id, metadata
+      )
+      VALUES (
+        ${data.userId}, ${data.amount}, ${data.type}, ${data.description}, ${newBalance},
+        ${data.relatedOrderId || null}, ${data.relatedUserId || null}, ${JSON.stringify(data.metadata || {})}
+      )
+      RETURNING *
+    `;
+
+    return result.rows[0];
+  },
+
+  async getWalletTransactions(userId: number, limit: number = 50, offset: number = 0) {
+    const result = await sql`
+      SELECT 
+        wt.*,
+        ru.username as related_username
+      FROM wallet_transactions wt
+      LEFT JOIN users ru ON wt.related_user_id = ru.id
+      WHERE wt.user_id = ${userId}
+      ORDER BY wt.created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+    return result.rows;
+  },
+
+  async transferFunds(fromUserId: number, toUserId: number, amount: number, description: string) {
+    // Validate sender has sufficient balance
+    const senderBalance = await this.getUserWalletBalance(fromUserId);
+    if (Number(senderBalance) < Number(amount)) {
+      throw new Error('Insufficient funds');
+    }
+
+    // Deduct from sender
+    await this.addWalletTransaction({
+      userId: fromUserId,
+      amount: -Math.abs(amount),
+      type: 'transfer_out',
+      description: `Transfer to user #${toUserId}: ${description}`,
+      relatedUserId: toUserId
+    });
+
+    // Add to recipient
+    await this.addWalletTransaction({
+      userId: toUserId,
+      amount: Math.abs(amount),
+      type: 'transfer_in',
+      description: `Transfer from user #${fromUserId}: ${description}`,
+      relatedUserId: fromUserId
+    });
+
+    return { success: true };
+  },
+
+  async adjustWalletBalance(userId: number, amount: number, description: string, adminId?: number) {
+    return await this.addWalletTransaction({
+      userId,
+      amount,
+      type: 'admin_adjustment',
+      description: description || `Admin adjustment${adminId ? ` by admin #${adminId}` : ''}`,
+      metadata: { adminId }
+    });
   }
 };
 

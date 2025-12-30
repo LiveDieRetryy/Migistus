@@ -648,3 +648,22 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
 CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON push_subscriptions(user_id);
 CREATE INDEX IF NOT EXISTS idx_push_subscriptions_active ON push_subscriptions(is_active) WHERE is_active = true;
 CREATE INDEX IF NOT EXISTS idx_push_subscriptions_endpoint ON push_subscriptions(endpoint);
+
+-- Wallet Transactions table (for tracking all wallet activity)
+CREATE TABLE IF NOT EXISTS wallet_transactions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  amount DECIMAL(10, 2) NOT NULL,
+  transaction_type VARCHAR(50) NOT NULL, -- 'deposit', 'withdrawal', 'purchase', 'refund', 'transfer_in', 'transfer_out', 'admin_adjustment', 'reward'
+  description TEXT,
+  balance_after DECIMAL(10, 2) NOT NULL,
+  related_order_id INTEGER REFERENCES orders(id) ON DELETE SET NULL,
+  related_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL, -- for transfers
+  metadata JSONB, -- additional data like payment method, reference, etc.
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_wallet_transactions_user ON wallet_transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_wallet_transactions_type ON wallet_transactions(transaction_type);
+CREATE INDEX IF NOT EXISTS idx_wallet_transactions_created ON wallet_transactions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_wallet_transactions_order ON wallet_transactions(related_order_id);

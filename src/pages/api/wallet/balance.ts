@@ -1,145 +1,89 @@
-import fs from "fs";
-import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
-
-function getWalletsFromStorage(): Record<number, any> {
-  const filePath = path.resolve("public/data/wallets.json");
-  if (!fs.existsSync(filePath)) return {};
-  try {
-    const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    return data && typeof data === "object" ? data : {};
-  } catch {
-    return {};
-  }
-}
-
-declare global {
-  // eslint-disable-next-line no-var
-  var balanceUpdates: any[] | undefined;
-  // eslint-disable-next-line no-var
-  var walletsStore: Record<number, any> | undefined;
-}
-
-type WalletBalance = {
-  userId: number;
-  guildTokens: number;
-  migistusCoins: number;
-  lastUpdated: string;
-};
+import { getSessionFromRequest } from '@/lib/session';
+import { db, isProduction } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { method } = req;
-  const { userId } = req.query;
-
-  if (method === 'GET') {
-    try {
-      const balance = getWalletBalance(Number(userId));
-      res.status(200).json(balance);
-    } catch (error) {
-      console.error('Error fetching wallet balance:', error);
-      res.status(500).json({ error: 'Failed to fetch wallet balance' });
+  try {
+    const session = await getSessionFromRequest(req);
+    if (!session) {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
-  } else if (method === 'POST') {
-    try {
-      const { guildTokens, migistusCoins, operation } = req.body;
+
+    const { method } = req;
+
+    if (method === 'GET') {
+      if (isProduction()) {
+        const balance = await db.getUserWalletBalance(session.userId);
+        return res.status(200).json({ 
+          balance, 
+          userId: session.userId 
+        });
+      } else {
+        // Development mode - use file storage
+        const UserStorage = (await import('@/utils/userStorage')).UserStorage3;
+        const balance = UserStorage.getUserWalletBalance(session.userId);
+        return res.status(200).json({ 
+          balance, 
+          userId: session.userId 
+        });
+      }
+    } 
+    
+    else if (method === 'POST') {
+      const { amount, type, description } = req.body;
       
-      if (!userId) {
-        return res.status(400).json({ error: 'User ID is required' });
+      if (!amount || typeof amount !== 'number') {
+        return res.status(400).json({ error: 'Valid amount is required' });
       }
 
-      const updatedBalance = updateWalletBalance(
-        Number(userId), 
-        guildTokens || 0, 
-        migistusCoins || 0, 
-        operation || 'add'
-      );
-
-      // Broadcast update to all connected clients
-      broadcastBalanceUpdate(Number(userId), updatedBalance);
-
-      res.status(200).json(updatedBalance);
-    } catch (error) {
-      console.error('Error updating wallet balance:', error);
-      res.status(500).json({ error: 'Failed to update wallet balance' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET', 'POST']);
-    res.status(405).end(`Method ${method} Not Allowed`);
-  }
-}
-
-function getWalletBalance(userId: number): WalletBalance {
-  const wallets = getWalletsFromStorage();
-  
-  return wallets[userId] || {
-    userId,
-    guildTokens: 0,
-    migistusCoins: 0,
-    lastUpdated: new Date().toISOString()
-  };
-}
-
-function updateWalletBalance(
-  userId: number,
-  amount: number,
-  migistusCoins: number,
-  operation: 'add' | 'subtract' | 'set' = 'add'
-): WalletBalance {
-  const wallets = getWalletsFromStorage();
-  const currentBalance = wallets[userId] || {
-    userId,
-    balance: 0,
-    migistusCoins: 0,
-  };
-
-  let newBalance = { ...currentBalance };
-
-  if (operation === "add") {
-    newBalance.balance += amount;
-    newBalance.migistusCoins += migistusCoins;
-  } else if (operation === "subtract") {
-    newBalance.balance = Math.max(0, newBalance.balance - amount);
-    newBalance.migistusCoins = Math.max(0, newBalance.migistusCoins - migistusCoins);
-  } else if (operation === "set") {
-    newBalance.balance = amount;
-    newBalance.migistusCoins = migistusCoins;
-  }
-
-  wallets[userId] = newBalance;
-  setWalletsToStorage(wallets);
-
-  return newBalance; // <-- Ensure you always return a WalletBalance
-}
-
-function broadcastBalanceUpdate(userId: number, balance: WalletBalance) {
-  // Store the update in a global broadcast queue
-  if (typeof globalThis !== 'undefined') {
-    if (!globalThis.balanceUpdates) {
-      globalThis.balanceUpdates = [];
-    }
-    globalThis.balanceUpdates.push({
-      userId,
-      balance,
-      timestamp: Date.now()
-    });
-
-    // Keep only recent updates (last 5 minutes)
-    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-    if (typeof global !== 'undefined') {
-      if (!global.balanceUpdates) {
-        global.balanceUpdates = [];
+      if (!['deposit', 'withdrawal'].includes(type)) {
+        return res.status(400).json({ error: 'Type must be deposit or withdrawal' });
       }
-      // Now it's safe to use .filter
-      global.balanceUpdates = global.balanceUpdates.filter(
-        (update: any) => update.timestamp > fiveMinutesAgo
-      );
-    }
-  }
-}
 
-function setWalletsToStorage(wallets: Record<number, WalletBalance>): void {
-  if (typeof global !== 'undefined') {
-    (global as any).walletsStore = wallets;
+      if (isProduction()) {
+        // For withdrawals, verify sufficient balance
+        if (type === 'withdrawal') {
+          const currentBalance = await db.getUserWalletBalance(session.userId);
+          if (Number(currentBalance) < Math.abs(amount)) {
+            return res.status(400).json({ error: 'Insufficient funds' });
+          }
+        }
+
+        const transaction = await db.addWalletTransaction({
+          userId: session.userId,
+          amount: type === 'withdrawal' ? -Math.abs(amount) : Math.abs(amount),
+          type: type as 'deposit' | 'withdrawal',
+          description: description || `${type === 'deposit' ? 'Deposit' : 'Withdrawal'} via wallet page`
+        });
+
+        return res.status(200).json({ 
+          success: true,
+          balance: transaction.balance_after,
+          transaction
+        });
+      } else {
+        // Development mode
+        const UserStorage = (await import('@/utils/userStorage')).UserStorage3;
+        if (type === 'deposit') {
+          UserStorage.incrementUserWallet(session.userId, Math.abs(amount));
+        } else {
+          UserStorage.decrementUserWallet(session.userId, Math.abs(amount));
+        }
+        const newBalance = UserStorage.getUserWalletBalance(session.userId);
+        return res.status(200).json({ 
+          success: true,
+          balance: newBalance
+        });
+      }
+    }
+    
+    else {
+      res.setHeader('Allow', ['GET', 'POST']);
+      return res.status(405).json({ error: `Method ${method} Not Allowed` });
+    }
+
+  } catch (error) {
+    console.error('Wallet balance API error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
-  // ...existing code for persisting to file if needed...
 }
