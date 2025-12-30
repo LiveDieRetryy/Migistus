@@ -629,48 +629,138 @@ export const db = {
   },
 
   async banUser(userId: number, moderatorId: number, reason: string, duration?: number) {
-    // Create moderation action
-    await this.createModerationAction({
-      moderatorId,
-      targetUserId: userId,
-      actionType: 'ban',
-      reason,
-      duration
-    });
-
-    // Update user status
+    // Update user ban status with new schema fields
     const result = await sql`
       UPDATE users
-      SET is_banned = true,
-          banned_until = ${duration ? new Date(Date.now() + duration * 1000).toISOString() : null},
-          banned_reason = ${reason}
+      SET banned = true,
+          banned_reason = ${reason},
+          banned_at = CURRENT_TIMESTAMP,
+          banned_by = ${moderatorId}
       WHERE id = ${userId}
       RETURNING *
+    `;
+
+    // Log the enforcement action
+    await sql`
+      INSERT INTO enforcement_log (user_id, admin_id, action_type, reason)
+      VALUES (${userId}, ${moderatorId}, 'ban', ${reason})
     `;
     
     return result.rows[0];
   },
 
   async unbanUser(userId: number, moderatorId: number) {
-    // Create moderation action
-    await this.createModerationAction({
-      moderatorId,
-      targetUserId: userId,
-      actionType: 'unban',
-      reason: 'Ban lifted'
-    });
-
-    // Update user status
+    // Update user ban status
     const result = await sql`
       UPDATE users
-      SET is_banned = false,
-          banned_until = NULL,
-          banned_reason = NULL
+      SET banned = false,
+          banned_reason = NULL,
+          banned_at = NULL,
+          banned_by = NULL
       WHERE id = ${userId}
       RETURNING *
     `;
+
+    // Log the enforcement action
+    await sql`
+      INSERT INTO enforcement_log (user_id, admin_id, action_type)
+      VALUES (${userId}, ${moderatorId}, 'unban')
+    `;
     
     return result.rows[0];
+  },
+
+  async muteUser(userId: number, moderatorId: number, durationMinutes: number, reason?: string) {
+    const mutedUntil = new Date(Date.now() + durationMinutes * 60 * 1000);
+    
+    // Update user mute status
+    const result = await sql`
+      UPDATE users 
+      SET muted_until = ${mutedUntil.toISOString()}, 
+          muted_reason = ${reason || null},
+          muted_at = CURRENT_TIMESTAMP, 
+          muted_by = ${moderatorId}
+      WHERE id = ${userId}
+      RETURNING *
+    `;
+
+    // Log the enforcement action
+    await sql`
+      INSERT INTO enforcement_log (user_id, admin_id, action_type, reason, duration_minutes, expires_at)
+      VALUES (${userId}, ${moderatorId}, 'mute', ${reason || null}, ${durationMinutes}, ${mutedUntil.toISOString()})
+    `;
+
+    return result.rows[0] || null;
+  },
+
+  async unmuteUser(userId: number, moderatorId: number) {
+    // Update user mute status
+    const result = await sql`
+      UPDATE users 
+      SET muted_until = NULL, 
+          muted_reason = NULL,
+          muted_at = NULL, 
+          muted_by = NULL
+      WHERE id = ${userId}
+      RETURNING *
+    `;
+
+    // Log the enforcement action
+    await sql`
+      INSERT INTO enforcement_log (user_id, admin_id, action_type)
+      VALUES (${userId}, ${moderatorId}, 'unmute')
+    `;
+
+    return result.rows[0] || null;
+  },
+
+  async getEnforcementLog(userId?: number, limit: number = 50) {
+    let result;
+    if (userId) {
+      result = await sql`
+        SELECT el.*, 
+               u.username as user_username,
+               a.username as admin_username
+        FROM enforcement_log el
+        LEFT JOIN users u ON el.user_id = u.id
+        LEFT JOIN users a ON el.admin_id = a.id
+        WHERE el.user_id = ${userId}
+        ORDER BY el.created_at DESC
+        LIMIT ${limit}
+      `;
+    } else {
+      result = await sql`
+        SELECT el.*, 
+               u.username as user_username,
+               a.username as admin_username
+        FROM enforcement_log el
+        LEFT JOIN users u ON el.user_id = u.id
+        LEFT JOIN users a ON el.admin_id = a.id
+        ORDER BY el.created_at DESC
+        LIMIT ${limit}
+      `;
+    }
+    return result.rows;
+  },
+
+  async getBannedUsers() {
+    const result = await sql`
+      SELECT id, username, email, banned, banned_reason, banned_at, banned_by
+      FROM users
+      WHERE banned = true
+      ORDER BY banned_at DESC
+    `;
+    return result.rows;
+  },
+
+  async getMutedUsers() {
+    const result = await sql`
+      SELECT id, username, email, muted_until, muted_reason, muted_at, muted_by
+      FROM users
+      WHERE muted_until IS NOT NULL AND muted_until > CURRENT_TIMESTAMP
+      ORDER BY muted_at DESC
+    `;
+    return result.rows;
   },
 
   async getUserModerationHistory(userId: number) {

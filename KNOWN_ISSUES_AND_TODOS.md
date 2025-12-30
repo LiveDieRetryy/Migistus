@@ -31,6 +31,23 @@
 - **File Updated:** `db/schema.sql`
 - **Result:** Complete production-ready schema with all indexes
 
+### **Supplier Application System - Complete Account Creation** ✅
+- **Completed:** Full approval workflow with email integration
+- **File Updated:** `src/pages/api/admin/process-supplier-application.ts`
+- **Result:**
+  - Creates user account with hashed password (bcrypt)
+  - Creates supplier profile in database
+  - Sends welcome email with login credentials
+  - Production uses database, dev uses files
+
+### **Marketing Preferences - Database Migration** ✅
+- **Completed:** Now uses user_settings table
+- **File Updated:** `src/pages/api/marketing/preferences.ts`
+- **Result:**
+  - Stores preferences in user_settings JSONB field
+  - Production uses database queries
+  - Supports email_notifications and marketing_emails flags
+
 ---
 
 ## 🔴 CRITICAL PRIORITY
@@ -84,43 +101,17 @@ const handleMute = async (userId: number) => {
 
 ---
 
-### 3. **Supplier Application Approval System**
-**File:** `src/pages/api/admin/supplier-applications.ts`  
-**Line:** 85  
-**Status:** ⚠️ APPROVAL ENDPOINT EXISTS, ACCOUNT CREATION MISSING
+### ~~2. Supplier Application Approval System~~ ✅ COMPLETED
+**Status:** ✅ **COMPLETED December 29, 2025**
+- Account creation with bcrypt password hashing
+- Database integration for user and supplier profile
+- Welcome email with login credentials
 
-**Problem:**
-- Applications can be approved/rejected
-- Approved applications don't create supplier accounts
-- Welcome emails not sent to approved suppliers
-- Manual account creation required
-
-**Impact:**
-- Approved suppliers must be manually created in database
-- Poor user experience for new suppliers
-- Admin workload increased
-
-**Solution Required:**
-1. On approval, create user account with `tier: 'Supplier'`
-2. Generate temporary password or send password setup link
-3. Send welcome email with login credentials/setup link
-4. Link supplier account to their application
-5. Update application status to `approved` with timestamp
-6. A2d supplier to suppliers.json (if using file storage)
-7. Notify admin of successful account creation
-
-**Code Location:**
-```typescript
-// Line 85
-case 'approve':
-  // TODO: Create supplier account and send welcome email
-  application.status = 'approved';
-  break;
-```
+- See `DATABASE_MIGRATION_COMPLETE_PHASE_2.md` for implementation details
 
 ---
 
-### 3. **Push Notifications - Not Implemented**
+### 2. **Push Notifications - Not Implemented**
 **File:** `src/pages/api/push/send.ts`  
 **Line:** 71  
 **Status:** ⚠️ ENDPOINT EXISTS, FUNCTIONALITY MISSING
@@ -162,7 +153,7 @@ case 'approve':
 
 ## 🟡 MEDIUM PRIORITY
 
-### 4. **Message Edit Functionality**
+### 3. **Message Edit Functionality**
 **File:** `src/components/messaging/DirectMessageThread.tsx`  
 **Line:** 518  
 **Status:** ⚠️ UI PLACEHOLDER EXISTS
@@ -193,7 +184,7 @@ case 'approve':
 
 ---
 
-### ~~5. Messages/Conversations - Database Migration Pending~~ ✅ COMPLETED
+### ~~4. Messages/Conversations - Database Migration Pending~~ ✅ COMPLETED
 **Status:** ✅ **ALREADY MIGRATED - Verified December 29, 2025**
 - Messages and conversations fully in database
 - Proper CASCADE DELETE for deleted users
@@ -203,31 +194,18 @@ case 'approve':
 
 ---
 
-### 7. **Marketing Preferences - File-Based Storage**
-**File:** `src/pages/api/marketing/preferences.ts`  
-**Status:** ⚠️ USES FILE STORAGE ONLY
-
-**Problem:**
-- Marketing preferences stored in `marketing-preferences.json`
-- Not in database like other user data
-- Inconsistent with user data storage pattern
-
-**Impact:**
-- Data not backed up with user data
-- Can't query marketing preferences efficiently
-- Preferences may be lost on deployment
-
-**Solution Required:**
-1. Add marketing preference columns to users table
-2. Migrate existing preferences to database
-3. Update API to read/write from database
-4. Keep file storage as development fallback
+### ~~5. Marketing Preferences - File-Based Storage~~ ✅ COMPLETED
+**Status:** ✅ **COMPLETED December 29, 2025**
+- Now uses user_settings table with JSONB preferences field
+- Production reads/writes from database
+- Development maintains file fallback
+- See `DATABASE_MIGRATION_COMPLETE_PHASE_2.md` for implementation details
 
 ---
 
 ## 🟢 LOW PRIORITY / ENHANCEMENTS
-5
-### 8. **Order Confirmation Emails - Not Integrated**
+
+### 6. **Order Confirmation Emails - Not Integrated**
 **File:** `src/lib/emailTemplates.ts`  
 **Status:** ✅ TEMPLATE READY, ⚠️ NOT INTEGRATED
 
@@ -242,7 +220,7 @@ case 'approve':
 
 ---
 
-### 9. **Drop Notification Emails - Not Integrated**
+### 7. **Drop Notification Emails - Not Integrated**
 **File:** `src/lib/emailTemplates.ts`  
 **Status:** ✅ TEMPLATE READY, ⚠️ NOT INTEGRATED
 

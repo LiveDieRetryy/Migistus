@@ -13,6 +13,15 @@ CREATE TABLE IF NOT EXISTS users (
   last_login TIMESTAMP,
   is_active BOOLEAN DEFAULT true,
   email_verified BOOLEAN DEFAULT false,
+  -- Enforcement fields
+  banned BOOLEAN DEFAULT false,
+  banned_reason TEXT,
+  banned_at TIMESTAMP,
+  banned_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  muted_until TIMESTAMP,
+  muted_reason TEXT,
+  muted_at TIMESTAMP,
+  muted_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
   -- Profile fields
   first_name VARCHAR(255),
   last_name VARCHAR(255),
@@ -600,3 +609,20 @@ CREATE TABLE IF NOT EXISTS supplier_testimonials (
 CREATE INDEX IF NOT EXISTS idx_supplier_testimonials_supplier ON supplier_testimonials(supplier_id);
 CREATE INDEX IF NOT EXISTS idx_supplier_testimonials_featured ON supplier_testimonials(is_featured) WHERE is_featured = true;
 CREATE INDEX IF NOT EXISTS idx_supplier_testimonials_approved ON supplier_testimonials(is_approved) WHERE is_approved = true;
+
+-- Enforcement Log table (tracks admin enforcement actions)
+CREATE TABLE IF NOT EXISTS enforcement_log (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  admin_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  action_type VARCHAR(50) NOT NULL, -- 'ban', 'unban', 'mute', 'unmute'
+  reason TEXT,
+  duration_minutes INTEGER, -- for mutes
+  expires_at TIMESTAMP, -- for mutes
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_enforcement_log_user ON enforcement_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_enforcement_log_admin ON enforcement_log(admin_id);
+CREATE INDEX IF NOT EXISTS idx_enforcement_log_action ON enforcement_log(action_type);
+CREATE INDEX IF NOT EXISTS idx_enforcement_log_created ON enforcement_log(created_at DESC);
