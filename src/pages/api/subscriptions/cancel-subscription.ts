@@ -69,7 +69,7 @@ export default async function handler(
     // Check if downgrading to a paid tier (Guild or Elite) or free tier (Initiate)
     const isPaidTierDowngrade = newTier === 'Guild' || newTier === 'MIGISTUS';
     
-    let subscription;
+    let subscription: Stripe.Subscription;
     
     if (isPaidTierDowngrade) {
       // Downgrading to a paid tier - switch the subscription to the new price
@@ -84,10 +84,6 @@ export default async function handler(
       
       // Get the current subscription to find the subscription item ID
       const currentSubscription = await stripe.subscriptions.retrieve(subscriptionId);
-      console.log('📊 Retrieved subscription:', {
-        current_period_end: currentSubscription.current_period_end,
-        status: currentSubscription.status
-      });
       const subscriptionItemId = currentSubscription.items.data[0].id;
       
       // Update subscription to new price at the end of the billing period
@@ -99,24 +95,11 @@ export default async function handler(
         proration_behavior: 'none', // No proration, changes at period end
         cancel_at_period_end: false, // Don't cancel, just switch price
       });
-      
-      console.log(`✅ Subscription ${subscriptionId} will switch to ${newTier} at period end:`,
-        subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : 'N/A'
-      );
-      console.log('📊 Updated subscription object:', {
-        current_period_end: subscription.current_period_end,
-        status: subscription.status,
-        cancel_at_period_end: subscription.cancel_at_period_end
-      });
     } else {
       // Downgrading to free tier - cancel the subscription at period end
       subscription = await stripe.subscriptions.update(subscriptionId, {
         cancel_at_period_end: true,
       });
-      
-      console.log(`✅ Subscription ${subscriptionId} will cancel at period end:`,
-        subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : 'N/A'
-      );
     }
 
     // Update subscription status to canceling and set pending tier to target tier
@@ -124,8 +107,8 @@ export default async function handler(
     const updates = {
       tier: newTier,
       stripeSubscriptionStatus: 'canceling',
-      subscriptionCurrentPeriodEnd: subscription.current_period_end 
-        ? new Date(subscription.current_period_end * 1000).toISOString()
+      subscriptionCurrentPeriodEnd: (subscription as any).current_period_end 
+        ? new Date((subscription as any).current_period_end * 1000).toISOString()
         : null,
     };
 
@@ -159,7 +142,7 @@ export default async function handler(
 
     res.status(200).json({ 
       success: true,
-      cancelAt: subscription.cancel_at ?? subscription.current_period_end,
+      cancelAt: (subscription as any).cancel_at ?? (subscription as any).current_period_end,
       message: isPaidTierDowngrade 
         ? `Subscription will switch to ${newTier} at the end of the current billing period`
         : 'Subscription will be canceled at the end of the current billing period',

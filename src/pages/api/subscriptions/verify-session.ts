@@ -78,14 +78,9 @@ export default async function handler(
     
     if (subscriptionId) {
       subscription = await stripe.subscriptions.retrieve(subscriptionId);
-      console.log('📊 Full subscription retrieved:', {
-        id: subscription.id,
-        current_period_end: subscription.current_period_end,
-        status: subscription.status
-      });
       
-      if (subscription.current_period_end) {
-        currentPeriodEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      if ((subscription as any).current_period_end) {
+        currentPeriodEnd = new Date((subscription as any).current_period_end * 1000).toISOString();
       }
     }
     
