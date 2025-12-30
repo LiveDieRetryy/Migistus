@@ -91,6 +91,10 @@ export const db = {
     if (data.emailVerified !== undefined) updateFields.email_verified = data.emailVerified;
     if (data.wallet !== undefined) updateFields.wallet = data.wallet;
     if (data.guildCoins !== undefined) updateFields.guild_coins = data.guildCoins;
+    if (data.stripeCustomerId !== undefined) updateFields.stripe_customer_id = data.stripeCustomerId;
+    if (data.stripeSubscriptionId !== undefined) updateFields.stripe_subscription_id = data.stripeSubscriptionId;
+    if (data.stripeSubscriptionStatus !== undefined) updateFields.stripe_subscription_status = data.stripeSubscriptionStatus;
+    if (data.subscriptionCurrentPeriodEnd !== undefined) updateFields.subscription_current_period_end = data.subscriptionCurrentPeriodEnd;
     
     // If no fields to update, just return the existing user
     if (Object.keys(updateFields).length === 0) {
@@ -113,6 +117,10 @@ export const db = {
         email_verified = COALESCE(${updateFields.email_verified !== undefined ? updateFields.email_verified : null}, email_verified),
         wallet = COALESCE(${updateFields.wallet !== undefined ? updateFields.wallet : null}, wallet),
         guild_coins = COALESCE(${updateFields.guild_coins !== undefined ? updateFields.guild_coins : null}, guild_coins),
+        stripe_customer_id = COALESCE(${updateFields.stripe_customer_id || null}, stripe_customer_id),
+        stripe_subscription_id = COALESCE(${updateFields.stripe_subscription_id || null}, stripe_subscription_id),
+        stripe_subscription_status = COALESCE(${updateFields.stripe_subscription_status || null}, stripe_subscription_status),
+        subscription_current_period_end = COALESCE(${updateFields.subscription_current_period_end || null}, subscription_current_period_end),
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
       RETURNING *
