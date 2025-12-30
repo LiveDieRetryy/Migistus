@@ -77,14 +77,38 @@ export const db = {
   },
 
   async updateUser(id: number, data: any) {
+    // Build update object with only defined fields
+    const updateFields: any = {};
+    
+    if (data.username !== undefined) updateFields.username = data.username;
+    if (data.email !== undefined) updateFields.email = data.email;
+    if (data.tier !== undefined) updateFields.tier = data.tier;
+    if (data.firstName !== undefined) updateFields.first_name = data.firstName;
+    if (data.lastName !== undefined) updateFields.last_name = data.lastName;
+    if (data.banned !== undefined) updateFields.banned = data.banned;
+    if (data.mutedUntil !== undefined) updateFields.muted_until = data.mutedUntil;
+    if (data.isActive !== undefined) updateFields.is_active = data.isActive;
+    if (data.emailVerified !== undefined) updateFields.email_verified = data.emailVerified;
+    
+    // If no fields to update, just return the existing user
+    if (Object.keys(updateFields).length === 0) {
+      const result = await sql`SELECT * FROM users WHERE id = ${id}`;
+      return result.rows[0];
+    }
+    
+    // Use COALESCE to only update fields that are provided
     const result = await sql`
       UPDATE users 
       SET 
-        username = COALESCE(${data.username}, username),
-        email = COALESCE(${data.email}, email),
-        tier = COALESCE(${data.tier}, tier),
-        first_name = COALESCE(${data.firstName}, first_name),
-        last_name = COALESCE(${data.lastName}, last_name),
+        username = COALESCE(${updateFields.username || null}, username),
+        email = COALESCE(${updateFields.email || null}, email),
+        tier = COALESCE(${updateFields.tier || null}, tier),
+        first_name = COALESCE(${updateFields.first_name || null}, first_name),
+        last_name = COALESCE(${updateFields.last_name || null}, last_name),
+        banned = COALESCE(${updateFields.banned !== undefined ? updateFields.banned : null}, banned),
+        muted_until = COALESCE(${updateFields.muted_until || null}, muted_until),
+        is_active = COALESCE(${updateFields.is_active !== undefined ? updateFields.is_active : null}, is_active),
+        email_verified = COALESCE(${updateFields.email_verified !== undefined ? updateFields.email_verified : null}, email_verified),
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
       RETURNING *
