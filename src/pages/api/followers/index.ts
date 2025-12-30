@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getSessionFromRequest } from '@/lib/session';
+import { getSessionFromRequest, isUserOnline as isUserOnlineFile } from '@/lib/session';
+import { db, isProduction } from '@/lib/db';
 import fs from 'fs';
 import path from 'path';
 
@@ -70,6 +71,80 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
+      if (isProduction()) {
+        console.log('🔐 Production mode: Using database for followers');
+        
+        if (type === 'followers') {
+          const followers = await db.getFollowers(parseInt(userId as string));
+          
+          // Get online status for all followers
+          const followersWithStatus = await Promise.all(
+            followers.map(async (f) => ({
+              id: f.id,
+              username: f.username,
+              avatar: f.avatar,
+              online: await db.isUserOnline(f.id, false)
+            }))
+          );
+          
+          return res.status(200).json({ 
+            followers: followersWithStatus, 
+            count: followersWithStatus.length 
+          });
+        } else if (type === 'following') {
+          const following = await db.getFollowing(parseInt(userId as string));
+          
+          // Get online status for all following
+          const followingWithStatus = await Promise.all(
+            following.map(async (f) => ({
+              id: f.id,
+              username: f.username,
+              avatar: f.avatar,
+              online: await db.isUserOnline(f.id, false)
+            }))
+          );
+          
+          return res.status(200).json({ 
+            following: followingWithStatus, 
+            count: followingWithStatus.length 
+          });
+        } else {
+          // Get both
+          const [followers, following] = await Promise.all([
+            db.getFollowers(parseInt(userId as string)),
+            db.getFollowing(parseInt(userId as string))
+          ]);
+          
+          // Get online status for all
+          const [followersWithStatus, followingWithStatus] = await Promise.all([
+            Promise.all(
+              followers.map(async (f) => ({
+                id: f.id,
+                username: f.username,
+                avatar: f.avatar,
+                online: await db.isUserOnline(f.id, false)
+              }))
+            ),
+            Promise.all(
+              following.map(async (f) => ({
+                id: f.id,
+                username: f.username,
+                avatar: f.avatar,
+                online: await db.isUserOnline(f.id, false)
+              }))
+            )
+          ]);
+          
+          return res.status(200).json({
+            followers: followersWithStatus,
+            following: followingWithStatus,
+            followersCount: followersWithStatus.length,
+            followingCount: followingWithStatus.length
+          });
+        }
+      }
+      
+      // Development: Use file-based storage
       const followData = readFollowers();
       const users = readUsers();
       
@@ -86,7 +161,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             id: user.id,
             username: user.username,
             avatar: user.avatar,
-            online: false // TODO: Implement online status tracking
+            online: isUserOnlineFile(user.id)
           } : null;
         }).filter(Boolean);
         
@@ -104,7 +179,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             id: user.id,
             username: user.username,
             avatar: user.avatar,
-            online: false // TODO: Implement online status tracking
+            online: isUserOnlineFile(user.id)
           } : null;
         }).filter(Boolean);
         
@@ -145,6 +220,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
+      if (isProduction()) {
+        console.log('🔐 Production mode: Using database for follow/unfollow');
+        
+        if (action === 'follow') {
+          await db.followUser(followerId, followingId);
+          console.log(`✅ User ${followerId} followed user ${followingId}`);
+          return res.status(200).json({ 
+            success: true, 
+            message: 'Successfully followed user'
+          });
+        } else if (action === 'unfollow') {
+          await db.unfollowUser(followerId, followingId);
+          console.log(`✅ User ${followerId} unfollowed user ${followingId}`);
+          return res.status(200).json({ 
+            success: true, 
+            message: 'Successfully unfollowed user'
+          });
+        } else {
+          return res.status(400).json({ error: 'Invalid action. Use "follow" or "unfollow"' });
+        }
+      }
+      
+      // Development: Use file-based storage
       const followData = readFollowers();
       const existingFollowIndex = followData.findIndex(
         (follow: FollowData) => follow.followerId === followerId && follow.followingId === followingId

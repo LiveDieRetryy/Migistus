@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { db, isProduction } from '@/lib/db';
 
 const SETTINGS_PATH = path.resolve('public/data/admin-settings.json');
 
@@ -73,13 +74,28 @@ function ensureSettingsFile() {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  ensureSettingsFile();
+  const useProduction = isProduction();
 
   if (req.method === 'GET') {
     try {
-      const fileContent = fs.readFileSync(SETTINGS_PATH, 'utf-8');
-      const settings = JSON.parse(fileContent);
-      res.status(200).json(settings);
+      if (useProduction) {
+        // Use database in production
+        const settings = await db.getAdminSettings();
+        
+        // If no settings exist, initialize defaults
+        if (Object.keys(settings.site).length === 0) {
+          const defaultSettings = await db.initializeDefaultAdminSettings();
+          return res.status(200).json(defaultSettings);
+        }
+        
+        return res.status(200).json(settings);
+      } else {
+        // Use file system in development
+        ensureSettingsFile();
+        const fileContent = fs.readFileSync(SETTINGS_PATH, 'utf-8');
+        const settings = JSON.parse(fileContent);
+        return res.status(200).json(settings);
+      }
     } catch (error) {
       console.error('Error reading settings:', error);
       res.status(500).json({ error: 'Failed to read settings' });
@@ -88,44 +104,58 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const newSettings = req.body;
       
-      // Validate required fields (check new structure)
+      // Validate required fields
       if (!newSettings.site?.siteName) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      // Read existing settings and merge deeply
-      let existingSettings: any = {};
-      try {
-        const fileContent = fs.readFileSync(SETTINGS_PATH, 'utf-8');
-        existingSettings = JSON.parse(fileContent);
-      } catch (error) {
-        // If file doesn't exist or can't be read, start with empty object
+      if (useProduction) {
+        // Use database in production
+        const updatedSettings = await db.updateAdminSettings(newSettings);
+        
+        return res.status(200).json({ 
+          success: true, 
+          message: 'Settings saved successfully',
+          settings: updatedSettings 
+        });
+      } else {
+        // Use file system in development
+        ensureSettingsFile();
+        
+        // Read existing settings and merge deeply
+        let existingSettings: any = {};
+        try {
+          const fileContent = fs.readFileSync(SETTINGS_PATH, 'utf-8');
+          existingSettings = JSON.parse(fileContent);
+        } catch (error) {
+          // If file doesn't exist or can't be read, start with empty object
+        }
+
+        // Deep merge settings by category
+        const mergedSettings = {
+          site: { ...existingSettings.site, ...newSettings.site },
+          voting: { 
+            ...existingSettings.voting, 
+            ...newSettings.voting,
+            tierMultipliers: {
+              ...existingSettings.voting?.tierMultipliers,
+              ...newSettings.voting?.tierMultipliers
+            }
+          },
+          drops: { ...existingSettings.drops, ...newSettings.drops },
+          features: { ...existingSettings.features, ...newSettings.features },
+          security: { ...existingSettings.security, ...newSettings.security },
+          updatedAt: new Date().toISOString()
+        };
+
+        fs.writeFileSync(SETTINGS_PATH, JSON.stringify(mergedSettings, null, 2));
+        
+        return res.status(200).json({ 
+          success: true, 
+          message: 'Settings saved successfully',
+          settings: mergedSettings 
+        });
       }
-
-      // Deep merge settings by category
-      const mergedSettings = {
-        site: { ...existingSettings.site, ...newSettings.site },
-        voting: { 
-          ...existingSettings.voting, 
-          ...newSettings.voting,
-          tierMultipliers: {
-            ...existingSettings.voting?.tierMultipliers,
-            ...newSettings.voting?.tierMultipliers
-          }
-        },
-        drops: { ...existingSettings.drops, ...newSettings.drops },
-        features: { ...existingSettings.features, ...newSettings.features },
-        security: { ...existingSettings.security, ...newSettings.security },
-        updatedAt: new Date().toISOString()
-      };
-
-      fs.writeFileSync(SETTINGS_PATH, JSON.stringify(mergedSettings, null, 2));
-      
-      res.status(200).json({ 
-        success: true, 
-        message: 'Settings saved successfully',
-        settings: mergedSettings 
-      });
     } catch (error) {
       console.error('Error saving settings:', error);
       res.status(500).json({ error: 'Failed to save settings' });

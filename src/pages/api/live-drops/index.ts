@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { db, isProduction } from '@/lib/db';
 
 const LIVE_DROPS_PATH = path.resolve('public/data/live-drops.json');
 
@@ -75,17 +76,29 @@ function calculateStats(liveDrops: any[]) {
   };
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const data = readLiveDropsData();
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const useProduction = isProduction();
 
+  try {
     if (req.method === 'GET') {
-      // Calculate fresh stats
-      const stats = calculateStats(data.liveDrops);
-      data.stats = stats;
-      writeLiveDropsData(data);
-      
-      return res.status(200).json(data);
+      if (useProduction) {
+        // Use database in production
+        const liveDrops = await db.getAllLiveDrops();
+        const stats = await db.getLiveDropStats();
+        
+        return res.status(200).json({
+          liveDrops,
+          stats
+        });
+      } else {
+        // Use file system in development
+        const data = readLiveDropsData();
+        const stats = calculateStats(data.liveDrops);
+        data.stats = stats;
+        writeLiveDropsData(data);
+        
+        return res.status(200).json(data);
+      }
     }
 
     if (req.method === 'POST') {
@@ -95,61 +108,105 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      const newLiveDrop = {
-        id: Date.now().toString(),
-        productId,
-        productName,
-        status: 'scheduled',
-        startTime,
-        endTime: new Date(Date.now() + (parseInt(duration || '24') * 60 * 60 * 1000)).toISOString(),
-        participants: 0,
-        pledgeGoal: parseInt(pledgeGoal),
-        currentPledges: 0,
-        createdAt: new Date().toISOString()
-      };
+      if (useProduction) {
+        // Use database in production
+        const newLiveDrop = await db.createLiveDrop({
+          productId: parseInt(productId),
+          productName,
+          pledgeGoal: parseFloat(pledgeGoal),
+          startTime,
+          durationHours: parseInt(duration || '24')
+        });
+        
+        return res.status(201).json(newLiveDrop);
+      } else {
+        // Use file system in development
+        const data = readLiveDropsData();
+        
+        const newLiveDrop = {
+          id: Date.now().toString(),
+          productId,
+          productName,
+          status: 'scheduled',
+          startTime,
+          endTime: new Date(Date.now() + (parseInt(duration || '24') * 60 * 60 * 1000)).toISOString(),
+          participants: 0,
+          pledgeGoal: parseInt(pledgeGoal),
+          currentPledges: 0,
+          createdAt: new Date().toISOString()
+        };
 
-      data.liveDrops.push(newLiveDrop);
-      data.stats = calculateStats(data.liveDrops);
-      writeLiveDropsData(data);
+        data.liveDrops.push(newLiveDrop);
+        data.stats = calculateStats(data.liveDrops);
+        writeLiveDropsData(data);
 
-      return res.status(201).json(newLiveDrop);
+        return res.status(201).json(newLiveDrop);
+      }
     }
 
     if (req.method === 'PUT') {
       const { id, status } = req.body;
       
-      const dropIndex = data.liveDrops.findIndex((drop: any) => drop.id === id);
-      if (dropIndex === -1) {
-        return res.status(404).json({ error: 'Live drop not found' });
-      }
+      if (useProduction) {
+        // Use database in production
+        const updates: any = { status };
+        
+        if (status === 'ended') {
+          updates.endTime = new Date().toISOString();
+        }
+        
+        const updatedDrop = await db.updateLiveDrop(parseInt(id), updates);
+        
+        if (!updatedDrop) {
+          return res.status(404).json({ error: 'Live drop not found' });
+        }
+        
+        return res.status(200).json(updatedDrop);
+      } else {
+        // Use file system in development
+        const data = readLiveDropsData();
+        const dropIndex = data.liveDrops.findIndex((drop: any) => drop.id === id);
+        
+        if (dropIndex === -1) {
+          return res.status(404).json({ error: 'Live drop not found' });
+        }
 
-      data.liveDrops[dropIndex].status = status;
-      if (status === 'active') {
-        data.liveDrops[dropIndex].startTime = new Date().toISOString();
-      }
-      if (status === 'ended') {
-        data.liveDrops[dropIndex].endTime = new Date().toISOString();
-      }
+        data.liveDrops[dropIndex].status = status;
+        if (status === 'active') {
+          data.liveDrops[dropIndex].startTime = new Date().toISOString();
+        }
+        if (status === 'ended') {
+          data.liveDrops[dropIndex].endTime = new Date().toISOString();
+        }
 
-      data.stats = calculateStats(data.liveDrops);
-      writeLiveDropsData(data);
+        data.stats = calculateStats(data.liveDrops);
+        writeLiveDropsData(data);
 
-      return res.status(200).json(data.liveDrops[dropIndex]);
+        return res.status(200).json(data.liveDrops[dropIndex]);
+      }
     }
 
     if (req.method === 'DELETE') {
       const { id } = req.query;
       
-      data.liveDrops = data.liveDrops.filter((drop: any) => drop.id !== id);
-      data.stats = calculateStats(data.liveDrops);
-      writeLiveDropsData(data);
+      if (useProduction) {
+        // Use database in production
+        await db.deleteLiveDrop(parseInt(id as string));
+        return res.status(200).json({ message: 'Live drop deleted successfully' });
+      } else {
+        // Use file system in development
+        const data = readLiveDropsData();
+        data.liveDrops = data.liveDrops.filter((drop: any) => drop.id !== id);
+        data.stats = calculateStats(data.liveDrops);
+        writeLiveDropsData(data);
 
-      return res.status(200).json({ message: 'Live drop deleted successfully' });
+        return res.status(200).json({ message: 'Live drop deleted successfully' });
+      }
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
-    console.error('Live drops API error:', error);
+    console.error('Error in live-drops API:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }

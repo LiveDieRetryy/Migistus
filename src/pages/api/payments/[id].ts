@@ -71,6 +71,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Create refund
       const refund = await paymentStorage.createRefund({
         transactionId,
+        userId: session.userId,
         amount: refundAmount,
         reason: reason || 'Customer requested refund',
         status: 'pending'

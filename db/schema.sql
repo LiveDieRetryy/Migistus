@@ -300,6 +300,34 @@ CREATE TABLE IF NOT EXISTS order_items (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Conversations (Direct Messaging)
+CREATE TABLE IF NOT EXISTS conversations (
+  id SERIAL PRIMARY KEY,
+  user1_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user2_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  last_message TEXT,
+  last_message_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status VARCHAR(50) DEFAULT 'accepted', -- accepted, pending, ignored
+  initiated_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT different_users CHECK (user1_id != user2_id),
+  CONSTRAINT ordered_users UNIQUE (LEAST(user1_id, user2_id), GREATEST(user1_id, user2_id))
+);
+
+-- Direct Messages
+CREATE TABLE IF NOT EXISTS direct_messages (
+  id SERIAL PRIMARY KEY,
+  conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+  sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  read BOOLEAN DEFAULT false,
+  deleted_for INTEGER[] DEFAULT ARRAY[]::integer[], -- Array of user IDs who deleted this message
+  reactions JSONB DEFAULT '[]', -- Array of reactions with userId and emoji
+  reply_to_id INTEGER REFERENCES direct_messages(id), -- For threaded replies
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
@@ -337,4 +365,238 @@ CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_order_number ON orders(order_number);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
-CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);CREATE INDEX IF NOT EXISTS idx_conversations_user1 ON conversations(user1_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_user2 ON conversations(user2_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_last_message_at ON conversations(last_message_at DESC);
+CREATE INDEX IF NOT EXISTS idx_conversations_status ON conversations(status);
+CREATE INDEX IF NOT EXISTS idx_direct_messages_conversation ON direct_messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_direct_messages_sender ON direct_messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_direct_messages_created_at ON direct_messages(created_at);
+CREATE INDEX IF NOT EXISTS idx_direct_messages_read ON direct_messages(read) WHERE read = false;
+
+-- Admin Settings table
+CREATE TABLE IF NOT EXISTS admin_settings (
+  id SERIAL PRIMARY KEY,
+  category VARCHAR(50) NOT NULL,
+  key VARCHAR(100) NOT NULL,
+  value JSONB NOT NULL,
+  updated_by INTEGER REFERENCES users(id),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(category, key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_settings_category ON admin_settings(category);
+CREATE INDEX IF NOT EXISTS idx_admin_settings_category_key ON admin_settings(category, key);
+
+-- Refunds table
+CREATE TABLE IF NOT EXISTS refunds (
+  id SERIAL PRIMARY KEY,
+  order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  amount DECIMAL(10,2) NOT NULL,
+  reason VARCHAR(50) NOT NULL,
+  description TEXT,
+  status VARCHAR(20) DEFAULT 'pending',
+  requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  reviewed_by INTEGER REFERENCES users(id),
+  reviewed_at TIMESTAMP,
+  reviewer_notes TEXT,
+  processed_at TIMESTAMP,
+  refund_method VARCHAR(50),
+  refund_reference VARCHAR(255)
+);
+
+CREATE INDEX IF NOT EXISTS idx_refunds_order ON refunds(order_id);
+CREATE INDEX IF NOT EXISTS idx_refunds_user ON refunds(user_id);
+CREATE INDEX IF NOT EXISTS idx_refunds_status ON refunds(status);
+CREATE INDEX IF NOT EXISTS idx_refunds_requested_at ON refunds(requested_at DESC);
+
+-- Reports table
+CREATE TABLE IF NOT EXISTS reports (
+  id SERIAL PRIMARY KEY,
+  reporter_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  reported_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  reported_content_type VARCHAR(50),
+  reported_content_id INTEGER,
+  reason VARCHAR(50) NOT NULL,
+  description TEXT,
+  status VARCHAR(20) DEFAULT 'pending',
+  reviewed_by INTEGER REFERENCES users(id),
+  reviewer_notes TEXT,
+  action_taken VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  reviewed_at TIMESTAMP,
+  resolved_at TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status);
+CREATE INDEX IF NOT EXISTS idx_reports_reporter ON reports(reporter_id);
+CREATE INDEX IF NOT EXISTS idx_reports_reported_user ON reports(reported_user_id);
+CREATE INDEX IF NOT EXISTS idx_reports_created_at ON reports(created_at DESC);
+
+-- Moderation Actions table
+CREATE TABLE IF NOT EXISTS moderation_actions (
+  id SERIAL PRIMARY KEY,
+  report_id INTEGER REFERENCES reports(id) ON DELETE CASCADE,
+  moderator_id INTEGER REFERENCES users(id),
+  action_type VARCHAR(50),
+  duration INTERVAL,
+  reason TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_moderation_actions_report ON moderation_actions(report_id);
+CREATE INDEX IF NOT EXISTS idx_moderation_actions_moderator ON moderation_actions(moderator_id);
+
+-- Live Drops table
+CREATE TABLE IF NOT EXISTS live_drops (
+  id SERIAL PRIMARY KEY,
+  product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+  product_name VARCHAR(255) NOT NULL,
+  pledge_goal DECIMAL(10,2) NOT NULL,
+  current_pledges DECIMAL(10,2) DEFAULT 0,
+  participants_count INTEGER DEFAULT 0,
+  status VARCHAR(20) DEFAULT 'scheduled',
+  start_time TIMESTAMP NOT NULL,
+  end_time TIMESTAMP,
+  duration_hours INTEGER DEFAULT 24,
+  created_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  started_at TIMESTAMP,
+  ended_at TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_live_drops_product ON live_drops(product_id);
+CREATE INDEX IF NOT EXISTS idx_live_drops_status ON live_drops(status);
+CREATE INDEX IF NOT EXISTS idx_live_drops_start_time ON live_drops(start_time);
+
+-- Live Drop Participants table
+CREATE TABLE IF NOT EXISTS live_drop_participants (
+  id SERIAL PRIMARY KEY,
+  drop_id INTEGER REFERENCES live_drops(id) ON DELETE CASCADE,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  pledge_amount DECIMAL(10,2) NOT NULL,
+  joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(drop_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_live_drop_participants_drop ON live_drop_participants(drop_id);
+CREATE INDEX IF NOT EXISTS idx_live_drop_participants_user ON live_drop_participants(user_id);
+
+-- Voting Configuration table (tier-based limits and multipliers)
+CREATE TABLE IF NOT EXISTS voting_config (
+  id SERIAL PRIMARY KEY,
+  tier VARCHAR(50) NOT NULL UNIQUE,
+  daily_vote_limit INTEGER NOT NULL,
+  vote_multiplier INTEGER NOT NULL,
+  updated_by INTEGER REFERENCES users(id),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Voting Settings table (global voting rules)
+CREATE TABLE IF NOT EXISTS voting_settings (
+  key VARCHAR(100) PRIMARY KEY,
+  value JSONB NOT NULL,
+  description TEXT,
+  updated_by INTEGER REFERENCES users(id),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_voting_config_tier ON voting_config(tier);
+
+-- Tier Benefits table
+CREATE TABLE IF NOT EXISTS tier_benefits (
+  id SERIAL PRIMARY KEY,
+  tier VARCHAR(50) NOT NULL,
+  benefit_type VARCHAR(50) NOT NULL,
+  benefit_key VARCHAR(100) NOT NULL,
+  benefit_value JSONB NOT NULL,
+  display_order INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  updated_by INTEGER REFERENCES users(id),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(tier, benefit_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_tier_benefits_tier ON tier_benefits(tier);
+CREATE INDEX IF NOT EXISTS idx_tier_benefits_type ON tier_benefits(benefit_type);
+CREATE INDEX IF NOT EXISTS idx_tier_benefits_active ON tier_benefits(is_active) WHERE is_active = true;
+-- Analytics Events table (tracks all user interactions)
+CREATE TABLE IF NOT EXISTS analytics_events (
+  id SERIAL PRIMARY KEY,
+  event_type VARCHAR(50) NOT NULL,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  session_id VARCHAR(100),
+  product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+  supplier_id INTEGER,
+  page_url TEXT,
+  referrer TEXT,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  user_agent TEXT,
+  ip_address VARCHAR(45),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_analytics_events_type ON analytics_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_user ON analytics_events(user_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_session ON analytics_events(session_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_product ON analytics_events(product_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_supplier ON analytics_events(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_events_created ON analytics_events(created_at DESC);
+
+-- Analytics Aggregates table (pre-computed metrics for performance)
+CREATE TABLE IF NOT EXISTS analytics_aggregates (
+  id SERIAL PRIMARY KEY,
+  aggregate_type VARCHAR(50) NOT NULL,
+  entity_type VARCHAR(50) NOT NULL,
+  entity_id INTEGER NOT NULL,
+  time_period VARCHAR(20) NOT NULL,
+  period_start TIMESTAMP NOT NULL,
+  period_end TIMESTAMP NOT NULL,
+  metrics JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(aggregate_type, entity_type, entity_id, time_period, period_start)
+);
+
+CREATE INDEX IF NOT EXISTS idx_analytics_aggregates_type ON analytics_aggregates(aggregate_type);
+CREATE INDEX IF NOT EXISTS idx_analytics_aggregates_entity ON analytics_aggregates(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_aggregates_period ON analytics_aggregates(time_period, period_start);
+CREATE INDEX IF NOT EXISTS idx_analytics_aggregates_updated ON analytics_aggregates(updated_at DESC);
+
+-- User Sessions table (tracks active user sessions)
+CREATE TABLE IF NOT EXISTS user_sessions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  session_id VARCHAR(100) UNIQUE NOT NULL,
+  login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  current_page TEXT,
+  user_agent TEXT,
+  ip_address VARCHAR(45),
+  is_active BOOLEAN DEFAULT true,
+  logout_time TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_session ON user_sessions(session_id);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_active ON user_sessions(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON user_sessions(last_activity DESC);
+
+-- Supplier Testimonials table
+CREATE TABLE IF NOT EXISTS supplier_testimonials (
+  id SERIAL PRIMARY KEY,
+  supplier_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  customer_name VARCHAR(255) NOT NULL,
+  customer_company VARCHAR(255),
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+  testimonial_text TEXT NOT NULL,
+  is_featured BOOLEAN DEFAULT false,
+  is_approved BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_supplier_testimonials_supplier ON supplier_testimonials(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_supplier_testimonials_featured ON supplier_testimonials(is_featured) WHERE is_featured = true;
+CREATE INDEX IF NOT EXISTS idx_supplier_testimonials_approved ON supplier_testimonials(is_approved) WHERE is_approved = true;

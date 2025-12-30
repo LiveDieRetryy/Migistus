@@ -2,6 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
+import { db, isProduction } from '@/lib/db';
 
 interface TrackingEvent {
   id: string;
@@ -27,7 +28,7 @@ interface SupplierMetrics {
   totalShares: number;
   totalLikes: number;
   uniqueUsers: number;
-  recentActivity: TrackingEvent[];
+  recentActivity: any[];
   hourlyData: { hour: number; views: number; interactions: number }[];
   topProducts: { productId: string; views: number; votes: number; pledges: number }[];
 }
@@ -121,49 +122,178 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
+  const useProduction = isProduction();
+
   try {
     const { supplierId, type } = req.query;
 
-    if (supplierId && typeof supplierId === 'string') {
-      // Get metrics for specific supplier
-      const metrics = calculateSupplierMetrics(supplierId);
-      return res.status(200).json(metrics);
-    }    if (type === 'summary') {
-      // Get summary of all suppliers
-      const trackingData = getTrackingData();
-      const supplierIds = Array.from(new Set(trackingData.events.map(e => e.supplierId).filter(Boolean)));
+    if (useProduction) {
+      // ============================================
+      // PRODUCTION: Use database
+      // ============================================
       
-      const summary = supplierIds.map(id => {
-        const metrics = calculateSupplierMetrics(id!);
-        return {
-          supplierId: id,
-          totalViews: metrics.totalViews,
-          totalVotes: metrics.totalVotes,
-          totalPledges: metrics.totalPledges,
-          totalFollows: metrics.totalFollows,
-          uniqueUsers: metrics.uniqueUsers
+      if (supplierId && typeof supplierId === 'string') {
+        // Get metrics for specific supplier
+        const supplierIdNum = parseInt(supplierId);
+        const now = new Date();
+        const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+        // Get basic event stats
+        const stats = await db.getEventStats({
+          supplierId: supplierIdNum,
+          startDate: dayAgo.toISOString()
+        });
+
+        // Get recent events
+        const recentEvents = await db.getAnalyticsEvents({
+          supplierId: supplierIdNum,
+          limit: 50
+        });
+
+        // Transform stats into metrics format
+        const metrics: any = {
+          supplierId,
+          totalViews: 0,
+          totalVotes: 0,
+          totalPledges: 0,
+          totalFollows: 0,
+          totalShares: 0,
+          totalLikes: 0,
+          uniqueUsers: 0,
+          recentActivity: recentEvents
         };
-      });
-      
-      return res.status(200).json(summary);
-    }
 
-    // Get general tracking stats
-    const trackingData = getTrackingData();
-    const stats = {
-      totalEvents: trackingData.events.length,
-      lastUpdated: trackingData.lastUpdated,
-      eventTypes: {
-        views: trackingData.events.filter(e => e.type === 'view').length,
-        votes: trackingData.events.filter(e => e.type === 'vote').length,
-        pledges: trackingData.events.filter(e => e.type === 'pledge').length,
-        follows: trackingData.events.filter(e => e.type === 'follow').length,
-        shares: trackingData.events.filter(e => e.type === 'share').length,
-        likes: trackingData.events.filter(e => e.type === 'like').length,
+        stats.forEach((stat: any) => {
+          if (stat.event_type === 'view') metrics.totalViews = stat.count;
+          else if (stat.event_type === 'vote') metrics.totalVotes = stat.count;
+          else if (stat.event_type === 'pledge') metrics.totalPledges = stat.count;
+          else if (stat.event_type === 'follow') metrics.totalFollows = stat.count;
+          else if (stat.event_type === 'share') metrics.totalShares = stat.count;
+          else if (stat.event_type === 'like') metrics.totalLikes = stat.count;
+          
+          metrics.uniqueUsers = Math.max(metrics.uniqueUsers, stat.unique_users);
+        });
+
+        return res.status(200).json(metrics);
       }
-    };
 
-    res.status(200).json(stats);
+      if (type === 'summary') {
+        // Get summary of all suppliers
+        const stats = await db.getEventStats({});
+        
+        // Group by supplier
+        const supplierMap = new Map();
+        
+        const allEvents = await db.getAnalyticsEvents({ limit: 10000 });
+        allEvents.forEach((event: any) => {
+          if (event.supplier_id) {
+            if (!supplierMap.has(event.supplier_id)) {
+              supplierMap.set(event.supplier_id, {
+                supplierId: event.supplier_id,
+                totalViews: 0,
+                totalVotes: 0,
+                totalPledges: 0,
+                totalFollows: 0,
+                uniqueUsers: new Set()
+              });
+            }
+            const data = supplierMap.get(event.supplier_id);
+            if (event.event_type === 'view') data.totalViews++;
+            else if (event.event_type === 'vote') data.totalVotes++;
+            else if (event.event_type === 'pledge') data.totalPledges++;
+            else if (event.event_type === 'follow') data.totalFollows++;
+            if (event.user_id) data.uniqueUsers.add(event.user_id);
+          }
+        });
+
+        const summary = Array.from(supplierMap.values()).map(data => ({
+          supplierId: data.supplierId,
+          totalViews: data.totalViews,
+          totalVotes: data.totalVotes,
+          totalPledges: data.totalPledges,
+          totalFollows: data.totalFollows,
+          uniqueUsers: data.uniqueUsers.size
+        }));
+
+        return res.status(200).json(summary);
+      }
+
+      // Get general tracking stats
+      const stats = await db.getEventStats({});
+      const totalEvents = stats.reduce((sum: number, stat: any) => sum + stat.count, 0);
+      
+      const eventTypes = {
+        views: 0,
+        votes: 0,
+        pledges: 0,
+        follows: 0,
+        shares: 0,
+        likes: 0
+      };
+
+      stats.forEach((stat: any) => {
+        if (stat.event_type === 'view') eventTypes.views = stat.count;
+        else if (stat.event_type === 'vote') eventTypes.votes = stat.count;
+        else if (stat.event_type === 'pledge') eventTypes.pledges = stat.count;
+        else if (stat.event_type === 'follow') eventTypes.follows = stat.count;
+        else if (stat.event_type === 'share') eventTypes.shares = stat.count;
+        else if (stat.event_type === 'like') eventTypes.likes = stat.count;
+      });
+
+      return res.status(200).json({
+        totalEvents,
+        lastUpdated: Date.now(),
+        eventTypes
+      });
+
+    } else {
+      // ============================================
+      // DEVELOPMENT: Use file system (legacy)
+      // ============================================
+      
+      if (supplierId && typeof supplierId === 'string') {
+        // Get metrics for specific supplier
+        const metrics = calculateSupplierMetrics(supplierId);
+        return res.status(200).json(metrics);
+      }
+
+      if (type === 'summary') {
+        // Get summary of all suppliers
+        const trackingData = getTrackingData();
+        const supplierIds = Array.from(new Set(trackingData.events.map(e => e.supplierId).filter(Boolean)));
+        
+        const summary = supplierIds.map(id => {
+          const metrics = calculateSupplierMetrics(id!);
+          return {
+            supplierId: id,
+            totalViews: metrics.totalViews,
+            totalVotes: metrics.totalVotes,
+            totalPledges: metrics.totalPledges,
+            totalFollows: metrics.totalFollows,
+            uniqueUsers: metrics.uniqueUsers
+          };
+        });
+        
+        return res.status(200).json(summary);
+      }
+
+      // Get general tracking stats
+      const trackingData = getTrackingData();
+      const stats = {
+        totalEvents: trackingData.events.length,
+        lastUpdated: trackingData.lastUpdated,
+        eventTypes: {
+          views: trackingData.events.filter(e => e.type === 'view').length,
+          votes: trackingData.events.filter(e => e.type === 'vote').length,
+          pledges: trackingData.events.filter(e => e.type === 'pledge').length,
+          follows: trackingData.events.filter(e => e.type === 'follow').length,
+          shares: trackingData.events.filter(e => e.type === 'share').length,
+          likes: trackingData.events.filter(e => e.type === 'like').length,
+        }
+      };
+
+      return res.status(200).json(stats);
+    }
   } catch (error) {
     console.error('Error getting tracking analytics:', error);
     res.status(500).json({ message: 'Internal server error' });

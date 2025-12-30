@@ -193,12 +193,23 @@ class DatabasePaymentStorage {
 
   // Refunds
   async createRefund(data: {
-    transactionId: number;
+    orderId?: number;
+    transactionId?: number; // Deprecated - use orderId
+    userId: number;
     amount: number;
-    reason?: string;
+    reason: string;
+    description?: string;
     status?: string;
   }) {
-    return await db.createRefund(data);
+    // Support legacy transactionId parameter
+    const refundData = {
+      orderId: data.orderId || data.transactionId,
+      userId: data.userId,
+      amount: data.amount,
+      reason: data.reason,
+      description: data.description
+    };
+    return await db.createRefund(refundData);
   }
 
   async getRefund(id: number) {

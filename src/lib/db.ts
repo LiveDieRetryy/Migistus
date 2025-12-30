@@ -862,7 +862,7 @@ export const db = {
     return result.rows[0];
   },
 
-  async getAnalyticsEvents(limit: number = 1000, offset: number = 0) {
+  async getAnalyticsEventsSimple(limit: number = 1000, offset: number = 0) {
     const result = await sql`
       SELECT * FROM analytics_events
       ORDER BY created_at DESC
@@ -1291,7 +1291,7 @@ export const db = {
     await sql`DELETE FROM realtime_sessions WHERE socket_id = ${socketId}`;
   },
 
-  async getActiveSessions(userId?: number) {
+  async getActiveRealtimeSessions(userId?: number) {
     const cutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // 5 minutes
     
     if (userId) {
@@ -1614,6 +1614,29 @@ export const db = {
 
     const result = await sql.query(query, values);
     return result.rows[0] || null;
+  },
+
+  async getUsersWithMarketingOptIn() {
+    // Get total users count
+    const totalResult = await sql`SELECT COUNT(*)::int as count FROM users`;
+    const totalUsers = totalResult.rows[0].count;
+    
+    // Get users with marketing opt-in
+    const result = await sql`
+      SELECT 
+        u.id, u.username, u.email, u.first_name, u.last_name, u.tier, u.created_at,
+        s.email_notifications, s.marketing_emails
+      FROM users u
+      LEFT JOIN user_settings s ON u.id = s.user_id
+      WHERE s.marketing_emails = true
+      ORDER BY u.created_at DESC
+    `;
+    
+    return {
+      totalUsers,
+      optInUsers: result.rows.length,
+      users: result.rows
+    };
   },
 
   // Follows/Followers
@@ -2185,6 +2208,131 @@ export const db = {
     `;
 
     const result = await sql.query(query, values);
+    return result.rows[0] || null;
+  },
+
+  // Supplier Testimonials
+  async createSupplierTestimonial(data: {
+    supplierId: number;
+    customerName: string;
+    customerCompany?: string;
+    rating: number;
+    testimonialText: string;
+    isFeatured?: boolean;
+    isApproved?: boolean;
+  }) {
+    const result = await sql`
+      INSERT INTO supplier_testimonials (
+        supplier_id, customer_name, customer_company, rating, 
+        testimonial_text, is_featured, is_approved
+      )
+      VALUES (
+        ${data.supplierId},
+        ${data.customerName},
+        ${data.customerCompany || null},
+        ${data.rating},
+        ${data.testimonialText},
+        ${data.isFeatured || false},
+        ${data.isApproved || true}
+      )
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async getSupplierTestimonials(supplierId?: number, approvedOnly: boolean = true) {
+    if (supplierId) {
+      const query = approvedOnly
+        ? sql`
+            SELECT * FROM supplier_testimonials 
+            WHERE supplier_id = ${supplierId} AND is_approved = true
+            ORDER BY created_at DESC
+          `
+        : sql`
+            SELECT * FROM supplier_testimonials 
+            WHERE supplier_id = ${supplierId}
+            ORDER BY created_at DESC
+          `;
+      const result = await query;
+      return result.rows;
+    } else {
+      const query = approvedOnly
+        ? sql`
+            SELECT * FROM supplier_testimonials 
+            WHERE is_approved = true
+            ORDER BY created_at DESC
+          `
+        : sql`SELECT * FROM supplier_testimonials ORDER BY created_at DESC`;
+      const result = await query;
+      return result.rows;
+    }
+  },
+
+  async getSupplierTestimonial(id: number) {
+    const result = await sql`
+      SELECT * FROM supplier_testimonials WHERE id = ${id}
+    `;
+    return result.rows[0] || null;
+  },
+
+  async updateSupplierTestimonial(id: number, data: {
+    customerName?: string;
+    customerCompany?: string;
+    rating?: number;
+    testimonialText?: string;
+    isFeatured?: boolean;
+    isApproved?: boolean;
+  }) {
+    const updates: string[] = [];
+    const values: any[] = [id];
+    
+    if (data.customerName !== undefined) {
+      values.push(data.customerName);
+      updates.push('customer_name = $' + values.length);
+    }
+    if (data.customerCompany !== undefined) {
+      values.push(data.customerCompany);
+      updates.push('customer_company = $' + values.length);
+    }
+    if (data.rating !== undefined) {
+      values.push(data.rating);
+      updates.push('rating = $' + values.length);
+    }
+    if (data.testimonialText !== undefined) {
+      values.push(data.testimonialText);
+      updates.push('testimonial_text = $' + values.length);
+    }
+    if (data.isFeatured !== undefined) {
+      values.push(data.isFeatured);
+      updates.push('is_featured = $' + values.length);
+    }
+    if (data.isApproved !== undefined) {
+      values.push(data.isApproved);
+      updates.push('is_approved = $' + values.length);
+    }
+    
+    if (updates.length === 0) {
+      return this.getSupplierTestimonial(id);
+    }
+    
+    updates.push('updated_at = CURRENT_TIMESTAMP');
+    
+    const query = `
+      UPDATE supplier_testimonials 
+      SET ${updates.join(', ')}
+      WHERE id = $1
+      RETURNING *
+    `;
+    
+    const result = await sql.query(query, values);
+    return result.rows[0] || null;
+  },
+
+  async deleteSupplierTestimonial(id: number) {
+    const result = await sql`
+      DELETE FROM supplier_testimonials WHERE id = ${id}
+      RETURNING *
+    `;
     return result.rows[0] || null;
   },
 
@@ -3699,18 +3847,82 @@ export const db = {
   },
 
   // Refunds
+  async getAllRefunds() {
+    const result = await sql`
+      SELECT 
+        r.*,
+        u.username,
+        u.email,
+        o.order_number,
+        reviewer.username as reviewer_username
+      FROM refunds r
+      LEFT JOIN users u ON r.user_id = u.id
+      LEFT JOIN orders o ON r.order_id = o.id
+      LEFT JOIN users reviewer ON r.reviewed_by = reviewer.id
+      ORDER BY r.requested_at DESC
+    `;
+    return result.rows;
+  },
+
+  async getRefundById(id: number) {
+    const result = await sql`
+      SELECT 
+        r.*,
+        u.username,
+        u.email,
+        o.order_number,
+        reviewer.username as reviewer_username
+      FROM refunds r
+      LEFT JOIN users u ON r.user_id = u.id
+      LEFT JOIN orders o ON r.order_id = o.id
+      LEFT JOIN users reviewer ON r.reviewed_by = reviewer.id
+      WHERE r.id = ${id}
+    `;
+    return result.rows[0] || null;
+  },
+
+  async getRefundsByUser(userId: number) {
+    const result = await sql`
+      SELECT 
+        r.*,
+        o.order_number
+      FROM refunds r
+      LEFT JOIN orders o ON r.order_id = o.id
+      WHERE r.user_id = ${userId}
+      ORDER BY r.requested_at DESC
+    `;
+    return result.rows;
+  },
+
+  async getRefundsByStatus(status: string) {
+    const result = await sql`
+      SELECT 
+        r.*,
+        u.username,
+        u.email,
+        o.order_number
+      FROM refunds r
+      LEFT JOIN users u ON r.user_id = u.id
+      LEFT JOIN orders o ON r.order_id = o.id
+      WHERE r.status = ${status}
+      ORDER BY r.requested_at DESC
+    `;
+    return result.rows;
+  },
+
   async createRefund(data: {
-    transactionId: number;
+    orderId?: number;
+    userId: number;
     amount: number;
-    reason?: string;
-    status?: string;
+    reason: string;
+    description?: string;
   }) {
     const result = await sql`
       INSERT INTO refunds (
-        transaction_id, amount, reason, status
+        order_id, user_id, amount, reason, description, requested_at
       ) VALUES (
-        ${data.transactionId}, ${data.amount}, ${data.reason || null},
-        ${data.status || 'pending'}
+        ${data.orderId || null}, ${data.userId}, ${data.amount}, 
+        ${data.reason}, ${data.description || null}, CURRENT_TIMESTAMP
       )
       RETURNING *
     `;
@@ -3718,28 +3930,952 @@ export const db = {
   },
 
   async getRefund(id: number) {
-    const result = await sql`SELECT * FROM refunds WHERE id = ${id}`;
+    // Alias for getRefundById for backward compatibility
+    return this.getRefundById(id);
+  },
+
+  async updateRefund(id: number, updates: {
+    status?: string;
+    reviewedBy?: number;
+    reviewerNotes?: string;
+    refundMethod?: string;
+    refundReference?: string;
+  }) {
+    const setters = [];
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    if (updates.status !== undefined) {
+      setters.push(`status = $${paramIndex++}`);
+      values.push(updates.status);
+    }
+
+    if (updates.reviewedBy !== undefined) {
+      setters.push(`reviewed_by = $${paramIndex++}`);
+      values.push(updates.reviewedBy);
+      setters.push(`reviewed_at = CURRENT_TIMESTAMP`);
+    }
+
+    if (updates.reviewerNotes !== undefined) {
+      setters.push(`reviewer_notes = $${paramIndex++}`);
+      values.push(updates.reviewerNotes);
+    }
+
+    if (updates.refundMethod !== undefined) {
+      setters.push(`refund_method = $${paramIndex++}`);
+      values.push(updates.refundMethod);
+    }
+
+    if (updates.refundReference !== undefined) {
+      setters.push(`refund_reference = $${paramIndex++}`);
+      values.push(updates.refundReference);
+    }
+
+    // Mark as processed if approved or completed
+    if (updates.status && ['approved', 'completed'].includes(updates.status)) {
+      setters.push(`processed_at = CURRENT_TIMESTAMP`);
+    }
+
+    if (setters.length === 0) return null;
+
+    values.push(id);
+    const query = `
+      UPDATE refunds 
+      SET ${setters.join(', ')}
+      WHERE id = $${paramIndex}
+      RETURNING *
+    `;
+
+    const result = await sql.query(query, values);
     return result.rows[0] || null;
   },
 
   async updateRefundStatus(id: number, status: string, processedAt?: string) {
+    // Backward compatibility wrapper
+    return this.updateRefund(id, { status });
+  },
+
+  async getTransactionRefunds(transactionId: number) {
+    // Legacy function - now redirects to order-based refunds
     const result = await sql`
-      UPDATE refunds 
-      SET status = ${status},
-          processed_at = ${processedAt || null},
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${id}
+      SELECT * FROM refunds 
+      WHERE order_id = ${transactionId}
+      ORDER BY requested_at DESC
+    `;
+    return result.rows;
+  },
+
+  async deleteRefund(id: number) {
+    await sql`DELETE FROM refunds WHERE id = ${id}`;
+  },
+
+  // Reports
+  async getAllReports() {
+    const result = await sql`
+      SELECT 
+        r.*,
+        reporter.username as reporter_username,
+        reported.username as reported_username,
+        reviewer.username as reviewer_username
+      FROM reports r
+      LEFT JOIN users reporter ON r.reporter_id = reporter.id
+      LEFT JOIN users reported ON r.reported_user_id = reported.id
+      LEFT JOIN users reviewer ON r.reviewed_by = reviewer.id
+      ORDER BY r.created_at DESC
+    `;
+    return result.rows;
+  },
+
+  async getReportById(id: number) {
+    const result = await sql`
+      SELECT 
+        r.*,
+        reporter.username as reporter_username,
+        reported.username as reported_username,
+        reviewer.username as reviewer_username
+      FROM reports r
+      LEFT JOIN users reporter ON r.reporter_id = reporter.id
+      LEFT JOIN users reported ON r.reported_user_id = reported.id
+      LEFT JOIN users reviewer ON r.reviewed_by = reviewer.id
+      WHERE r.id = ${id}
+    `;
+    return result.rows[0] || null;
+  },
+
+  async getReportsByStatus(status: string) {
+    const result = await sql`
+      SELECT 
+        r.*,
+        reporter.username as reporter_username,
+        reported.username as reported_username
+      FROM reports r
+      LEFT JOIN users reporter ON r.reporter_id = reporter.id
+      LEFT JOIN users reported ON r.reported_user_id = reported.id
+      WHERE r.status = ${status}
+      ORDER BY r.created_at DESC
+    `;
+    return result.rows;
+  },
+
+  async getReportsByReason(reason: string) {
+    const result = await sql`
+      SELECT 
+        r.*,
+        reporter.username as reporter_username,
+        reported.username as reported_username
+      FROM reports r
+      LEFT JOIN users reporter ON r.reporter_id = reporter.id
+      LEFT JOIN users reported ON r.reported_user_id = reported.id
+      WHERE r.reason = ${reason}
+      ORDER BY r.created_at DESC
+    `;
+    return result.rows;
+  },
+
+  async createReport(data: {
+    reporterId?: number;
+    reportedUserId?: number;
+    reportedContentType?: string;
+    reportedContentId?: number;
+    reason: string;
+    description?: string;
+  }) {
+    const result = await sql`
+      INSERT INTO reports (
+        reporter_id, reported_user_id, reported_content_type, 
+        reported_content_id, reason, description, created_at
+      ) VALUES (
+        ${data.reporterId || null}, ${data.reportedUserId || null}, 
+        ${data.reportedContentType || null}, ${data.reportedContentId || null},
+        ${data.reason}, ${data.description || null}, CURRENT_TIMESTAMP
+      )
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async updateReport(id: number, updates: {
+    status?: string;
+    reviewedBy?: number;
+    reviewerNotes?: string;
+    actionTaken?: string;
+  }) {
+    const setters = [];
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    if (updates.status !== undefined) {
+      setters.push(`status = $${paramIndex++}`);
+      values.push(updates.status);
+    }
+
+    if (updates.reviewedBy !== undefined) {
+      setters.push(`reviewed_by = $${paramIndex++}`);
+      values.push(updates.reviewedBy);
+      setters.push(`reviewed_at = CURRENT_TIMESTAMP`);
+    }
+
+    if (updates.reviewerNotes !== undefined) {
+      setters.push(`reviewer_notes = $${paramIndex++}`);
+      values.push(updates.reviewerNotes);
+    }
+
+    if (updates.actionTaken !== undefined) {
+      setters.push(`action_taken = $${paramIndex++}`);
+      values.push(updates.actionTaken);
+    }
+
+    // Mark as resolved if status is resolved or dismissed
+    if (updates.status && ['resolved', 'dismissed'].includes(updates.status)) {
+      setters.push(`resolved_at = CURRENT_TIMESTAMP`);
+    }
+
+    if (setters.length === 0) return null;
+
+    values.push(id);
+    const query = `
+      UPDATE reports 
+      SET ${setters.join(', ')}
+      WHERE id = $${paramIndex}
+      RETURNING *
+    `;
+
+    const result = await sql.query(query, values);
+    return result.rows[0] || null;
+  },
+
+  async deleteReport(id: number) {
+    await sql`DELETE FROM reports WHERE id = ${id}`;
+  },
+
+  async getModerationActionsByReport(reportId: number) {
+    const result = await sql`
+      SELECT 
+        ma.*,
+        u.username as moderator_username
+      FROM moderation_actions ma
+      LEFT JOIN users u ON ma.moderator_id = u.id
+      WHERE ma.report_id = ${reportId}
+      ORDER BY ma.created_at DESC
+    `;
+    return result.rows;
+  },
+
+  // Live Drops
+  async getAllLiveDrops() {
+    const result = await sql`
+      SELECT 
+        ld.*,
+        p.name as product_name,
+        p.image as product_image,
+        u.username as created_by_username
+      FROM live_drops ld
+      LEFT JOIN products p ON ld.product_id = p.id
+      LEFT JOIN users u ON ld.created_by = u.id
+      ORDER BY ld.start_time DESC
+    `;
+    return result.rows;
+  },
+
+  async getLiveDropById(id: number) {
+    const result = await sql`
+      SELECT 
+        ld.*,
+        p.name as product_name,
+        p.image as product_image
+      FROM live_drops ld
+      LEFT JOIN products p ON ld.product_id = p.id
+      WHERE ld.id = ${id}
+    `;
+    return result.rows[0] || null;
+  },
+
+  async getLiveDropsByStatus(status: string) {
+    const result = await sql`
+      SELECT 
+        ld.*,
+        p.name as product_name,
+        p.image as product_image
+      FROM live_drops ld
+      LEFT JOIN products p ON ld.product_id = p.id
+      WHERE ld.status = ${status}
+      ORDER BY ld.start_time DESC
+    `;
+    return result.rows;
+  },
+
+  async createLiveDrop(data: {
+    productId: number;
+    productName: string;
+    pledgeGoal: number;
+    startTime: string;
+    durationHours?: number;
+    createdBy?: number;
+  }) {
+    const result = await sql`
+      INSERT INTO live_drops (
+        product_id, product_name, pledge_goal, start_time, 
+        duration_hours, created_by, created_at
+      ) VALUES (
+        ${data.productId}, ${data.productName}, ${data.pledgeGoal},
+        ${data.startTime}, ${data.durationHours || 24}, 
+        ${data.createdBy || null}, CURRENT_TIMESTAMP
+      )
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async updateLiveDrop(id: number, updates: {
+    status?: string;
+    currentPledges?: number;
+    participantsCount?: number;
+    endTime?: string;
+  }) {
+    const setters = [];
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    if (updates.status !== undefined) {
+      setters.push(`status = $${paramIndex++}`);
+      values.push(updates.status);
+
+      // Set timestamp fields based on status
+      if (updates.status === 'active') {
+        setters.push(`started_at = CURRENT_TIMESTAMP`);
+      } else if (updates.status === 'ended') {
+        setters.push(`ended_at = CURRENT_TIMESTAMP`);
+      }
+    }
+
+    if (updates.currentPledges !== undefined) {
+      setters.push(`current_pledges = $${paramIndex++}`);
+      values.push(updates.currentPledges);
+    }
+
+    if (updates.participantsCount !== undefined) {
+      setters.push(`participants_count = $${paramIndex++}`);
+      values.push(updates.participantsCount);
+    }
+
+    if (updates.endTime !== undefined) {
+      setters.push(`end_time = $${paramIndex++}`);
+      values.push(updates.endTime);
+    }
+
+    if (setters.length === 0) return null;
+
+    values.push(id);
+    const query = `
+      UPDATE live_drops 
+      SET ${setters.join(', ')}
+      WHERE id = $${paramIndex}
+      RETURNING *
+    `;
+
+    const result = await sql.query(query, values);
+    return result.rows[0] || null;
+  },
+
+  async deleteLiveDrop(id: number) {
+    await sql`DELETE FROM live_drops WHERE id = ${id}`;
+  },
+
+  async addLiveDropParticipant(dropId: number, userId: number, pledgeAmount: number) {
+    const result = await sql`
+      INSERT INTO live_drop_participants (
+        drop_id, user_id, pledge_amount, joined_at
+      ) VALUES (
+        ${dropId}, ${userId}, ${pledgeAmount}, CURRENT_TIMESTAMP
+      )
+      ON CONFLICT (drop_id, user_id) DO UPDATE
+      SET pledge_amount = live_drop_participants.pledge_amount + ${pledgeAmount}
+      RETURNING *
+    `;
+
+    // Update live drop stats
+    await sql`
+      UPDATE live_drops
+      SET 
+        current_pledges = (SELECT COALESCE(SUM(pledge_amount), 0) FROM live_drop_participants WHERE drop_id = ${dropId}),
+        participants_count = (SELECT COUNT(DISTINCT user_id) FROM live_drop_participants WHERE drop_id = ${dropId})
+      WHERE id = ${dropId}
+    `;
+
+    return result.rows[0];
+  },
+
+  async getLiveDropParticipants(dropId: number) {
+    const result = await sql`
+      SELECT 
+        ldp.*,
+        u.username,
+        u.tier
+      FROM live_drop_participants ldp
+      LEFT JOIN users u ON ldp.user_id = u.id
+      WHERE ldp.drop_id = ${dropId}
+      ORDER BY ldp.joined_at DESC
+    `;
+    return result.rows;
+  },
+
+  async getLiveDropStats() {
+    const result = await sql`
+      SELECT 
+        COUNT(*) FILTER (WHERE status = 'active') as active,
+        COUNT(*) FILTER (WHERE status = 'scheduled') as scheduled,
+        COALESCE(SUM(participants_count), 0) as total_participants,
+        COUNT(*) FILTER (WHERE status = 'ended' AND DATE(ended_at) = CURRENT_DATE) as completed_today
+      FROM live_drops
+    `;
+    return result.rows[0] || { active: 0, scheduled: 0, total_participants: 0, completed_today: 0 };
+  },
+
+  // Voting Configuration
+  async getVotingConfig() {
+    const [tierConfig, settings] = await Promise.all([
+      sql`SELECT tier, daily_vote_limit, vote_multiplier FROM voting_config ORDER BY tier`,
+      sql`SELECT key, value FROM voting_settings`
+    ]);
+
+    // Transform to expected structure
+    const config: any = {
+      tierLimits: {},
+      tierMultipliers: {},
+      votingEnabled: true,
+      doubleVoteWeek: false,
+      tripleVoteWeek: false,
+      topWinners: 3
+    };
+
+    // Build tier limits and multipliers
+    for (const row of tierConfig.rows) {
+      config.tierLimits[row.tier] = row.daily_vote_limit;
+      config.tierMultipliers[row.tier] = row.vote_multiplier;
+    }
+
+    // Apply settings
+    for (const row of settings.rows) {
+      config[row.key] = row.value;
+    }
+
+    return config;
+  },
+
+  async updateVotingTierConfig(tier: string, dailyLimit: number, multiplier: number, updatedBy?: number) {
+    const result = await sql`
+      INSERT INTO voting_config (tier, daily_vote_limit, vote_multiplier, updated_by, updated_at)
+      VALUES (${tier}, ${dailyLimit}, ${multiplier}, ${updatedBy || null}, CURRENT_TIMESTAMP)
+      ON CONFLICT (tier)
+      DO UPDATE SET
+        daily_vote_limit = ${dailyLimit},
+        vote_multiplier = ${multiplier},
+        updated_by = ${updatedBy || null},
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async updateVotingSetting(key: string, value: any, updatedBy?: number, description?: string) {
+    const result = await sql`
+      INSERT INTO voting_settings (key, value, description, updated_by, updated_at)
+      VALUES (${key}, ${value}, ${description || null}, ${updatedBy || null}, CURRENT_TIMESTAMP)
+      ON CONFLICT (key)
+      DO UPDATE SET
+        value = ${value},
+        description = COALESCE(${description || null}, voting_settings.description),
+        updated_by = ${updatedBy || null},
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async updateVotingConfig(config: any, updatedBy?: number) {
+    // Update tier configurations
+    if (config.tierLimits && config.tierMultipliers) {
+      const updates = [];
+      for (const [tier, limit] of Object.entries(config.tierLimits)) {
+        const multiplier = config.tierMultipliers[tier] || 1;
+        updates.push(
+          this.updateVotingTierConfig(tier, limit as number, multiplier, updatedBy)
+        );
+      }
+      await Promise.all(updates);
+    }
+
+    // Update global settings
+    const settingUpdates = [];
+    if (config.votingEnabled !== undefined) {
+      settingUpdates.push(this.updateVotingSetting('votingEnabled', config.votingEnabled, updatedBy));
+    }
+    if (config.doubleVoteWeek !== undefined) {
+      settingUpdates.push(this.updateVotingSetting('doubleVoteWeek', config.doubleVoteWeek, updatedBy));
+    }
+    if (config.tripleVoteWeek !== undefined) {
+      settingUpdates.push(this.updateVotingSetting('tripleVoteWeek', config.tripleVoteWeek, updatedBy));
+    }
+    if (config.topWinners !== undefined) {
+      settingUpdates.push(this.updateVotingSetting('topWinners', config.topWinners, updatedBy));
+    }
+
+    if (settingUpdates.length > 0) {
+      await Promise.all(settingUpdates);
+    }
+
+    return await this.getVotingConfig();
+  },
+
+  async initializeDefaultVotingConfig() {
+    // Initialize tier configurations
+    await Promise.all([
+      this.updateVotingTierConfig('Initiate', 2, 1),
+      this.updateVotingTierConfig('Guild', 5, 2),
+      this.updateVotingTierConfig('MIGISTUS', 15, 4)
+    ]);
+
+    // Initialize settings
+    await Promise.all([
+      this.updateVotingSetting('votingEnabled', true, undefined, 'Enable/disable voting system'),
+      this.updateVotingSetting('doubleVoteWeek', false, undefined, 'Double vote power week'),
+      this.updateVotingSetting('tripleVoteWeek', false, undefined, 'Triple vote power week'),
+      this.updateVotingSetting('topWinners', 3, undefined, 'Number of top winners displayed')
+    ]);
+
+    return await this.getVotingConfig();
+  },
+
+  // Tier Rewards/Benefits
+  async getTierRewards() {
+    const result = await sql`
+      SELECT tier, benefit_key, benefit_value, benefit_type
+      FROM tier_benefits
+      WHERE is_active = true
+      ORDER BY tier, display_order, benefit_key
+    `;
+
+    // Transform to expected nested structure
+    const rewards: any = {};
+
+    for (const row of result.rows) {
+      if (!rewards[row.tier]) {
+        rewards[row.tier] = {};
+      }
+
+      // Handle special cases
+      if (row.benefit_key === 'perks' && Array.isArray(row.benefit_value)) {
+        rewards[row.tier].perks = row.benefit_value;
+      } else {
+        rewards[row.tier][row.benefit_key] = row.benefit_value;
+      }
+    }
+
+    return rewards;
+  },
+
+  async getTierBenefits(tier: string) {
+    const result = await sql`
+      SELECT benefit_key, benefit_value, benefit_type
+      FROM tier_benefits
+      WHERE tier = ${tier} AND is_active = true
+      ORDER BY display_order, benefit_key
+    `;
+
+    const benefits: any = {};
+    for (const row of result.rows) {
+      if (row.benefit_key === 'perks' && Array.isArray(row.benefit_value)) {
+        benefits.perks = row.benefit_value;
+      } else {
+        benefits[row.benefit_key] = row.benefit_value;
+      }
+    }
+
+    return benefits;
+  },
+
+  async updateTierBenefit(
+    tier: string,
+    benefitKey: string,
+    benefitValue: any,
+    benefitType: string = 'general',
+    updatedBy?: number,
+    displayOrder: number = 0
+  ) {
+    const result = await sql`
+      INSERT INTO tier_benefits (
+        tier, benefit_key, benefit_value, benefit_type, display_order, updated_by, updated_at
+      ) VALUES (
+        ${tier}, ${benefitKey}, ${benefitValue}, ${benefitType}, ${displayOrder},
+        ${updatedBy || null}, CURRENT_TIMESTAMP
+      )
+      ON CONFLICT (tier, benefit_key)
+      DO UPDATE SET
+        benefit_value = ${benefitValue},
+        benefit_type = ${benefitType},
+        display_order = ${displayOrder},
+        updated_by = ${updatedBy || null},
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async updateTierRewards(tierRewards: any, updatedBy?: number) {
+    const updates = [];
+
+    for (const [tier, benefits] of Object.entries(tierRewards)) {
+      if (typeof benefits === 'object' && benefits !== null) {
+        for (const [key, value] of Object.entries(benefits)) {
+          const benefitType = key === 'perks' ? 'perk' :
+                             key === 'votingMultiplier' ? 'multiplier' :
+                             key === 'chatCooldown' ? 'cooldown' :
+                             key === 'discount' ? 'discount' : 'general';
+          
+          updates.push(
+            this.updateTierBenefit(tier, key, value, benefitType, updatedBy)
+          );
+        }
+      }
+    }
+
+    await Promise.all(updates);
+    return await this.getTierRewards();
+  },
+
+  async initializeDefaultTierRewards() {
+    const defaultRewards = {
+      Initiate: {
+        perks: ["Access to drops", "1x voting power"],
+        votingMultiplier: 1,
+        chatCooldown: 30,
+        discount: 0
+      },
+      Guild: {
+        perks: ["All Initiate perks", "2x voting power", "Priority support"],
+        votingMultiplier: 2,
+        chatCooldown: 10,
+        discount: 2
+      },
+      MIGISTUS: {
+        perks: ["All Guild perks", "4x voting power", "Exclusive deals", "Early access"],
+        votingMultiplier: 4,
+        chatCooldown: 3,
+        discount: 5
+      }
+    };
+
+    await this.updateTierRewards(defaultRewards);
+    return defaultRewards;
+  },
+
+  // ============================================
+  // ANALYTICS SYSTEM
+  // ============================================
+
+  // Analytics Events
+  async createAnalyticsEvent(data: {
+    eventType: string;
+    userId?: number;
+    sessionId?: string;
+    productId?: number;
+    supplierId?: number;
+    pageUrl?: string;
+    referrer?: string;
+    metadata?: any;
+    userAgent?: string;
+    ipAddress?: string;
+  }) {
+    const result = await sql`
+      INSERT INTO analytics_events (
+        event_type, user_id, session_id, product_id, supplier_id,
+        page_url, referrer, metadata, user_agent, ip_address
+      )
+      VALUES (
+        ${data.eventType},
+        ${data.userId || null},
+        ${data.sessionId || null},
+        ${data.productId || null},
+        ${data.supplierId || null},
+        ${data.pageUrl || null},
+        ${data.referrer || null},
+        ${JSON.stringify(data.metadata || {})},
+        ${data.userAgent || null},
+        ${data.ipAddress || null}
+      )
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async getAnalyticsEvents(filters: {
+    eventType?: string;
+    userId?: number;
+    sessionId?: string;
+    productId?: number;
+    supplierId?: number;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+  }) {
+    let whereConditions = [];
+    let params: any[] = [];
+    
+    if (filters.eventType) {
+      whereConditions.push('event_type = $' + (params.length + 1));
+      params.push(filters.eventType);
+    }
+    if (filters.userId) {
+      whereConditions.push('user_id = $' + (params.length + 1));
+      params.push(filters.userId);
+    }
+    if (filters.sessionId) {
+      whereConditions.push('session_id = $' + (params.length + 1));
+      params.push(filters.sessionId);
+    }
+    if (filters.productId) {
+      whereConditions.push('product_id = $' + (params.length + 1));
+      params.push(filters.productId);
+    }
+    if (filters.supplierId) {
+      whereConditions.push('supplier_id = $' + (params.length + 1));
+      params.push(filters.supplierId);
+    }
+    if (filters.startDate) {
+      whereConditions.push('created_at >= $' + (params.length + 1));
+      params.push(filters.startDate);
+    }
+    if (filters.endDate) {
+      whereConditions.push('created_at <= $' + (params.length + 1));
+      params.push(filters.endDate);
+    }
+    
+    const whereClause = whereConditions.length > 0 
+      ? 'WHERE ' + whereConditions.join(' AND ')
+      : '';
+    
+    let query = `
+      SELECT * FROM analytics_events 
+      ${whereClause}
+      ORDER BY created_at DESC
+    `;
+    
+    if (filters.limit) {
+      params.push(filters.limit);
+      query += ` LIMIT $${params.length}`;
+    }
+    
+    const result = await sql.query(query, params);
+    return result.rows;
+  },
+
+  async getEventStats(filters: {
+    supplierId?: number;
+    productId?: number;
+    startDate?: string;
+    endDate?: string;
+  }) {
+    let whereConditions = [];
+    let params: any[] = [];
+    
+    if (filters.supplierId) {
+      whereConditions.push('supplier_id = $' + (params.length + 1));
+      params.push(filters.supplierId);
+    }
+    if (filters.productId) {
+      whereConditions.push('product_id = $' + (params.length + 1));
+      params.push(filters.productId);
+    }
+    if (filters.startDate) {
+      whereConditions.push('created_at >= $' + (params.length + 1));
+      params.push(filters.startDate);
+    }
+    if (filters.endDate) {
+      whereConditions.push('created_at <= $' + (params.length + 1));
+      params.push(filters.endDate);
+    }
+    
+    const whereClause = whereConditions.length > 0 
+      ? 'WHERE ' + whereConditions.join(' AND ')
+      : '';
+    
+    const query = `
+      SELECT 
+        event_type,
+        COUNT(*)::int as count,
+        COUNT(DISTINCT user_id)::int as unique_users,
+        COUNT(DISTINCT session_id)::int as unique_sessions
+      FROM analytics_events
+      ${whereClause}
+      GROUP BY event_type
+    `;
+    
+    const result = await sql.query(query, params);
+    return result.rows;
+  },
+
+  // User Sessions
+  async createUserSession(data: {
+    userId: number;
+    sessionId: string;
+    currentPage?: string;
+    userAgent?: string;
+    ipAddress?: string;
+  }) {
+    const result = await sql`
+      INSERT INTO user_sessions (
+        user_id, session_id, current_page, user_agent, ip_address
+      )
+      VALUES (
+        ${data.userId},
+        ${data.sessionId},
+        ${data.currentPage || null},
+        ${data.userAgent || null},
+        ${data.ipAddress || null}
+      )
+      ON CONFLICT (session_id) DO UPDATE SET
+        last_activity = CURRENT_TIMESTAMP,
+        current_page = EXCLUDED.current_page,
+        is_active = true
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async updateUserSession(sessionId: string, data: {
+    currentPage?: string;
+    isActive?: boolean;
+    logoutTime?: string;
+  }) {
+    const result = await sql`
+      UPDATE user_sessions
+      SET 
+        last_activity = CURRENT_TIMESTAMP,
+        current_page = COALESCE(${data.currentPage || null}, current_page),
+        is_active = COALESCE(${data.isActive !== undefined ? data.isActive : null}, is_active),
+        logout_time = COALESCE(${data.logoutTime || null}, logout_time)
+      WHERE session_id = ${sessionId}
       RETURNING *
     `;
     return result.rows[0] || null;
   },
 
-  async getTransactionRefunds(transactionId: number) {
+  async getUserSession(sessionId: string) {
     const result = await sql`
-      SELECT * FROM refunds 
-      WHERE transaction_id = ${transactionId}
-      ORDER BY created_at DESC
+      SELECT * FROM user_sessions 
+      WHERE session_id = ${sessionId}
     `;
+    return result.rows[0] || null;
+  },
+
+  async getActiveSessions(userId?: number) {
+    if (userId) {
+      const result = await sql`
+        SELECT * FROM user_sessions 
+        WHERE user_id = ${userId} AND is_active = true
+        ORDER BY last_activity DESC
+      `;
+      return result.rows;
+    } else {
+      const result = await sql`
+        SELECT * FROM user_sessions 
+        WHERE is_active = true
+        ORDER BY last_activity DESC
+      `;
+      return result.rows;
+    }
+  },
+
+  async endUserSession(sessionId: string) {
+    const result = await sql`
+      UPDATE user_sessions
+      SET is_active = false, logout_time = CURRENT_TIMESTAMP
+      WHERE session_id = ${sessionId}
+      RETURNING *
+    `;
+    return result.rows[0] || null;
+  },
+
+  // Analytics Aggregates
+  async createOrUpdateAggregate(data: {
+    aggregateType: string;
+    entityType: string;
+    entityId: number;
+    timePeriod: string;
+    periodStart: string;
+    periodEnd: string;
+    metrics: any;
+  }) {
+    const result = await sql`
+      INSERT INTO analytics_aggregates (
+        aggregate_type, entity_type, entity_id, time_period,
+        period_start, period_end, metrics
+      )
+      VALUES (
+        ${data.aggregateType},
+        ${data.entityType},
+        ${data.entityId},
+        ${data.timePeriod},
+        ${data.periodStart},
+        ${data.periodEnd},
+        ${JSON.stringify(data.metrics)}
+      )
+      ON CONFLICT (aggregate_type, entity_type, entity_id, time_period, period_start)
+      DO UPDATE SET
+        metrics = EXCLUDED.metrics,
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async getAggregates(filters: {
+    aggregateType?: string;
+    entityType?: string;
+    entityId?: number;
+    timePeriod?: string;
+    startDate?: string;
+    endDate?: string;
+  }) {
+    let whereConditions = ['1=1'];
+    let params: any[] = [];
+    
+    if (filters.aggregateType) {
+      whereConditions.push('aggregate_type = $' + (params.length + 1));
+      params.push(filters.aggregateType);
+    }
+    if (filters.entityType) {
+      whereConditions.push('entity_type = $' + (params.length + 1));
+      params.push(filters.entityType);
+    }
+    if (filters.entityId) {
+      whereConditions.push('entity_id = $' + (params.length + 1));
+      params.push(filters.entityId);
+    }
+    if (filters.timePeriod) {
+      whereConditions.push('time_period = $' + (params.length + 1));
+      params.push(filters.timePeriod);
+    }
+    if (filters.startDate) {
+      whereConditions.push('period_start >= $' + (params.length + 1));
+      params.push(filters.startDate);
+    }
+    if (filters.endDate) {
+      whereConditions.push('period_end <= $' + (params.length + 1));
+      params.push(filters.endDate);
+    }
+    
+    const whereClause = whereConditions.length > 0 
+      ? 'WHERE ' + whereConditions.join(' AND ')
+      : '';
+    
+    const query = `
+      SELECT * FROM analytics_aggregates 
+      ${whereClause}
+      ORDER BY period_start DESC
+    `;
+    
+    const result = await sql.query(query, params);
     return result.rows;
   },
 
@@ -4445,6 +5581,152 @@ export const db = {
 
   async deleteTemplate(id: number) {
     await sql`UPDATE page_templates SET is_active = false WHERE id = ${id}`;
+  },
+
+  // Admin Settings
+  async getAdminSettings() {
+    const result = await sql`
+      SELECT category, key, value, updated_at
+      FROM admin_settings
+      ORDER BY category, key
+    `;
+    
+    // Transform flat rows into nested object structure
+    const settings: any = {
+      site: {},
+      voting: { tierMultipliers: {} },
+      drops: {},
+      features: {},
+      security: {}
+    };
+
+    for (const row of result.rows) {
+      const { category, key, value } = row;
+      
+      // Handle nested tierMultipliers in voting
+      if (category === 'voting' && key === 'tierMultipliers') {
+        settings.voting.tierMultipliers = value;
+      } else {
+        settings[category][key] = value;
+      }
+    }
+
+    return settings;
+  },
+
+  async getAdminSettingsByCategory(category: string) {
+    const result = await sql`
+      SELECT key, value FROM admin_settings 
+      WHERE category = ${category}
+    `;
+    
+    const settings: any = {};
+    for (const row of result.rows) {
+      settings[row.key] = row.value;
+    }
+    
+    return settings;
+  },
+
+  async updateAdminSetting(category: string, key: string, value: any, updatedBy?: number) {
+    const result = await sql`
+      INSERT INTO admin_settings (category, key, value, updated_by, updated_at)
+      VALUES (${category}, ${key}, ${value}, ${updatedBy || null}, CURRENT_TIMESTAMP)
+      ON CONFLICT (category, key) 
+      DO UPDATE SET 
+        value = ${value},
+        updated_by = ${updatedBy || null},
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async updateAdminSettings(settings: any, updatedBy?: number) {
+    // Process each category and key
+    const updates = [];
+    
+    for (const [category, categoryData] of Object.entries(settings)) {
+      if (category === 'updatedAt') continue; // Skip metadata
+      
+      if (typeof categoryData === 'object' && categoryData !== null) {
+        for (const [key, value] of Object.entries(categoryData)) {
+          updates.push(
+            sql`
+              INSERT INTO admin_settings (category, key, value, updated_by, updated_at)
+              VALUES (${category}, ${key}, ${value}, ${updatedBy || null}, CURRENT_TIMESTAMP)
+              ON CONFLICT (category, key) 
+              DO UPDATE SET 
+                value = ${value},
+                updated_by = ${updatedBy || null},
+                updated_at = CURRENT_TIMESTAMP
+            `
+          );
+        }
+      }
+    }
+
+    // Execute all updates
+    await Promise.all(updates);
+    
+    // Return updated settings
+    return await this.getAdminSettings();
+  },
+
+  async initializeDefaultAdminSettings() {
+    const defaultSettings = {
+      site: {
+        siteName: 'MIGISTUS',
+        siteDescription: 'The ultimate group buying platform',
+        siteTagline: 'Power in Numbers',
+        maintenanceMode: false,
+        registrationEnabled: true,
+        contactEmail: 'contact@migistus.com',
+        supportEmail: 'support@migistus.com',
+        logo: '/images/logo.png',
+        favicon: '/favicon.ico'
+      },
+      voting: {
+        enabled: true,
+        maxVotesPerUser: 10,
+        votingCooldown: 24,
+        tierMultipliers: {
+          initiate: 1,
+          guild: 2,
+          migistus: 3
+        },
+        autoApproveThreshold: 100
+      },
+      drops: {
+        enabled: true,
+        maxActiveDrops: 5,
+        defaultDuration: 24,
+        pledgeTimeLimit: 2,
+        minParticipants: 10,
+        maxParticipants: 1000
+      },
+      features: {
+        chatEnabled: true,
+        marketingEnabled: true,
+        analyticsEnabled: true,
+        notificationsEnabled: true,
+        emailNotifications: true,
+        pushNotifications: false,
+        wishlistEnabled: true,
+        reviewsEnabled: true
+      },
+      security: {
+        maxLoginAttempts: 5,
+        sessionTimeout: 60,
+        passwordMinLength: 8,
+        twoFactorRequired: false,
+        ipWhitelist: [],
+        rateLimitPerMinute: 60
+      }
+    };
+
+    await this.updateAdminSettings(defaultSettings);
+    return defaultSettings;
   }
 };
 

@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { db, isProduction } from '@/lib/db';
 
 const TRACKING_PATH = path.resolve("public/data/user-tracking");
 const SESSIONS_PATH = path.resolve("public/data/user-sessions.json");
@@ -134,7 +135,9 @@ function updateUserSession(userId: number, sessionId: string, updates: any) {
   return sessions[sessionIndex] || sessions[sessions.length - 1];
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const useProduction = isProduction();
+
   if (req.method === "POST") {
     try {
       const { userId, sessionId, type, action, details, page } = req.body;
@@ -142,29 +145,72 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       if (!userId || !sessionId) {
         return res.status(400).json({ error: "userId and sessionId are required" });
       }
-      
-      // Track the activity
-      const activity = trackUserActivity(userId, sessionId, {
-        type: type || 'navigation',
-        action: action || 'page_visit',
-        page,
-        details: details || {},
-        userAgent: req.headers['user-agent'] || 'unknown',
-        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown'
-      });
-      
-      // Update session info
-      const session = updateUserSession(userId, sessionId, {
-        currentPage: page,
-        userAgent: req.headers['user-agent'] || 'unknown',
-        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown'
-      });
-      
-      return res.status(200).json({ 
-        success: true, 
-        activity,
-        session 
-      });
+
+      if (useProduction) {
+        // ============================================
+        // PRODUCTION: Use database
+        // ============================================
+        const userAgent = req.headers['user-agent'] || 'unknown';
+        const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
+
+        // Create analytics event
+        const event = await db.createAnalyticsEvent({
+          eventType: type || 'navigation',
+          userId: parseInt(userId),
+          sessionId,
+          pageUrl: page,
+          metadata: {
+            action: action || 'page_visit',
+            details: details || {},
+            userAgent,
+            ip: ipAddress
+          },
+          userAgent,
+          ipAddress
+        });
+
+        // Update or create session
+        const session = await db.createUserSession({
+          userId: parseInt(userId),
+          sessionId,
+          currentPage: page,
+          userAgent,
+          ipAddress
+        });
+
+        return res.status(200).json({ 
+          success: true, 
+          activity: event,
+          session 
+        });
+
+      } else {
+        // ============================================
+        // DEVELOPMENT: Use file system (legacy)
+        // ============================================
+        // Track the activity
+        const activity = trackUserActivity(userId, sessionId, {
+          type: type || 'navigation',
+          action: action || 'page_visit',
+          page,
+          details: details || {},
+          userAgent: req.headers['user-agent'] || 'unknown',
+          ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
+        });
+        
+        // Update session info
+        const session = updateUserSession(userId, sessionId, {
+          currentPage: page,
+          userAgent: req.headers['user-agent'] || 'unknown',
+          ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
+        });
+        
+        return res.status(200).json({ 
+          success: true, 
+          activity,
+          session 
+        });
+      }
       
     } catch (error) {
       console.error('Live tracking error:', error);
@@ -175,28 +221,46 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     try {
       const { userId, sessionId, type, limit = 50 } = req.query;
-      
-      let activities = readActivity();
-      
-      // Filter by user if specified
-      if (userId) {
-        activities = activities.filter((a: any) => a.userId === parseInt(userId as string));
+
+      if (useProduction) {
+        // ============================================
+        // PRODUCTION: Use database
+        // ============================================
+        const events = await db.getAnalyticsEvents({
+          userId: userId ? parseInt(userId as string) : undefined,
+          sessionId: sessionId as string,
+          eventType: type as string,
+          limit: parseInt(limit as string)
+        });
+
+        return res.status(200).json(events);
+
+      } else {
+        // ============================================
+        // DEVELOPMENT: Use file system (legacy)
+        // ============================================
+        let activities = readActivity();
+        
+        // Filter by user if specified
+        if (userId) {
+          activities = activities.filter((a: any) => a.userId === parseInt(userId as string));
+        }
+        
+        // Filter by session if specified
+        if (sessionId) {
+          activities = activities.filter((a: any) => a.sessionId === sessionId);
+        }
+        
+        // Filter by type if specified
+        if (type) {
+          activities = activities.filter((a: any) => a.type === type);
+        }
+        
+        // Limit results
+        activities = activities.slice(0, parseInt(limit as string));
+        
+        return res.status(200).json(activities);
       }
-      
-      // Filter by session if specified
-      if (sessionId) {
-        activities = activities.filter((a: any) => a.sessionId === sessionId);
-      }
-      
-      // Filter by type if specified
-      if (type) {
-        activities = activities.filter((a: any) => a.type === type);
-      }
-      
-      // Limit results
-      activities = activities.slice(0, parseInt(limit as string));
-      
-      return res.status(200).json(activities);
       
     } catch (error) {
       console.error('Live tracking GET error:', error);

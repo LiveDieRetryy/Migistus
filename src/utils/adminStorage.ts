@@ -123,7 +123,7 @@ class DatabaseAdminStorage {
   }
 
   async getAnalyticsEvents(limit: number = 1000, offset: number = 0) {
-    return await db.getAnalyticsEvents(limit, offset);
+    return await db.getAnalyticsEventsSimple(limit, offset);
   }
 
   async getEventsByType(eventType: string, limit: number = 500) {
