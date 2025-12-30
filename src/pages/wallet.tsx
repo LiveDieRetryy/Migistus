@@ -5,6 +5,7 @@ import { UserStorage3 as UserStorage } from "@/utils/userStorage";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import StripeDepositForm from "@/components/wallet/StripeDepositForm";
 
 export default function WalletPage() {
   const { user } = useAuth();
@@ -19,6 +20,8 @@ export default function WalletPage() {
   const [mounted, setMounted] = useState(false);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [depositAmount, setDepositAmount] = useState<number>(0);
 
   // Account navigation items
   const getProfileSlug = () => {
@@ -48,24 +51,61 @@ export default function WalletPage() {
       setGuildCoins(UserStorage.getUserGuildCoins(user.id));
       
       // Fetch transaction history
-      const fetchTransactions = async () => {
-        setLoadingTransactions(true);
-        try {
-          const response = await fetch(`/api/wallet/transactions?userId=${user.id}`);
-          if (response.ok) {
-            const data = await response.json();
-            setTransactions(data.transactions || []);
-          }
-        } catch (error) {
-          console.error('Failed to fetch transactions:', error);
-        } finally {
-          setLoadingTransactions(false);
-        }
-      };
-      
       fetchTransactions();
     }
   }, [user, mounted]);
+
+  // Check for successful payment return
+  useEffect(() => {
+    if (router.query.payment === 'success') {
+      // Refresh balance and transactions after successful payment
+      if (user) {
+        setTimeout(() => {
+          setBalance(UserStorage.getUserWalletBalance(user.id));
+          fetchTransactions();
+        }, 1000);
+      }
+      // Remove query param
+      router.replace('/wallet', undefined, { shallow: true });
+    }
+  }, [router.query.payment, user]);
+
+  const fetchTransactions = async () => {
+    if (!user) return;
+    setLoadingTransactions(true);
+    try {
+      const response = await fetch(`/api/wallet/transactions?userId=${user.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setTransactions(data.transactions || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch transactions:', error);
+    } finally {
+      setLoadingTransactions(false);
+    }
+  };
+
+  const handleDepositClick = () => {
+    setShowDepositModal(true);
+  };
+
+  const handleDepositSuccess = () => {
+    setShowDepositModal(false);
+    setDepositAmount(0);
+    // Refresh balance and transactions
+    if (user) {
+      setTimeout(() => {
+        setBalance(UserStorage.getUserWalletBalance(user.id));
+        fetchTransactions();
+      }, 1500);
+    }
+  };
+
+  const handleDepositCancel = () => {
+    setShowDepositModal(false);
+    setDepositAmount(0);
+  };
 
   const handleDeposit = () => {
     if (user && amount > 0) {
@@ -251,28 +291,28 @@ export default function WalletPage() {
                 <div className="space-y-4">
                   <input
                     type="number"
-                    min={0}
+                    min={1}
+                    max={10000}
                     step="0.01"
-                    value={amount}
-                    onChange={e => setAmount(Number(e.target.value))}
+                    value={depositAmount}
+                    onChange={e => setDepositAmount(Number(e.target.value))}
                     className="w-full px-4 py-3 bg-zinc-800 border border-green-500/30 rounded-xl text-white placeholder-gray-400 focus:border-green-400 focus:outline-none transition-colors"
-                    placeholder="Enter amount (USD)"
+                    placeholder="Enter amount ($1 - $10,000)"
                   />
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={handleDeposit}
-                      disabled={!amount || amount <= 0}
-                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold py-3 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed shadow-lg"
-                    >
-                      💳 Deposit
-                    </button>
-                    <button
-                      onClick={handleWithdraw}
-                      disabled={!amount || amount <= 0 || amount > balance}
-                      className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold py-3 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed shadow-lg"
-                    >
-                      🏧 Withdraw
-                    </button>
+                  <button
+                    onClick={handleDepositClick}
+                    disabled={!depositAmount || depositAmount < 1 || depositAmount > 10000}
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 disabled:from-gray-600 disabled:to-gray-700 text-white font-bold py-3 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed shadow-lg"
+                  >
+                    💳 Deposit with Stripe
+                  </button>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500">
+                      Secure payment processing via Stripe
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Accepts cards, PayPal, Apple Pay & Google Pay
+                    </p>
                   </div>
                 </div>
               </div>
@@ -389,6 +429,32 @@ export default function WalletPage() {
           </main>
         </div>
       </div>
+
+      {/* Stripe Deposit Modal */}
+      {showDepositModal && depositAmount > 0 && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-yellow-500/20 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-yellow-400">💳 Deposit Funds</h2>
+                <button
+                  onClick={handleDepositCancel}
+                  className="text-gray-400 hover:text-white transition-colors text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <StripeDepositForm
+                amount={depositAmount}
+                onSuccess={handleDepositSuccess}
+                onError={(error) => console.error('Deposit failed:', error)}
+                onCancel={handleDepositCancel}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
