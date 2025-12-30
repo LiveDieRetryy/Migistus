@@ -110,6 +110,97 @@ export default async function handler(
         break;
       }
 
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const userId = parseInt(subscription.metadata.userId);
+        const tier = subscription.metadata.tier; // 'guild' or 'elite'
+        const status = subscription.status;
+
+        console.log(`🔔 Subscription ${event.type}: User ${userId}, Tier: ${tier}, Status: ${status}`);
+
+        if (!userId) {
+          console.error('No userId in subscription metadata');
+          break;
+        }
+
+        try {
+          // Map subscription tier to user tier
+          let userTier: 'Initiate' | 'Guild' | 'MIGISTUS';
+          if (status === 'active' || status === 'trialing') {
+            userTier = tier === 'elite' ? 'MIGISTUS' : tier === 'guild' ? 'Guild' : 'Initiate';
+          } else {
+            // If subscription is not active (canceled, past_due, etc.), downgrade to Initiate
+            userTier = 'Initiate';
+          }
+
+          // Update user's tier and subscription info
+          const periodEnd = (subscription as any).current_period_end;
+          await db.updateUser(userId, {
+            tier: userTier,
+            stripeSubscriptionId: subscription.id,
+            stripeSubscriptionStatus: status,
+            subscriptionCurrentPeriodEnd: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
+          });
+
+          console.log(`✅ Updated user ${userId} tier to ${userTier} (subscription ${subscription.id})`);
+        } catch (dbError) {
+          console.error('Failed to update user subscription:', dbError);
+        }
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const userId = parseInt(subscription.metadata.userId);
+
+        console.log(`🗑️ Subscription deleted: User ${userId}`);
+
+        if (!userId) {
+          console.error('No userId in subscription metadata');
+          break;
+        }
+
+        try {
+          // Downgrade user to Initiate tier
+          await db.updateUser(userId, {
+            tier: 'Initiate',
+            stripeSubscriptionId: null,
+            stripeSubscriptionStatus: 'canceled',
+            subscriptionCurrentPeriodEnd: null,
+          });
+
+          console.log(`✅ Downgraded user ${userId} to Initiate tier`);
+        } catch (dbError) {
+          console.error('Failed to downgrade user:', dbError);
+        }
+        break;
+      }
+
+      case 'invoice.payment_succeeded': {
+        const invoice = event.data.object as Stripe.Invoice;
+        const subscription = (invoice as any).subscription;
+        const subscriptionId = typeof subscription === 'string' ? subscription : subscription?.id;
+
+        if (subscriptionId) {
+          console.log(`💳 Invoice paid for subscription ${subscriptionId}`);
+          // Additional logic for successful recurring payments can go here
+        }
+        break;
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice;
+        const subscription = (invoice as any).subscription;
+        const subscriptionId = typeof subscription === 'string' ? subscription : subscription?.id;
+
+        if (subscriptionId) {
+          console.error(`❌ Invoice payment failed for subscription ${subscriptionId}`);
+          // You might want to send an email notification to the user here
+        }
+        break;
+      }
+
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }

@@ -9,6 +9,10 @@ interface User {
   email: string;
   sessionId: string;
   tier?: string;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  stripeSubscriptionStatus?: string;
+  subscriptionCurrentPeriodEnd?: string;
 }
 
 interface RegistrationData {
