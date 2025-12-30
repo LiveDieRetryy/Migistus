@@ -6,9 +6,20 @@ import fs from 'fs';
 import path from 'path';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  // GET - Fetch messages
+  if (req.method === 'GET') {
+    return handleGetMessages(req, res);
   }
+
+  // PUT - Edit message
+  if (req.method === 'PUT') {
+    return handleEditMessage(req, res);
+  }
+
+  return res.status(405).json({ error: 'Method not allowed' });
+}
+
+async function handleGetMessages(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     const conversationId = req.query.id as string;
@@ -60,6 +71,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           dm.deleted_for,
           dm.reactions,
           dm.reply_to_id,
+          dm.edited,
+          dm.edited_at,
           reply_msg.sender_id as reply_sender_id,
           reply_msg.content as reply_content
         FROM direct_messages dm
@@ -153,6 +166,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           content: row.content,
           createdAt: row.created_at,
           read: row.read,
+          edited: row.edited || false,
+          editedAt: row.edited_at || null,
           reactions: reactions,
           replyTo: replyTo,
           attachments: []
@@ -162,5 +177,55 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error) {
     console.error('Error fetching messages:', error);
     return res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+}
+
+async function handleEditMessage(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const session = await getSessionFromRequest(req);
+
+    if (!session) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const { messageId, content } = req.body;
+
+    if (!messageId || !content || !content.trim()) {
+      return res.status(400).json({ error: 'Message ID and content required' });
+    }
+
+    const userId = session.userId;
+
+    // Check message exists and belongs to user
+    const message = await sql`
+      SELECT * FROM direct_messages 
+      WHERE id = ${messageId} AND sender_id = ${userId}
+    `;
+
+    if (message.rows.length === 0) {
+      return res.status(403).json({ error: 'Message not found or access denied' });
+    }
+
+    // Update message with edited flag
+    const updated = await sql`
+      UPDATE direct_messages 
+      SET content = ${content.trim()},
+          edited = true,
+          edited_at = NOW()
+      WHERE id = ${messageId} AND sender_id = ${userId}
+      RETURNING *
+    `;
+
+    if (updated.rows.length === 0) {
+      return res.status(500).json({ error: 'Failed to update message' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: updated.rows[0]
+    });
+  } catch (error) {
+    console.error('Error editing message:', error);
+    return res.status(500).json({ error: 'Failed to edit message' });
   }
 }

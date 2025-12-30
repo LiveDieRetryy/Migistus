@@ -333,6 +333,8 @@ CREATE TABLE IF NOT EXISTS direct_messages (
   deleted_for INTEGER[] DEFAULT ARRAY[]::integer[], -- Array of user IDs who deleted this message
   reactions JSONB DEFAULT '[]', -- Array of reactions with userId and emoji
   reply_to_id INTEGER REFERENCES direct_messages(id), -- For threaded replies
+  edited BOOLEAN DEFAULT false, -- Whether message was edited
+  edited_at TIMESTAMP, -- When message was last edited
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -626,3 +628,20 @@ CREATE INDEX IF NOT EXISTS idx_enforcement_log_user ON enforcement_log(user_id);
 CREATE INDEX IF NOT EXISTS idx_enforcement_log_admin ON enforcement_log(admin_id);
 CREATE INDEX IF NOT EXISTS idx_enforcement_log_action ON enforcement_log(action_type);
 CREATE INDEX IF NOT EXISTS idx_enforcement_log_created ON enforcement_log(created_at DESC);
+
+-- Push Subscriptions table (for web push notifications)
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  endpoint TEXT UNIQUE NOT NULL,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  user_agent TEXT,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_used TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON push_subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_active ON push_subscriptions(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_endpoint ON push_subscriptions(endpoint);

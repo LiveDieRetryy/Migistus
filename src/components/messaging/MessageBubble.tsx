@@ -11,6 +11,8 @@ interface MessageBubbleProps {
     content: string;
     createdAt: string;
     read: boolean;
+    edited?: boolean;
+    editedAt?: string;
     reactions?: { emoji: string; users: number[] }[];
     replyTo?: {
       id: string;
@@ -134,6 +136,9 @@ export default function MessageBubble({
               isOwnMessage ? 'text-yellow-100' : 'text-gray-400'
             }`}>
               <span>{formatTime(message.createdAt)}</span>
+              {message.edited && (
+                <span className="text-xs italic opacity-70">(edited)</span>
+              )}
               {isOwnMessage && (
                 message.read ? (
                   <CheckCheck className="w-3 h-3 text-blue-400" />

@@ -1,6 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { db, isProduction } from '@/lib/db';
 import { notificationStorage } from '@/utils/notificationStorage';
 import { getSessionFromRequest } from '@/lib/session';
+import webpush from 'web-push';
+
+// Configure web-push with VAPID keys
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY && process.env.VAPID_SUBJECT) {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT,
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -17,7 +28,7 @@ export default async function handler(
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    if (session.tier !== 'Master') { // Check if admin
+    if (session.tier !== 'Master' && session.tier !== 'King') {
       return res.status(403).json({ error: 'Forbidden: Admin access required' });
     }
 
@@ -27,10 +38,12 @@ export default async function handler(
       body,
       icon,
       data,
-      broadcast = false
+      url,
+      broadcast = false,
+      tag
     } = req.body;
 
-    // Validate required fields for non-broadcast
+    // Validate required fields
     if (!broadcast && !userId) {
       return res.status(400).json({
         error: 'userId is required unless broadcast is true'
@@ -43,45 +56,92 @@ export default async function handler(
       });
     }
 
-    const payload = {
+    const payload = JSON.stringify({
       title,
       body,
-      icon: icon || '/icons/notification.png',
-      data: data || {}
-    };
+      icon: icon || '/logo.png',
+      badge: '/badge.png',
+      tag: tag || 'migistus-notification',
+      data: { url: url || '/', ...data },
+      requireInteraction: false
+    });
 
     let subscriptions;
-    if (broadcast) {
-      // Send to all active subscriptions
-      subscriptions = await notificationStorage.getAllActivePushSubscriptions();
-    } else {
-      // Send to specific user
-      subscriptions = await notificationStorage.getUserPushSubscriptions(userId);
-    }
+    let sentCount = 0;
+    let failedCount = 0;
 
-    if (subscriptions.length === 0) {
-      return res.status(404).json({
-        error: 'No active push subscriptions found',
-        message: broadcast 
-          ? 'No users are subscribed to push notifications'
-          : 'User has no active push subscriptions'
+    if (isProduction()) {
+      // Use database in production
+      if (broadcast) {
+        subscriptions = await db.getAllActivePushSubscriptions();
+      } else {
+        subscriptions = await db.getUserPushSubscriptions(userId);
+      }
+
+      if (subscriptions.length === 0) {
+        return res.status(404).json({
+          error: 'No active push subscriptions found',
+          message: broadcast 
+            ? 'No users are subscribed to push notifications'
+            : 'User has no active push subscriptions'
+        });
+      }
+
+      // Send push notifications
+      const sendPromises = subscriptions.map(async (sub: any) => {
+        try {
+          await webpush.sendNotification(
+            {
+              endpoint: sub.endpoint,
+              keys: {
+                p256dh: sub.p256dh,
+                auth: sub.auth
+              }
+            },
+            payload
+          );
+          sentCount++;
+        } catch (error: any) {
+          console.error(`Failed to send to ${sub.endpoint}:`, error);
+          failedCount++;
+
+          // Deactivate subscription if it's invalid (410 Gone or 404 Not Found)
+          if (error.statusCode === 410 || error.statusCode === 404) {
+            await db.deactivatePushSubscription(sub.endpoint);
+          }
+        }
       });
-    }
 
-    // TODO: Implement actual push notification sending with web-push library
-    // For now, return success with subscription count
-    // In production, you would:
-    // 1. Import web-push library
-    // 2. Configure VAPID keys
-    // 3. Send notifications to each subscription
-    // 4. Handle failures and deactivate invalid subscriptions
+      await Promise.allSettled(sendPromises);
+    } else {
+      // Use file storage in development
+      if (broadcast) {
+        subscriptions = await notificationStorage.getAllActivePushSubscriptions();
+      } else {
+        subscriptions = await notificationStorage.getUserPushSubscriptions(userId);
+      }
+
+      if (subscriptions.length === 0) {
+        return res.status(404).json({
+          error: 'No active push subscriptions found',
+          message: broadcast 
+            ? 'No users are subscribed to push notifications'
+            : 'User has no active push subscriptions'
+        });
+      }
+
+      // In development, just simulate sending
+      sentCount = subscriptions.length;
+      console.log(`[DEV] Would send push to ${sentCount} subscription(s):`, payload);
+    }
 
     return res.status(200).json({
       success: true,
-      message: `Push notification queued for ${subscriptions.length} subscription(s)`,
-      subscriptionCount: subscriptions.length,
-      payload,
-      note: 'Actual push sending requires web-push library configuration with VAPID keys'
+      message: `Push notification sent to ${sentCount} subscription(s)`,
+      sentCount,
+      failedCount,
+      totalSubscriptions: subscriptions.length,
+      payload: JSON.parse(payload)
     });
   } catch (error) {
     console.error('Push send API error:', error);

@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { db, isProduction } from '@/lib/db';
 import { notificationStorage } from '@/utils/notificationStorage';
 import { getSessionFromRequest } from '@/lib/session';
 
@@ -33,14 +34,27 @@ export default async function handler(
       });
     }
 
-    // Save push subscription
-    const subscription = await notificationStorage.savePushSubscription({
-      userId: session.userId,
-      endpoint,
-      p256dh: keys.p256dh,
-      auth: keys.auth,
-      userAgent: userAgent || req.headers['user-agent'] || ''
-    });
+    let subscription;
+    
+    if (isProduction()) {
+      // Save to database in production
+      subscription = await db.savePushSubscription({
+        userId: session.userId,
+        endpoint,
+        p256dh: keys.p256dh,
+        auth: keys.auth,
+        userAgent: userAgent || req.headers['user-agent'] || ''
+      });
+    } else {
+      // Save to file storage in development
+      subscription = await notificationStorage.savePushSubscription({
+        userId: session.userId,
+        endpoint,
+        p256dh: keys.p256dh,
+        auth: keys.auth,
+        userAgent: userAgent || req.headers['user-agent'] || ''
+      });
+    }
 
     return res.status(201).json({
       success: true,

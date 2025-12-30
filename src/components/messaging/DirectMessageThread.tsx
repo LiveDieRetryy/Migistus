@@ -19,6 +19,8 @@ interface Message {
   content: string;
   createdAt: string;
   read: boolean;
+  edited?: boolean;
+  editedAt?: string;
   reactions?: {
     emoji: string;
     users: number[];
@@ -71,6 +73,8 @@ export default function DirectMessageThread({
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [deletingMessage, setDeletingMessage] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [editContent, setEditContent] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -237,6 +241,48 @@ export default function DirectMessageThread({
     } finally {
       setSending(false);
     }
+  };
+
+  // Edit message
+  const handleEditMessage = async () => {
+    if (!editingMessage || !editContent.trim()) return;
+
+    try {
+      const response = await fetch(`/api/messages/conversation`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          messageId: editingMessage.id,
+          content: editContent.trim()
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Update local messages
+        setMessages(prev => prev.map(m => 
+          m.id === editingMessage.id 
+            ? { ...m, content: editContent.trim(), edited: true, editedAt: new Date().toISOString() } 
+            : m
+        ));
+        // Clear edit state
+        setEditingMessage(null);
+        setEditContent('');
+      } else {
+        console.error('Failed to edit message');
+        alert('Failed to edit message');
+      }
+    } catch (error) {
+      console.error('Error editing message:', error);
+      alert('Error editing message');
+    }
+  };
+
+  // Cancel edit
+  const handleCancelEdit = () => {
+    setEditingMessage(null);
+    setEditContent('');
   };
 
   // Upload file attachment
@@ -515,11 +561,10 @@ export default function DirectMessageThread({
                   setShowDeleteDialog(true);
                 }}
                 onEdit={(msgId) => {
-                  // TODO: Implement edit functionality
                   const msg = messages.find(m => m.id === msgId);
-                  if (msg) {
-                    setNewMessage(msg.content);
-                    textareaRef.current?.focus();
+                  if (msg && msg.senderId === user?.id) {
+                    setEditingMessage(msg);
+                    setEditContent(msg.content);
                   }
                 }}
               />
@@ -539,6 +584,22 @@ export default function DirectMessageThread({
 
       {/* Input */}
       <div className="p-4 border-t border-zinc-700/50">
+        {/* Edit banner */}
+        {editingMessage && (
+          <div className="mb-3 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-xs text-blue-400 font-medium mb-1">Editing message</p>
+              <p className="text-sm text-gray-300 truncate">{editingMessage.content}</p>
+            </div>
+            <button
+              onClick={handleCancelEdit}
+              className="p-1 hover:bg-blue-800/30 rounded transition-colors"
+            >
+              <X className="w-4 h-4 text-blue-400" />
+            </button>
+          </div>
+        )}
+
         {/* File preview */}
         {selectedFile && (
           <div className="mb-3 p-3 bg-zinc-800/50 rounded-lg flex items-center justify-between">
@@ -604,15 +665,27 @@ export default function DirectMessageThread({
             
             <textarea
               ref={textareaRef}
-              value={newMessage}
-              onChange={(e) => handleTyping(e.target.value)}
+              value={editingMessage ? editContent : newMessage}
+              onChange={(e) => {
+                if (editingMessage) {
+                  setEditContent(e.target.value);
+                } else {
+                  handleTyping(e.target.value);
+                }
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  sendMessage();
+                  if (editingMessage) {
+                    handleEditMessage();
+                  } else {
+                    sendMessage();
+                  }
+                } else if (e.key === 'Escape' && editingMessage) {
+                  handleCancelEdit();
                 }
               }}
-              placeholder="Type a message..."
+              placeholder={editingMessage ? "Edit your message..." : "Type a message..."}
               rows={1}
               className="w-full px-4 py-3 bg-transparent text-white placeholder-gray-400 resize-none focus:outline-none max-h-32"
             />
@@ -640,10 +713,10 @@ export default function DirectMessageThread({
           </div>
           
           <button
-            onClick={sendMessage}
-            disabled={(!newMessage.trim() && !selectedFile) || sending || uploadingFile}
+            onClick={editingMessage ? handleEditMessage : sendMessage}
+            disabled={editingMessage ? !editContent.trim() : (!newMessage.trim() && !selectedFile) || sending || uploadingFile}
             className="p-3 bg-yellow-400 hover:bg-yellow-500 disabled:bg-zinc-700 disabled:cursor-not-allowed rounded-full transition-colors flex-shrink-0"
-            title="Send message"
+            title={editingMessage ? "Save edit" : "Send message"}
           >
             <Send className="w-5 h-5 text-black" />
           </button>

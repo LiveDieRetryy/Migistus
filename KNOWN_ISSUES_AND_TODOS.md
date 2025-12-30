@@ -1,10 +1,44 @@
 # Known Issues & TODOs - MIGISTUS Platform
-**Last Updated:** December 29, 2025 - Post Phase 2 Migration  
-**Status:** Updated after followers and messages database migration completion
+**Last Updated:** December 29, 2025 - Push Notifications & Message Editing Complete  
+**Status:** Updated after push notifications and message editing implementation
 
 ---
 
 ## ✅ RECENTLY COMPLETED (December 29, 2025)
+
+### **Push Notifications System** ✅
+- **Completed:** Full web-push implementation with VAPID keys
+- **Files Created/Updated:**
+  - `public/service-worker.js` (NEW) - Browser push notification handler
+  - `src/pages/api/push/send.ts` - Real push notification sending
+  - `src/pages/api/push/subscribe.ts` - Device subscription management
+  - `src/lib/db.ts` - Added push subscription functions
+  - `db/schema.sql` - Added push_subscriptions table
+  - `.env.local` - Added VAPID keys and subject
+- **Result:**
+  - Service worker handles push events, notification clicks, and dismissals
+  - VAPID authentication configured (mailto:noreply@migistus.com)
+  - Database functions: save, getUserSubs, getAllSubs, deactivate, delete
+  - Production sends via webpush.sendNotification()
+  - Auto-deactivates invalid subscriptions (410/404 errors)
+  - Supports broadcast and targeted push notifications
+  - Full TypeScript support with @types/web-push
+
+### **Message Editing Functionality** ✅
+- **Completed:** Full edit UI with keyboard shortcuts and indicators
+- **Files Updated:**
+  - `src/components/messaging/DirectMessageThread.tsx` - Edit state and UI
+  - `src/components/messaging/MessageBubble.tsx` - Edit button and "(edited)" indicator
+  - `src/pages/api/messages/conversation.ts` - PUT handler for edits
+  - `db/schema.sql` - Added edited and edited_at columns
+- **Result:**
+  - Edit mode with blue banner showing original content
+  - Keyboard shortcuts: Enter to save, Escape to cancel
+  - Textarea switches between send/edit modes
+  - "(edited)" indicator next to timestamp
+  - Server validates ownership before allowing edits
+  - Stores edit timestamp for transparency
+  - Only own messages can be edited
 
 ### **Followers API - Database Migration** ✅
 - **Completed:** Online status tracking implemented for both production and development
@@ -59,11 +93,19 @@
 - Deleted users properly handled via CASCADE DELETE
 - See `DATABASE_MIGRATION_COMPLETE_PHASE_2.md` for details
 
+### ~~2. Push Notifications - Missing Implementation~~ ✅ COMPLETED
+**Status:** ✅ **COMPLETED December 29, 2025**
+- Full web-push implementation with VAPID authentication
+- Service worker created for browser notification handling
+- Database functions and schema complete
+- Production sends real push notifications
+- See above for complete implementation details
+
 ---
 
 ## 🟠 HIGH PRIORITY
 
-### 1. **Enforcement Management - Actions Not Wired Up** (Moved to #1)
+### 1. **Enforcement Management - Actions Not Wired Up**
 **File:** `src/pages/kingdom/enforcement-management.tsx`  
 **Lines:** 31, 38  
 **Status:** ⚠️ UI COMPLETE, BACKEND NOT CONNECTED
@@ -106,26 +148,19 @@ const handleMute = async (userId: number) => {
 - Account creation with bcrypt password hashing
 - Database integration for user and supplier profile
 - Welcome email with login credentials
-
 - See `DATABASE_MIGRATION_COMPLETE_PHASE_2.md` for implementation details
 
 ---
 
-### 2. **Push Notifications - Not Implemented**
-**File:** `src/pages/api/push/send.ts`  
-**Line:** 71  
-**Status:** ⚠️ ENDPOINT EXISTS, FUNCTIONALITY MISSING
+### ~~3. Message Edit Functionality - Missing~~ ✅ COMPLETED
+**Status:** ✅ **COMPLETED December 29, 2025**
+- Full edit UI in DirectMessageThread with keyboard shortcuts
+- Edit button in MessageBubble, "(edited)" indicator
+- PUT handler in conversation API
+- Database schema with edited and edited_at columns
+- Server-side ownership validation
 
-**Problem:**
-- Push notification endpoint exists but doesn't send notifications
-- TODO comment indicates web-push library needed
-- Service worker may not be configured
-
-**Impact:**
-- Users don't receive real-time notifications for:
-  - New messages
-  - Product drops
-  - Follower activity
+---
   - Vote results
   - Order updates
 

@@ -117,7 +117,7 @@ class DatabaseNotificationStorage {
   }
 
   async removePushSubscription(endpoint: string) {
-    return await db.removePushSubscription(endpoint);
+    return await db.deletePushSubscription(endpoint);
   }
 
   async getUserPushSubscriptions(userId: number) {

@@ -763,6 +763,66 @@ export const db = {
     return result.rows;
   },
 
+  // Push Subscriptions
+  async savePushSubscription(data: {
+    userId: number;
+    endpoint: string;
+    p256dh: string;
+    auth: string;
+    userAgent?: string;
+  }) {
+    const result = await sql`
+      INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth, user_agent)
+      VALUES (${data.userId}, ${data.endpoint}, ${data.p256dh}, ${data.auth}, ${data.userAgent || null})
+      ON CONFLICT (endpoint) 
+      DO UPDATE SET 
+        user_id = ${data.userId},
+        p256dh = ${data.p256dh},
+        auth = ${data.auth},
+        is_active = true,
+        last_used = CURRENT_TIMESTAMP
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async getUserPushSubscriptions(userId: number) {
+    const result = await sql`
+      SELECT * FROM push_subscriptions 
+      WHERE user_id = ${userId} AND is_active = true
+      ORDER BY created_at DESC
+    `;
+    return result.rows;
+  },
+
+  async getAllActivePushSubscriptions() {
+    const result = await sql`
+      SELECT * FROM push_subscriptions 
+      WHERE is_active = true
+      ORDER BY last_used DESC
+    `;
+    return result.rows;
+  },
+
+  async deactivatePushSubscription(endpoint: string) {
+    const result = await sql`
+      UPDATE push_subscriptions 
+      SET is_active = false 
+      WHERE endpoint = ${endpoint}
+      RETURNING *
+    `;
+    return result.rows[0] || null;
+  },
+
+  async deletePushSubscription(endpoint: string) {
+    const result = await sql`
+      DELETE FROM push_subscriptions 
+      WHERE endpoint = ${endpoint}
+      RETURNING *
+    `;
+    return result.rows[0] || null;
+  },
+
   async getUserModerationHistory(userId: number) {
     const result = await sql`
       SELECT ma.*, u.username as moderator_username
@@ -1280,68 +1340,6 @@ export const db = {
       DELETE FROM email_queue
       WHERE status = 'sent' AND sent_at < ${cutoffDate}
     `;
-  },
-
-  // Push Subscriptions
-  async savePushSubscription(data: {
-    userId: number;
-    endpoint: string;
-    p256dh: string;
-    auth: string;
-    userAgent?: string;
-    deviceType?: string;
-  }) {
-    const result = await sql`
-      INSERT INTO push_subscriptions (
-        user_id, endpoint, p256dh, auth, user_agent, device_type
-      ) VALUES (
-        ${data.userId},
-        ${data.endpoint},
-        ${data.p256dh},
-        ${data.auth},
-        ${data.userAgent || null},
-        ${data.deviceType || 'unknown'}
-      )
-      ON CONFLICT (endpoint) 
-      DO UPDATE SET 
-        user_id = ${data.userId},
-        p256dh = ${data.p256dh},
-        auth = ${data.auth},
-        updated_at = CURRENT_TIMESTAMP
-      RETURNING *
-    `;
-    return result.rows[0];
-  },
-
-  async removePushSubscription(endpoint: string) {
-    await sql`DELETE FROM push_subscriptions WHERE endpoint = ${endpoint}`;
-  },
-
-  async getUserPushSubscriptions(userId: number) {
-    const result = await sql`
-      SELECT * FROM push_subscriptions
-      WHERE user_id = ${userId}
-      ORDER BY created_at DESC
-    `;
-    return result.rows;
-  },
-
-  async getAllActivePushSubscriptions() {
-    const result = await sql`
-      SELECT * FROM push_subscriptions
-      WHERE is_active = true
-    `;
-    return result.rows;
-  },
-
-  async deactivatePushSubscription(endpoint: string) {
-    const result = await sql`
-      UPDATE push_subscriptions
-      SET is_active = false
-      WHERE endpoint = ${endpoint}
-      RETURNING *
-    `;
-    return result.rows[0];
   },
 
   // Real-time Sessions (WebSocket tracking)

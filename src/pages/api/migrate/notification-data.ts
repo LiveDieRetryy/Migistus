@@ -127,8 +127,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               endpoint: sub.endpoint,
               p256dh: sub.p256dh,
               auth: sub.auth,
-              userAgent: sub.user_agent || sub.userAgent,
-              deviceType: sub.device_type || sub.deviceType
+              userAgent: sub.user_agent || sub.userAgent
             });
             results.pushSubscriptions.migrated++;
           }
