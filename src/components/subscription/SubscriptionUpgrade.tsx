@@ -114,8 +114,18 @@ const SubscriptionUpgrade: React.FC<SubscriptionUpgradeProps> = ({
       });
 
       if (!customerResponse.ok) {
-        const errorData = await customerResponse.json();
-        throw new Error(errorData.error || 'Failed to create customer');
+        const errorText = await customerResponse.text();
+        let errorMessage = 'Failed to create customer';
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || errorMessage;
+          if (errorData.details) {
+            errorMessage += `: ${errorData.details}`;
+          }
+        } catch {
+          errorMessage += `: ${errorText || 'Unknown error'}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const { customerId } = await customerResponse.json();

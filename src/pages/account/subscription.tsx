@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useAuth } from '@/context/AuthContext';
+import MainNavbar from '@/components/nav/MainNavbar';
 import SubscriptionUpgrade from '@/components/subscription/SubscriptionUpgrade';
 import { AlertCircle, CheckCircle, XCircle, Crown } from 'lucide-react';
 
@@ -61,6 +62,8 @@ export default function SubscriptionPage() {
         <title>Subscription - MIGISTUS</title>
         <meta name="description" content="Manage your MIGISTUS membership subscription" />
       </Head>
+
+      <MainNavbar />
 
       <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black">
         {/* Success Message */}
