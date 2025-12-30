@@ -89,6 +89,8 @@ export const db = {
     if (data.mutedUntil !== undefined) updateFields.muted_until = data.mutedUntil;
     if (data.isActive !== undefined) updateFields.is_active = data.isActive;
     if (data.emailVerified !== undefined) updateFields.email_verified = data.emailVerified;
+    if (data.wallet !== undefined) updateFields.wallet = data.wallet;
+    if (data.guildCoins !== undefined) updateFields.guild_coins = data.guildCoins;
     
     // If no fields to update, just return the existing user
     if (Object.keys(updateFields).length === 0) {
@@ -109,6 +111,8 @@ export const db = {
         muted_until = COALESCE(${updateFields.muted_until || null}, muted_until),
         is_active = COALESCE(${updateFields.is_active !== undefined ? updateFields.is_active : null}, is_active),
         email_verified = COALESCE(${updateFields.email_verified !== undefined ? updateFields.email_verified : null}, email_verified),
+        wallet = COALESCE(${updateFields.wallet !== undefined ? updateFields.wallet : null}, wallet),
+        guild_coins = COALESCE(${updateFields.guild_coins !== undefined ? updateFields.guild_coins : null}, guild_coins),
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
       RETURNING *

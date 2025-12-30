@@ -31,7 +31,10 @@ CREATE TABLE IF NOT EXISTS users (
   city VARCHAR(100),
   phone_number VARCHAR(50),
   referral_source VARCHAR(255),
-  agree_to_marketing BOOLEAN DEFAULT false
+  agree_to_marketing BOOLEAN DEFAULT false,
+  -- Financial fields
+  wallet DECIMAL(10, 2) DEFAULT 0.00,
+  guild_coins INTEGER DEFAULT 0
 );
 
 -- Sessions table
