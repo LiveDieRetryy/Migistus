@@ -163,7 +163,11 @@
       "marketingEmails": true,
       "productUpdates": true,
       "orderUpdates": true,
-      "updatedAt": "2025-12-07T08:15:29.817Z"
+      "updatedAt": "2025-12-07T08:15:29.817Z",
+      "stripeCustomerId": "cus_ThKdr2Kwwv9s6h",
+      "stripeSubscriptionId": "sub_1SjvyYQtP8wrIBCp12aanuwF",
+      "stripeSubscriptionStatus": "canceling",
+      "subscriptionCurrentPeriodEnd": null
     },
     {
       "id": 1765515711190,

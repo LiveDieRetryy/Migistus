@@ -34,7 +34,12 @@ CREATE TABLE IF NOT EXISTS users (
   agree_to_marketing BOOLEAN DEFAULT false,
   -- Financial fields
   wallet DECIMAL(10, 2) DEFAULT 0.00,
-  guild_coins INTEGER DEFAULT 0
+  guild_coins INTEGER DEFAULT 0,
+  -- Stripe subscription fields
+  stripe_customer_id VARCHAR(255),
+  stripe_subscription_id VARCHAR(255),
+  stripe_subscription_status VARCHAR(50),
+  subscription_current_period_end TIMESTAMP
 );
 
 -- Sessions table

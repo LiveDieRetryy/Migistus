@@ -1,10 +1,46 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import { db } from '@/lib/db';
+import fs from 'fs';
+import path from 'path';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-12-15.clover',
 });
+
+// Check if running in production
+const isProduction = () => {
+  return process.env.NEXT_PUBLIC_USE_DATABASE === 'true' || 
+         process.env.NODE_ENV === 'production';
+};
+
+// File-based user lookup for development
+const getUserFromFile = (userId: number) => {
+  try {
+    const usersPath = path.join(process.cwd(), 'public', 'data', 'users.json');
+    const data = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+    return data.users.find((u: any) => u.id === userId) || null;
+  } catch (error) {
+    console.error('Error reading users file:', error);
+    return null;
+  }
+};
+
+// Update user in file for development
+const updateUserInFile = (userId: number, updates: any) => {
+  try {
+    const usersPath = path.join(process.cwd(), 'public', 'data', 'users.json');
+    const data = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+    const userIndex = data.users.findIndex((u: any) => u.id === userId);
+    
+    if (userIndex !== -1) {
+      data.users[userIndex] = { ...data.users[userIndex], ...updates };
+      fs.writeFileSync(usersPath, JSON.stringify(data, null, 2));
+    }
+  } catch (error) {
+    console.error('Error updating users file:', error);
+  }
+};
 
 export default async function handler(
   req: NextApiRequest,
@@ -25,11 +61,16 @@ export default async function handler(
       });
     }
 
-    // Check if user already has a Stripe customer ID
-    const user = await db.getUserById(userId);
+    // Get user from appropriate storage
+    const user = isProduction() 
+      ? await db.getUserById(userId)
+      : getUserFromFile(userId);
     
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ 
+        error: 'User not found',
+        details: `User with ID ${userId} does not exist in ${isProduction() ? 'database' : 'file storage'}`
+      });
     }
 
     // If user already has a stripe_customer_id, retrieve and return it
@@ -61,11 +102,17 @@ export default async function handler(
     });
 
     // Update user record with Stripe customer ID
-    await db.updateUser(userId, {
-      stripeCustomerId: customer.id
-    });
+    if (isProduction()) {
+      await db.updateUser(userId, {
+        stripeCustomerId: customer.id
+      });
+    } else {
+      updateUserInFile(userId, {
+        stripeCustomerId: customer.id
+      });
+    }
 
-    console.log(`✅ Created Stripe customer ${customer.id} for user ${userId}`);
+    console.log(`✅ Created Stripe customer ${customer.id} for user ${userId} (${isProduction() ? 'database' : 'file'})`);
 
     res.status(200).json({ 
       customerId: customer.id,

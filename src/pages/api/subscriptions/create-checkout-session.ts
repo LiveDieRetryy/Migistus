@@ -1,10 +1,30 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import { db } from '@/lib/db';
+import fs from 'fs';
+import path from 'path';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-12-15.clover',
 });
+
+// Check if running in production
+const isProduction = () => {
+  return process.env.NEXT_PUBLIC_USE_DATABASE === 'true' || 
+         process.env.NODE_ENV === 'production';
+};
+
+// File-based user lookup for development
+const getUserFromFile = (userId: number) => {
+  try {
+    const usersPath = path.join(process.cwd(), 'public', 'data', 'users.json');
+    const data = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+    return data.users.find((u: any) => u.id === userId) || null;
+  } catch (error) {
+    console.error('Error reading users file:', error);
+    return null;
+  }
+};
 
 // Price IDs from Stripe Dashboard
 // You'll need to replace these with your actual price IDs from Stripe
@@ -51,9 +71,15 @@ export default async function handler(
     }
 
     // Verify user exists
-    const user = await db.getUserById(userId);
+    const user = isProduction()
+      ? await db.getUserById(userId)
+      : getUserFromFile(userId);
+      
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ 
+        error: 'User not found',
+        details: `User with ID ${userId} does not exist in ${isProduction() ? 'database' : 'file storage'}`
+      });
     }
 
     // Create Stripe Checkout Session
@@ -84,7 +110,7 @@ export default async function handler(
       billing_address_collection: 'auto',
     });
 
-    console.log(`✅ Created checkout session ${session.id} for user ${userId} - ${tier} tier`);
+    console.log(`✅ Created checkout session ${session.id} for user ${userId} - ${tier} tier (${isProduction() ? 'database' : 'file'})`);
 
     res.status(200).json({ 
       sessionId: session.id,

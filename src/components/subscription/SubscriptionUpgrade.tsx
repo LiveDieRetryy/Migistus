@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Check, Crown, Sparkles, Zap } from 'lucide-react';
+import { Check, Crown, Sparkles, Zap, AlertCircle } from 'lucide-react';
 
 interface SubscriptionUpgradeProps {
   currentTier: 'Initiate' | 'Guild' | 'MIGISTUS';
   userId: number;
   email: string;
   username: string;
+  stripeSubscriptionId?: string;
+  stripeSubscriptionStatus?: string;
 }
 
 interface PlanFeature {
@@ -30,15 +32,21 @@ const SubscriptionUpgrade: React.FC<SubscriptionUpgradeProps> = ({
   userId,
   email,
   username,
+  stripeSubscriptionId,
+  stripeSubscriptionStatus,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [targetTier, setTargetTier] = useState<'initiate' | 'guild' | 'elite' | null>(null);
 
   const plans: Plan[] = [
     {
       id: 'initiate',
       name: 'Initiate',
-      displayName: 'Free Tier',
+      displayName: 'Initiate',
       price: 0,
       interval: 'forever',
       icon: <Sparkles className="w-6 h-6" />,
@@ -161,6 +169,62 @@ const SubscriptionUpgrade: React.FC<SubscriptionUpgradeProps> = ({
     }
   };
 
+  const handleDowngrade = async (planId: 'initiate' | 'guild' | 'elite') => {
+    if (!stripeSubscriptionId) {
+      setError('No active subscription found');
+      return;
+    }
+
+    // Store which tier they're downgrading to and show confirmation modal
+    setTargetTier(planId);
+    setShowConfirmModal(true);
+  };
+
+  const confirmDowngrade = async () => {
+    setShowConfirmModal(false);
+    setCancelLoading(true);
+    setError(null);
+
+    const targetTierName = targetTier === 'initiate' ? 'Initiate' : targetTier === 'guild' ? 'Guild' : 'MIGISTUS';
+
+    try {
+      const response = await fetch('/api/subscriptions/cancel-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          subscriptionId: stripeSubscriptionId,
+          targetTier: targetTierName,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to cancel subscription');
+      }
+
+      const data = await response.json();
+      
+      // Update localStorage immediately
+      const sessionData = localStorage.getItem('userSession');
+      if (sessionData) {
+        const session = JSON.parse(sessionData);
+        session.user.tier = targetTierName;
+        session.user.stripeSubscriptionStatus = 'canceling';
+        localStorage.setItem('userSession', JSON.stringify(session));
+      }
+      
+      setSuccessMessage(`Subscription will be canceled at the end of your billing period${data.periodEnd ? `: ${data.periodEnd}` : ''}. You'll retain access until then.`);
+      // Reload after 3 seconds to show the message
+      setTimeout(() => window.location.reload(), 3000);
+    } catch (err) {
+      console.error('Cancel error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to cancel subscription');
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
   const currentPlanIndex = getCurrentPlanIndex();
 
   return (
@@ -168,16 +232,48 @@ const SubscriptionUpgrade: React.FC<SubscriptionUpgradeProps> = ({
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-white mb-4">
-          Choose Your Membership Tier
+          {currentTier === 'MIGISTUS' && stripeSubscriptionStatus === 'active' 
+            ? 'You are part of the Elite MIGISTUS Users' 
+            : currentTier === 'Guild' && stripeSubscriptionStatus === 'active'
+            ? 'You are a Guild Member'
+            : 'Choose Your Membership Tier'}
         </h1>
         <p className="text-xl text-gray-400">
-          Unlock exclusive benefits and features with a MIGISTUS membership
+          {currentTier === 'MIGISTUS' && stripeSubscriptionStatus === 'active'
+            ? 'You can downgrade or unsubscribe at any time, but you will lose your elite perks'
+            : currentTier === 'Guild' && stripeSubscriptionStatus === 'active'
+            ? 'You can upgrade or unsubscribe at any time, but you will lose your Guild perks if you cancel'
+            : 'Unlock exclusive benefits and features with a MIGISTUS membership'}
         </p>
       </div>
 
       {error && (
         <div className="mb-6 p-4 bg-red-500/10 border border-red-500 rounded-lg text-red-400">
           {error}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="mb-6 p-4 bg-green-500/10 border border-green-500 rounded-lg text-green-400">
+          {successMessage}
+        </div>
+      )}
+
+      {/* Canceling Status Banner */}
+      {stripeSubscriptionStatus === 'canceling' && (
+        <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500 rounded-lg">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-yellow-400 font-semibold mb-1">
+                {currentTier !== 'Initiate' ? 'Downgrading Subscription' : 'Subscription Canceling'}
+              </h3>
+              <p className="text-gray-300 text-sm">
+                You still have access to your premium features until the end of your billing period. 
+                {currentTier !== 'Initiate' ? ' Your new tier will take effect at the start of your next billing cycle.' : ' You can reactivate your subscription at any time before it expires.'}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -225,9 +321,13 @@ const SubscriptionUpgrade: React.FC<SubscriptionUpgradeProps> = ({
 
               {/* Price */}
               <div className="mb-6">
-                <span className="text-4xl font-bold text-white">${plan.price}</span>
-                {plan.price > 0 && (
-                  <span className="text-gray-400 ml-2">/{plan.interval}</span>
+                {plan.price === 0 ? (
+                  <span className="text-4xl font-bold text-green-400">free</span>
+                ) : (
+                  <>
+                    <span className="text-4xl font-bold text-white">${plan.price}</span>
+                    <span className="text-gray-400 ml-2">/{plan.interval}</span>
+                  </>
                 )}
               </div>
 
@@ -252,29 +352,45 @@ const SubscriptionUpgrade: React.FC<SubscriptionUpgradeProps> = ({
               {/* Action Button */}
               <button
                 onClick={() => {
-                  if (isUpgrade && plan.id !== 'initiate') {
+                  if ((isUpgrade || (isCurrent && stripeSubscriptionStatus === 'canceling')) && plan.id !== 'initiate') {
                     handleUpgrade(plan.id as 'guild' | 'elite');
+                  } else if (isDowngrade && stripeSubscriptionId) {
+                    handleDowngrade(plan.id);
                   }
                 }}
-                disabled={isCurrent || isDowngrade || loading || plan.id === 'initiate'}
+                disabled={
+                  (isCurrent && stripeSubscriptionStatus !== 'canceling') || 
+                  (isDowngrade && !stripeSubscriptionId) || 
+                  loading || 
+                  cancelLoading || 
+                  (plan.id === 'initiate' && !stripeSubscriptionId)
+                }
                 className={`w-full py-3 px-6 rounded-lg font-semibold transition-all ${
-                  isCurrent
+                  isCurrent && stripeSubscriptionStatus === 'canceling'
+                    ? `bg-gradient-to-r ${plan.color} text-white hover:opacity-90 hover:scale-105`
+                    : isCurrent
+                    ? 'bg-gray-700 text-gray-400 cursor-default'
+                    : isDowngrade && stripeSubscriptionId
+                    ? 'bg-red-600 hover:bg-red-700 text-white hover:scale-105'
+                    : plan.id === 'initiate' && !stripeSubscriptionId
                     ? 'bg-gray-700 text-gray-400 cursor-default'
                     : isDowngrade
                     ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                    : plan.id === 'initiate'
-                    ? 'bg-gray-700 text-gray-400 cursor-default'
                     : `bg-gradient-to-r ${plan.color} text-white hover:opacity-90 hover:scale-105`
-                } ${loading ? 'opacity-50 cursor-wait' : ''}`}
+                } ${loading || cancelLoading ? 'opacity-50 cursor-wait' : ''}`}
               >
-                {loading
+                {loading || cancelLoading
                   ? 'Processing...'
+                  : isCurrent && stripeSubscriptionStatus === 'canceling'
+                  ? 'Current Subscription'
                   : isCurrent
                   ? 'Current Plan'
+                  : isDowngrade && stripeSubscriptionId
+                  ? 'Downgrade'
+                  : plan.id === 'initiate' && !stripeSubscriptionId
+                  ? 'Free Forever'
                   : isDowngrade
                   ? 'Contact Support'
-                  : plan.id === 'initiate'
-                  ? 'Free Forever'
                   : 'Upgrade Now'}
               </button>
             </div>
@@ -289,6 +405,41 @@ const SubscriptionUpgrade: React.FC<SubscriptionUpgradeProps> = ({
           Cancel anytime. No questions asked. Payments processed securely via Stripe.
         </p>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-2xl p-8 max-w-md w-full border border-gray-700 shadow-2xl">
+            <h3 className="text-2xl font-bold text-white mb-6">
+              Are you sure you want to downgrade your subscription?
+            </h3>
+            <p className="text-gray-400 mb-4 text-sm leading-relaxed">
+              Your subscription will remain active until the end of your current billing period.
+              {targetTier === 'initiate' ? (
+                <span className="block mt-2 text-gray-300">After that, you will lose access to premium features and your subscription will be canceled.</span>
+              ) : (
+                <span className="block mt-2 text-gray-300">
+                  Your next billing cycle will be <span className="font-semibold text-white">${plans.find(p => p.id === targetTier)?.price}/month</span> instead of <span className="font-semibold text-white">${plans.find(p => p.id === currentTier.toLowerCase() as 'guild' | 'elite')?.price}/month</span>.
+                </span>
+              )}
+            </p>
+            <div className="flex gap-4 justify-end">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-6 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDowngrade}
+                className="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

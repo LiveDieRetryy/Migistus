@@ -177,6 +177,13 @@ export const db = {
     await sql`DELETE FROM sessions WHERE session_id = ${sessionId}`;
   },
 
+  async updateSessionTier(sessionId: string, tier: string) {
+    // Note: In production, user tier is stored in users table, not sessions
+    // Sessions join with users to get current tier, so we don't need to update sessions
+    // This is a no-op in database mode but kept for API compatibility
+    console.log(`Note: updateSessionTier called but tier is stored in users table, not sessions`);
+  },
+
   // Email Verification Tokens
   async createVerificationToken(email: string, code: string, expiresAt: Date) {
     const result = await sql`

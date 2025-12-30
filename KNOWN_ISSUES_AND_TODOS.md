@@ -1,6 +1,36 @@
 # Known Issues & TODOs - MIGISTUS Platform
-**Last Updated:** December 29, 2025 - Push Notifications & Message Editing Complete  
-**Status:** Updated after push notifications and message editing implementation
+**Last Updated:** December 29, 2025 - Stripe Subscription Fix Deployed  
+**Status:** Stripe columns migration ready, push notifications complete
+
+---
+
+## 🔴 URGENT - PRODUCTION ISSUE
+
+### **Stripe Subscription Upgrade Broken - Missing Database Columns**
+**Status:** 🔧 **FIX READY - MIGRATION REQUIRED**  
+**Error:** "Failed to create customer: Unknown error"  
+**File:** See `STRIPE_SUBSCRIPTION_FIX.md` for complete solution
+
+**Problem:**
+- Production database missing Stripe columns in `users` table
+- Code attempts to save `stripe_customer_id` but column doesn't exist
+- Membership upgrade buttons fail with generic error
+
+**Solution:**
+- ✅ Migration script created: `db/migrations/add_stripe_columns.sql`
+- ✅ Schema updated: `db/schema.sql`
+- ⏳ **ACTION REQUIRED:** Run migration in Vercel Postgres dashboard
+
+**Quick Fix:**
+```sql
+-- Run this in Vercel SQL Editor:
+ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_id VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_status VARCHAR(50);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_current_period_end TIMESTAMP;
+```
+
+**Documentation:** `STRIPE_SUBSCRIPTION_FIX.md` (complete step-by-step guide)
 
 ---
 
