@@ -644,7 +644,7 @@ export default function HomePage() {
                     <span>Member badge & perks</span>
                   </li>
                 </ul>
-                <Link href="/register" legacyBehavior>
+                <Link href="/account/subscription" legacyBehavior>
                   <a className="block w-full text-center bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-yellow-500/30">
                     Upgrade Now
                   </a>
@@ -683,7 +683,7 @@ export default function HomePage() {
                     <span>Crown badge & premium perks</span>
                   </li>
                 </ul>
-                <Link href="/register" legacyBehavior>
+                <Link href="/account/subscription" legacyBehavior>
                   <a className="block w-full text-center bg-purple-500 hover:bg-purple-400 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-purple-500/30">
                     Go Elite
                   </a>
