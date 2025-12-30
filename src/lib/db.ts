@@ -145,7 +145,7 @@ export const db = {
   async markUserAsVerified(email: string) {
     const result = await sql`
       UPDATE users 
-      SET email_verified = true, verified = true, updated_at = CURRENT_TIMESTAMP
+      SET email_verified = true, updated_at = CURRENT_TIMESTAMP
       WHERE LOWER(email) = LOWER(${email})
       RETURNING *
     `;
