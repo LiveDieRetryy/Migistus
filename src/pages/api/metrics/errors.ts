@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { metrics } from '@/lib/metrics';
-import { getServerSession } from '@/lib/session';
+import { getSessionFromRequest } from '@/lib/session';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     // Require admin access
-    const session = await getServerSession(req, res);
-    if (!session || session.role !== 'admin') {
+    const session = await getSessionFromRequest(req);
+    if (!session || session.tier !== 'Admin') {
       return res.status(403).json({ error: 'Admin access required' });
     }
 

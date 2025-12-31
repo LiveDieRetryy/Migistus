@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import KingdomLayout from '@/components/kingdom/KingdomLayout';
+import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 
 interface MetricsData {
   metrics: {
@@ -48,7 +49,7 @@ export default function MonitoringPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   useEffect(() => {
-    if (user && user.role !== 'admin') {
+    if (user && user.tier !== 'Admin') {
       router.push('/');
     }
   }, [user, router]);
@@ -101,12 +102,15 @@ export default function MonitoringPage() {
     return 'text-green-600';
   };
 
-  if (!user || user.role !== 'admin') {
+  if (!user || user.tier !== 'Admin') {
     return null;
   }
 
   return (
-    <KingdomLayout>
+    <DashboardLayout>
+      <Head>
+        <title>System Monitoring - MIGISTUS Kingdom</title>
+      </Head>
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -285,6 +289,6 @@ export default function MonitoringPage() {
           <div className="text-center py-12 text-gray-500">Failed to load metrics</div>
         )}
       </div>
-    </KingdomLayout>
+    </DashboardLayout>
   );
 }
