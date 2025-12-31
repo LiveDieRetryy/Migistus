@@ -4,6 +4,7 @@ import { createSession, setSessionCookie } from "@/lib/session";
 import { sendEmail, emailTemplates } from "@/lib/email";
 import { db } from "@/lib/db";
 import { validateUsername } from "@/lib/profanity-filter";
+import { appCache as cache } from "@/lib/cache";
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
@@ -246,6 +247,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     guildCoins: savedUser.guildCoins || 100,
     guildTokens: savedUser.guildTokens || 100
   };
+
+  // Invalidate users cache
+  cache.invalidate('users:all');
 
   res.status(201).json({ 
     success: true, 

@@ -76,6 +76,27 @@ class Cache {
       callbacks.forEach((callback: () => void) => callback());
     });
   }
+
+  getStats() {
+    let active = 0;
+    let expired = 0;
+    const now = Date.now();
+    
+    this.cache.forEach(entry => {
+      if (now - entry.timestamp > entry.ttl) {
+        expired++;
+      } else {
+        active++;
+      }
+    });
+
+    return {
+      total: this.cache.size,
+      active,
+      expired,
+      keys: Array.from(this.cache.keys())
+    };
+  }
 }
 
 export const appCache = new Cache();
