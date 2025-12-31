@@ -3,19 +3,12 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { sql } from '@vercel/postgres';
 import { emitChatMessage } from '@/utils/socketEmitter';
 import { getSessionFromRequest } from '@/lib/session';
-import fs from 'fs';
-import path from 'path';
+import { db } from '@/lib/db';
 
 // Helper function to check if user1 follows user2
-function checkIfFollowing(userId1: number, userId2: number): boolean {
+async function checkIfFollowing(userId1: number, userId2: number): Promise<boolean> {
   try {
-    const followersPath = path.join(process.cwd(), 'public', 'data', 'followers.json');
-    const followersData = JSON.parse(fs.readFileSync(followersPath, 'utf-8'));
-    const follows = followersData.follows || [];
-    
-    return follows.some((follow: any) => 
-      follow.followerId === userId1 && follow.followingId === userId2
-    );
+    return await db.isFollowing(userId1, userId2);
   } catch (error) {
     console.error('Error checking follow status:', error);
     return false;
@@ -59,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         conversationStatus = existingConversation.rows[0].status || 'accepted';
       } else {
         // Check if recipient follows sender back
-        const recipientFollowsSender = checkIfFollowing(recipientId, userId);
+        const recipientFollowsSender = await checkIfFollowing(recipientId, userId);
         
         // If recipient doesn't follow sender, conversation is pending
         conversationStatus = recipientFollowsSender ? 'accepted' : 'pending';

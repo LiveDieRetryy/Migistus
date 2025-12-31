@@ -1,37 +1,5 @@
-import fs from 'fs';
-import path from 'path';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-const LIVE_DROPS_PATH = path.resolve('public/data/live-drops.json');
-
-function readLiveDropsData() {
-  try {
-    if (!fs.existsSync(LIVE_DROPS_PATH)) {
-      const initialData = { liveDrops: [] };
-      fs.writeFileSync(LIVE_DROPS_PATH, JSON.stringify(initialData, null, 2));
-      return initialData;
-    }
-    
-    const fileContent = fs.readFileSync(LIVE_DROPS_PATH, 'utf-8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    console.error('Error reading live drops file:', error);
-    return { liveDrops: [] };
-  }
-}
-
-function writeLiveDropsData(data: any) {
-  try {
-    const dir = path.dirname(LIVE_DROPS_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(LIVE_DROPS_PATH, JSON.stringify(data, null, 2));
-  } catch (error) {
-    console.error('Error writing live drops file:', error);
-    throw new Error('Failed to save live drops data');
-  }
-}
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -40,21 +8,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const dropData = req.body;
+    const { productId, productName, pledgeGoal, startTime, duration } = req.body;
     
     // Validate required fields
-    if (!dropData.productId || !dropData.startTime || !dropData.endTime) {
+    if (!productId || !productName || !startTime) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const liveDropsData = readLiveDropsData();
+    const newDrop = await db.createLiveDrop({
+      productId: parseInt(productId),
+      productName,
+      pledgeGoal: parseFloat(pledgeGoal || 0),
+      startTime,
+      durationHours: parseInt(duration || 24)
+    });
     
-    // Add the new drop
-    liveDropsData.liveDrops.push(dropData);
-    
-    writeLiveDropsData(liveDropsData);
-    
-    res.status(201).json({ success: true, drop: dropData });
+    res.status(201).json({ success: true, drop: newDrop });
   } catch (error) {
     console.error('Error creating live drop:', error);
     res.status(500).json({ error: 'Failed to create live drop' });

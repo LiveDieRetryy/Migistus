@@ -1,45 +1,24 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
+import { db } from '@/lib/db';
 import { getSessionToken, getSession } from '@/lib/session';
-
-const reportsPath = path.join(process.cwd(), 'public', 'data', 'chat-reports.json');
-const usersPath = path.join(process.cwd(), 'public', 'data', 'users.json');
 
 interface ChatReport {
   id: number;
-  reporterId: number;
-  reporterName: string;
-  reportedUserId: number;
-  reportedUserName: string;
-  messageId: number;
-  messageContent: string;
-  productId: number;
+  reporter_id: number;
+  reporter_name: string;
+  reported_user_id: number;
+  reported_user_name: string;
+  message_id: number;
+  message_content: string;
+  product_id: number;
   reason: string;
   description?: string;
   status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
-  createdAt: string;
-  reviewedAt?: string;
-  reviewedBy?: number;
+  created_at: string;
+  reviewed_at?: string;
+  reviewed_by?: number;
   action?: string;
-  reportedUserMessageHistory?: any[];
 }
-
-const getReports = (): ChatReport[] => {
-  try {
-    if (!fs.existsSync(reportsPath)) {
-      return [];
-    }
-    return JSON.parse(fs.readFileSync(reportsPath, 'utf8'));
-  } catch (error) {
-    console.error('Error reading reports:', error);
-    return [];
-  }
-};
-
-const saveReports = (reports: ChatReport[]) => {
-  fs.writeFileSync(reportsPath, JSON.stringify(reports, null, 2));
-};
 
 const getUserFromSession = async (req: NextApiRequest): Promise<{ userId: number; isAdmin: boolean } | null> => {
   try {
@@ -50,12 +29,8 @@ const getUserFromSession = async (req: NextApiRequest): Promise<{ userId: number
     if (!session) return null;
     
     // Check if user is admin
-    let isAdmin = false;
-    if (fs.existsSync(usersPath)) {
-      const users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
-      const user = users.find((u: any) => u.id === session.userId);
-      isAdmin = user?.role === 'admin' || user?.role === 'staff';
-    }
+    const user = await db.getUserById(session.userId);
+    const isAdmin = user?.role === 'admin' || user?.role === 'staff';
     
     return {
       userId: session.userId,
@@ -90,43 +65,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Invalid action. Must be "resolve" or "dismiss"' });
       }
 
-      const reports = getReports();
-      const reportIndex = reports.findIndex(r => r.id === reportId);
+      // Update report in database
+      const report = await db.updateReport(reportId, {
+        status: action === 'resolve' ? 'resolved' : 'dismissed',
+        reviewedBy: user.userId,
+        actionTaken: actionNote || action
+      });
 
-      if (reportIndex === -1) {
+      if (!report) {
         return res.status(404).json({ error: 'Report not found' });
       }
 
-      // Update report status
-      reports[reportIndex] = {
-        ...reports[reportIndex],
-        status: action === 'resolve' ? 'resolved' : 'dismissed',
-        reviewedAt: new Date().toISOString(),
-        reviewedBy: user.userId,
-        action: actionNote || action
-      };
-
-      saveReports(reports);
-
       // Log the moderation action
-      const moderationPath = path.join(process.cwd(), 'public', 'data', 'moderation.json');
-      if (fs.existsSync(moderationPath)) {
-        const logs = JSON.parse(fs.readFileSync(moderationPath, 'utf8'));
-        logs.push({
-          type: 'report_action',
-          action,
-          reportId,
-          moderatorId: user.userId,
-          reportedUserId: reports[reportIndex].reportedUserId,
-          timestamp: new Date().toISOString()
-        });
-        fs.writeFileSync(moderationPath, JSON.stringify(logs.slice(-1000), null, 2));
-      }
+      await db.createModerationLog({
+        type: 'report_action',
+        action,
+        reportId,
+        moderatorId: user.userId,
+        reportedUserId: report.reported_user_id
+      });
 
       return res.status(200).json({
         success: true,
         message: `Report ${action === 'resolve' ? 'resolved' : 'dismissed'} successfully`,
-        report: reports[reportIndex]
+        report
       });
     } catch (error) {
       console.error('Error processing report action:', error);

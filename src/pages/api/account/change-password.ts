@@ -1,31 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
 import bcrypt from 'bcryptjs';
 import { requireAuth } from '@/lib/session';
-
-const usersPath = path.join(process.cwd(), 'public', 'data', 'users.json');
-
-function readUsers() {
-  try {
-    const fileContent = fs.readFileSync(usersPath, 'utf-8');
-    const data = JSON.parse(fileContent);
-    return data.users || [];
-  } catch (error) {
-    console.error('Error reading users file:', error);
-    return [];
-  }
-}
-
-function writeUsers(users: any[]) {
-  try {
-    const data = { users };
-    fs.writeFileSync(usersPath, JSON.stringify(data, null, 2));
-  } catch (error) {
-    console.error('Error writing users file:', error);
-    throw new Error('Failed to save user data');
-  }
-}
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -57,20 +33,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const users = readUsers();
-    const userIndex = users.findIndex((u: any) => u.id === session.userId);
+    const user = await db.getUserById(session.userId);
 
-    if (userIndex === -1) {
+    if (!user) {
       return res.status(404).json({ 
         success: false,
         error: 'User not found' 
       });
     }
 
-    const user = users[userIndex];
-
     // Verify current password
-    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password_hash);
     if (!isValidPassword) {
       return res.status(401).json({ 
         success: false,
@@ -82,14 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Update user password
-    users[userIndex] = {
-      ...user,
-      password: hashedPassword,
-      updatedAt: new Date().toISOString()
-    };
-
-    // Save to file
-    writeUsers(users);
+    await db.updateUser(session.userId, { passwordHash: hashedPassword });
 
     console.log(`✅ Password changed successfully for user ${session.userId}`);
 

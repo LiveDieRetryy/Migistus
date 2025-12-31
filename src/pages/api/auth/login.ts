@@ -1,27 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
-import { db, isProduction } from "@/lib/db";
+import { db } from "@/lib/db";
 import { createSession, setSessionCookie } from "@/lib/session";
-
-// Fallback to file-based auth in development
-import fs from "fs";
-import path from "path";
-
-const USERS_PATH = path.resolve("public/data/users.json");
-
-function readUsersFile() {
-  try {
-    if (!fs.existsSync(USERS_PATH)) {
-      return [];
-    }
-    const fileContent = fs.readFileSync(USERS_PATH, "utf-8");
-    const data = JSON.parse(fileContent);
-    return Array.isArray(data) ? data : (data.users || []);
-  } catch (error) {
-    console.error("Error reading users file:", error);
-    return [];
-  }
-}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -41,29 +21,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    let user: any = null;
-
-    // Use database in production, fallback to files in development
-    console.log("🔍 Environment check:", {
-      VERCEL_ENV: process.env.VERCEL_ENV,
-      NODE_ENV: process.env.NODE_ENV,
-      isProduction: isProduction(),
-      hasPostgresUrl: !!process.env.POSTGRES_URL
-    });
-
-    if (isProduction()) {
-      console.log("🔐 Production mode: Using database authentication");
-      user = await db.getUserByEmailOrUsername(email.toLowerCase());
-      console.log("✅ Database query successful, user found:", !!user);
-    } else {
-      console.log("🔐 Development mode: Using file-based authentication");
-      const users = readUsersFile();
-      const foundUser = users.find((u: any) => 
-        u.email?.toLowerCase() === email.toLowerCase() || 
-        u.username?.toLowerCase() === email.toLowerCase()
-      );
-      user = foundUser || null;
-    }
+    console.log("🔐 Using database authentication");
+    const user = await db.getUserByEmailOrUsername(email.toLowerCase());
+    console.log("✅ Database query successful, user found:", !!user);
 
     if (!user) {
       console.log("❌ User not found:", email);
@@ -117,10 +77,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     setSessionCookie(res, sessionToken);
 
-    // Update last login in database (production only)
-    if (isProduction()) {
-      await db.updateLastLogin(user.id);
-    }
+    // Update last login in database
+    await db.updateLastLogin(user.id);
 
     // Return user data (without sensitive information)
     const userResponse = {

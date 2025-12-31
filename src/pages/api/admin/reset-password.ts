@@ -1,31 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
 import bcrypt from 'bcryptjs';
 import { requireAuth } from '@/lib/session';
-
-const usersFilePath = path.join(process.cwd(), 'public', 'data', 'users.json');
-
-// Helper to read users from file
-const readUsers = () => {
-  try {
-    const data = fs.readFileSync(usersFilePath, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading users.json:', error);
-    return { users: [] };
-  }
-};
-
-// Helper to write users to file
-const writeUsers = (usersData: any) => {
-  try {
-    fs.writeFileSync(usersFilePath, JSON.stringify(usersData, null, 2), 'utf-8');
-  } catch (error) {
-    console.error('Error writing users.json:', error);
-    throw error;
-  }
-};
+import { db } from '@/lib/db';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -54,10 +30,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
-    const usersData = readUsers();
-    const userIndex = usersData.users.findIndex((u: any) => u.id === userId);
+    const user = await db.getUserById(userId);
 
-    if (userIndex === -1) {
+    if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
@@ -65,18 +40,17 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Update the user's password
-    usersData.users[userIndex].password = hashedPassword;
-    usersData.users[userIndex].updatedAt = new Date().toISOString();
+    await db.updateUser(userId, {
+      password: hashedPassword,
+      updatedAt: new Date().toISOString()
+    });
 
-    // Save to file
-    writeUsers(usersData);
-
-    console.log(`✅ Admin reset password for user ${userId} (${usersData.users[userIndex].username})`);
+    console.log(`✅ Admin reset password for user ${userId} (${user.username})`);
 
     return res.status(200).json({ 
       success: true,
       message: 'Password reset successfully',
-      username: usersData.users[userIndex].username
+      username: user.username
     });
 
   } catch (error) {

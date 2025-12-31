@@ -2,35 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import { db } from '@/lib/db';
 import { getSessionToken } from '@/lib/session';
-import fs from 'fs';
-import path from 'path';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-12-15.clover',
 });
-
-// Check if running in production
-const isProduction = () => {
-  return process.env.NEXT_PUBLIC_USE_DATABASE === 'true' || 
-         process.env.NODE_ENV === 'production';
-};
-
-// Update user in file for development
-const updateUserInFile = (userId: number, updates: any) => {
-  try {
-    const usersPath = path.join(process.cwd(), 'public', 'data', 'users.json');
-    const data = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
-    const userIndex = data.users.findIndex((u: any) => u.id === userId);
-    
-    if (userIndex !== -1) {
-      data.users[userIndex] = { ...data.users[userIndex], ...updates };
-      fs.writeFileSync(usersPath, JSON.stringify(data, null, 2));
-      console.log(`✅ Updated user ${userId} in file:`, updates);
-    }
-  } catch (error) {
-    console.error('Error updating users file:', error);
-  }
-};
 
 export default async function handler(
   req: NextApiRequest,
@@ -94,45 +69,20 @@ export default async function handler(
       subscriptionCurrentPeriodEnd: currentPeriodEnd,
     };
 
-    if (isProduction()) {
-      // Production: Update database
-      await db.updateUser(userId, updates);
-      
-      // Also update the session in database to reflect new tier immediately
-      try {
-        const sessionToken = getSessionToken(req);
-        if (sessionToken) {
-          await db.updateSessionTier(sessionToken, userTier);
-          console.log(`✅ Updated session tier in database for user ${userId}`);
-        }
-      } catch (error) {
-        console.error('Error updating session in database:', error);
+    await db.updateUser(userId, updates);
+    
+    // Also update the session to reflect new tier immediately
+    try {
+      const sessionToken = getSessionToken(req);
+      if (sessionToken) {
+        await db.updateSessionTier(sessionToken, userTier);
+        console.log(`✅ Updated session tier for user ${userId}`);
       }
-    } else {
-      // Development: Update file
-      updateUserInFile(userId, updates);
-      
-      // Also update the session file in development
-      try {
-        const sessionsPath = path.join(process.cwd(), 'public', 'data', 'sessions.json');
-        const sessionFileData = fs.readFileSync(sessionsPath, 'utf8');
-        const sessions = JSON.parse(sessionFileData);
-        
-        // Update all sessions for this user (sessions is an object with token keys)
-        for (const token in sessions) {
-          if (sessions[token] && sessions[token].userId === userId) {
-            sessions[token].tier = userTier;
-          }
-        }
-        
-        fs.writeFileSync(sessionsPath, JSON.stringify(sessions, null, 2));
-        console.log(`✅ Updated session for user ${userId} to ${userTier} tier`);
-      } catch (error) {
-        console.error('Error updating session file:', error);
-      }
+    } catch (error) {
+      console.error('Error updating session:', error);
     }
 
-    console.log(`✅ Updated user ${userId} to ${userTier} tier (${isProduction() ? 'database' : 'file'})`);
+    console.log(`✅ Updated user ${userId} to ${userTier} tier`);
 
     res.status(200).json({ 
       success: true,

@@ -1,37 +1,5 @@
-import fs from 'fs';
-import path from 'path';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-const VOTING_PATH = path.resolve('public/data/voting.json');
-
-function readVotingData() {
-  try {
-    if (!fs.existsSync(VOTING_PATH)) {
-      const initialData = { polls: [] };
-      fs.writeFileSync(VOTING_PATH, JSON.stringify(initialData, null, 2));
-      return initialData;
-    }
-    
-    const fileContent = fs.readFileSync(VOTING_PATH, 'utf-8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    console.error('Error reading voting file:', error);
-    return { polls: [] };
-  }
-}
-
-function writeVotingData(data: any) {
-  try {
-    const dir = path.dirname(VOTING_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(VOTING_PATH, JSON.stringify(data, null, 2));
-  } catch (error) {
-    console.error('Error writing voting file:', error);
-    throw new Error('Failed to save voting data');
-  }
-}
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -43,18 +11,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const pollData = req.body;
     
     // Validate required fields
-    if (!pollData.title || !pollData.options || pollData.options.length < 2) {
-      return res.status(400).json({ error: 'Invalid poll data' });
+    if (!pollData.title || !pollData.description) {
+      return res.status(400).json({ error: 'Title and description are required' });
     }
 
-    const votingData = readVotingData();
-    votingData.polls.push(pollData);
+    const newPoll = await db.createCommunityPoll({
+      title: pollData.title,
+      description: pollData.description,
+      category: pollData.category || 'general',
+      createdBy: pollData.createdBy
+    });
     
-    writeVotingData(votingData);
-    
-    res.status(201).json({ success: true, poll: pollData });
+    res.status(201).json({ success: true, poll: newPoll });
   } catch (error) {
     console.error('Error creating poll:', error);
     res.status(500).json({ error: 'Failed to create poll' });
   }
 }
+

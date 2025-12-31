@@ -1,20 +1,6 @@
-import fs from 'fs';
-import path from 'path';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-const PRODUCTS_PATH = path.resolve('public/data/products.json');
-const STAFF_PICKS_PATH = path.resolve('public/data/staff-picks.json');
-
-function readJsonFile(filePath: string) {
-  try {
-    if (!fs.existsSync(filePath)) return null;
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    console.error(`Error reading ${filePath}:`, error);
-    return null;
-  }
-}
+import { productStorage } from '@/utils/productStorageV2';
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -23,11 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const productsData = readJsonFile(PRODUCTS_PATH);
-    const staffPicksData = readJsonFile(STAFF_PICKS_PATH);
-    
-    const products = productsData?.products || [];
-    const staffPicks = staffPicksData?.staffPicks || [];
+    const products = await productStorage.getProducts();
+    const staffPicks = await db.getAllStaffPicks();
     
     const stats = {
       total: products.length,

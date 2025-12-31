@@ -1,29 +1,37 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
+import { db } from '@/lib/db';
 
-const CONFIG_PATH = path.join(process.cwd(), 'public', 'data', 'product-lifecycle-config.json');
-
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
-      const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
-      res.status(200).json(config);
+      const config = await db.getProductLifecycleConfig();
+      
+      // Map snake_case to camelCase for frontend
+      const formattedConfig = {
+        votingToComingSoonThreshold: config.voting_to_coming_soon_threshold,
+        comingSoonDuration: config.coming_soon_duration,
+        communityDropsDuration: config.community_drops_duration,
+        autoPromotionEnabled: config.auto_promotion_enabled,
+        lastUpdated: config.last_updated,
+        updatedBy: config.updated_by
+      };
+      
+      res.status(200).json(formattedConfig);
     } catch (error) {
       res.status(500).json({ error: 'Failed to load config' });
     }
   } else if (req.method === 'POST') {
     try {
       const { votingToComingSoonThreshold, comingSoonDuration, communityDropsDuration, autoPromotionEnabled } = req.body;
-      const config = {
+      
+      const config = await db.updateProductLifecycleConfig({
         votingToComingSoonThreshold,
         comingSoonDuration,
         communityDropsDuration,
         autoPromotionEnabled,
-        lastUpdated: new Date().toISOString(),
-        createdBy: 'admin',
-      };
-      fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
+        updatedBy: 'admin'
+      });
+      
       res.status(200).json({ success: true, config });
     } catch (error) {
       res.status(500).json({ error: 'Failed to save config' });

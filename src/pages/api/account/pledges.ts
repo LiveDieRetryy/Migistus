@@ -1,25 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
 import { requireAuth } from '@/lib/session';
-
-const pledgesPath = path.join(process.cwd(), 'public', 'data', 'pledges.json');
-
-function ensurePledgesFile() {
-  if (!fs.existsSync(pledgesPath)) {
-    fs.writeFileSync(pledgesPath, '[]');
-  }
-}
-
-function getPledges() {
-  ensurePledgesFile();
-  const data = fs.readFileSync(pledgesPath, 'utf-8');
-  return JSON.parse(data);
-}
-
-function savePledges(pledges: any[]) {
-  fs.writeFileSync(pledgesPath, JSON.stringify(pledges, null, 2));
-}
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Require authentication - this validates the session
@@ -29,55 +10,53 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    let pledges = getPledges();
-
     if (req.method === 'GET') {
-      // Always return only the authenticated user's pledges
-      const userPledges = pledges.filter((pledge: any) => pledge.userId === session.userId);
+      // Get user's pledges from database
+      const userPledges = await db.getUserPledges(session.userId);
       return res.status(200).json({
         success: true,
         data: userPledges,
         total: userPledges.length
       });
     } else if (req.method === 'POST') {
-      const newPledge = {
-        id: Date.now(),
-        ...req.body,
-        userId: session.userId, // Force the userId to match the authenticated user
-        username: session.username,
-        createdAt: new Date().toISOString()
-      };
-      pledges.push(newPledge);
-      savePledges(pledges);
+      const { productId, tierId, quantity, amount } = req.body;
+      
+      if (!productId || (!tierId && !amount)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Product ID and either tier ID or amount are required'
+        });
+      }
+      
+      // Create pledge in database
+      const newPledge = await db.createPledge({
+        productId: parseInt(productId),
+        userId: session.userId,
+        tierId: tierId ? parseInt(tierId) : 1, // Default tier if not specified
+        quantity: quantity ? parseInt(quantity) : 1 // Default quantity
+      });
+      
       return res.status(201).json({
         success: true,
         data: newPledge,
         message: 'Pledge created successfully'
       });
     } else if (req.method === 'DELETE') {
-      const { pledgeId } = req.query;
-      const pledgeIdNum = parseInt(pledgeId as string);
+      const { productId } = req.query;
       
-      // Find the pledge and verify it belongs to the authenticated user
-      const pledgeIndex = pledges.findIndex((p: any) => p.id === pledgeIdNum);
-      if (pledgeIndex === -1) {
-        return res.status(404).json({ 
+      if (!productId) {
+        return res.status(400).json({
           success: false,
-          error: 'Pledge not found' 
+          error: 'Product ID is required'
         });
       }
       
-      if (pledges[pledgeIndex].userId !== session.userId) {
-        return res.status(403).json({ 
-          success: false,
-          error: 'You can only delete your own pledges',
-          code: 'FORBIDDEN'
-        });
-      }
+      const productIdNum = parseInt(productId as string);
       
-      pledges = pledges.filter((pledge: any) => pledge.id !== pledgeIdNum);
-      savePledges(pledges);
-      return res.status(200).json({ 
+      // Delete pledge from database
+      await db.deletePledge(productIdNum, session.userId);
+      
+      return res.status(200).json({  
         success: true,
         message: 'Pledge deleted successfully'
       });

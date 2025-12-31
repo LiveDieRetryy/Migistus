@@ -1,24 +1,5 @@
-import fs from 'fs';
-import path from 'path';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-const USERS_PATH = path.resolve('public/data/users.json');
-
-function readUsers() {
-  try {
-    if (!fs.existsSync(USERS_PATH)) return [];
-    
-    const fileContent = fs.readFileSync(USERS_PATH, 'utf-8');
-    const data = JSON.parse(fileContent);
-    
-    if (Array.isArray(data)) return data;
-    if (data.users && Array.isArray(data.users)) return data.users;
-    return [];
-  } catch (error) {
-    console.error('Error reading users file:', error);
-    return [];
-  }
-}
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -27,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const users = readUsers();
+    const users = await db.getAllUsers();
     const today = new Date().toISOString().split('T')[0];
     
     const stats = {

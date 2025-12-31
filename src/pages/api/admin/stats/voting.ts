@@ -1,20 +1,5 @@
-import fs from 'fs';
-import path from 'path';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-const VOTING_PATH = path.resolve('public/data/voting.json');
-const VOTES_PATH = path.resolve('public/data/votes.json');
-
-function readJsonFile(filePath: string) {
-  try {
-    if (!fs.existsSync(filePath)) return null;
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    console.error(`Error reading ${filePath}:`, error);
-    return null;
-  }
-}
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -23,11 +8,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const votingData = readJsonFile(VOTING_PATH);
-    const votesData = readJsonFile(VOTES_PATH);
-    
-    const polls = votingData?.polls || [];
-    const votes = votesData?.votes || [];
+    const polls = await db.getCommunityPolls();
+    const votes = await db.getVotes();
     
     const stats = {
       activePolls: polls.filter((poll: any) => poll.status === 'active').length,

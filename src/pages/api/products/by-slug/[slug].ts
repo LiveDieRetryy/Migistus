@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
+import { productStorage } from '@/utils/productStorageV2';
 
 interface Product {
   id: number;
@@ -74,7 +73,7 @@ function generateSlug(name: string): string {
     .trim();
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
       const { slug } = req.query;
@@ -83,39 +82,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         return res.status(400).json({ error: 'Product slug is required' });
       }
 
-      // Load products from various sources
-      const productsPath = path.join(process.cwd(), 'public', 'data', 'products.json');
-      const votingPath = path.join(process.cwd(), 'public', 'data', 'voting.json');
-      const supplierProductsPath = path.join(process.cwd(), 'public', 'data', 'supplier-products.json');
-
-      let allProducts: Product[] = [];
-
-      // Load main products
-      if (fs.existsSync(productsPath)) {
-        const productsData = fs.readFileSync(productsPath, 'utf8');
-        const products = JSON.parse(productsData);
-        allProducts = allProducts.concat(products.products || products || []);
-      }
-
-      // Load voting products
-      if (fs.existsSync(votingPath)) {
-        const votingData = fs.readFileSync(votingPath, 'utf8');
-        const votingProducts = JSON.parse(votingData);
-        allProducts = allProducts.concat(votingProducts.products || votingProducts || []);
-      }
-
-      // Load supplier products
-      if (fs.existsSync(supplierProductsPath)) {
-        const supplierData = fs.readFileSync(supplierProductsPath, 'utf8');
-        const supplierProducts = JSON.parse(supplierData);
-        allProducts = allProducts.concat(supplierProducts || []);
-      }
-
-      // Find product by slug or generate slug and match
-      let product = allProducts.find(p => {
-        const productSlug = p.slug || generateSlug(p.name);
-        return productSlug === slug;
-      });
+      // Get product by slug from productStorage
+      const product = await productStorage.getProductBySlug(slug as string);
 
       if (!product) {
         return res.status(404).json({ error: 'Product not found' });
@@ -144,17 +112,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         }
       };
 
-      // Get vote count from votes.json if available
-      const votesPath = path.join(process.cwd(), 'public', 'data', 'votes.json');
-      if (fs.existsSync(votesPath)) {
-        try {
-          const votesData = fs.readFileSync(votesPath, 'utf8');
-          const votes = JSON.parse(votesData);
-          const productVotes = votes.votes?.filter((vote: any) => vote.productId === product.id) || [];
-          enhancedProduct.votes = productVotes.length;
-        } catch (error) {
-          console.log('Could not load votes data:', error);
-        }
+      // Get vote count from productStorage
+      try {
+        const voteCount = await productStorage.getProductVoteCount(product.id);
+        enhancedProduct.votes = voteCount;
+      } catch (error) {
+        console.log('Could not load votes data:', error);
       }
 
       return res.status(200).json({ product: enhancedProduct });
@@ -171,37 +134,17 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         return res.status(400).json({ error: 'Product slug is required' });
       }
 
-      const productsPath = path.join(process.cwd(), 'public', 'data', 'products.json');
-      
-      if (!fs.existsSync(productsPath)) {
-        return res.status(404).json({ error: 'Products file not found' });
-      }
+      // Get product to delete
+      const product = await productStorage.getProductBySlug(slug);
 
-      const productsData = fs.readFileSync(productsPath, 'utf8');
-      const products = JSON.parse(productsData);
-      const productsList = products.products || products || [];
-
-      // Find the product by slug to get its ID
-      const productToDelete = productsList.find((p: Product) => {
-        const productSlug = p.slug || generateSlug(p.name);
-        return productSlug === slug;
-      });
-
-      if (!productToDelete) {
+      if (!product) {
         return res.status(404).json({ error: 'Product not found' });
       }
 
-      // Filter out the product
-      const filteredProducts = productsList.filter((p: Product) => {
-        const productSlug = p.slug || generateSlug(p.name);
-        return productSlug !== slug;
-      });
+      // Delete the product
+      await productStorage.deleteProduct(product.id);
 
-      // Save the updated products list
-      const updatedData = products.products ? { products: filteredProducts } : filteredProducts;
-      fs.writeFileSync(productsPath, JSON.stringify(updatedData, null, 2));
-
-      return res.status(200).json({ success: true, deletedProduct: productToDelete });
+      return res.status(200).json({ success: true, deletedProduct: product });
 
     } catch (error) {
       console.error('Error deleting product:', error);

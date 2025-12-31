@@ -1,36 +1,10 @@
-import fs from "fs";
-import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
+import { db } from "@/lib/db";
 
 // Hardcoded admin credentials for fallback
 const ADMIN_USER = "Admin";
 const ADMIN_PASS = "Admin";
-
-const USERS_PATH = path.resolve("public/data/users.json");
-
-function readUsers() {
-  try {
-    if (!fs.existsSync(USERS_PATH)) {
-      return [];
-    }
-    
-    const fileContent = fs.readFileSync(USERS_PATH, "utf-8");
-    const data = JSON.parse(fileContent);
-    
-    // Handle both old flat array format and new object format
-    if (Array.isArray(data)) {
-      return data;
-    } else if (data.users && Array.isArray(data.users)) {
-      return data.users;
-    } else {
-      return [];
-    }
-  } catch (error) {
-    console.error("Error reading users file:", error);
-    return [];
-  }
-}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -49,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   
   // Then check against users database for admin accounts
-  const users = readUsers();
+  const users = await db.getAllUsers();
   const adminUser = users.find((u: any) => 
     (u.email === "admin@migistus.com" || u.username === "Administrator" || u.username === username || u.email === username) &&
     (u.tier === "Admin" || u.username === "Administrator" || u.email === "admin@migistus.com")

@@ -1,45 +1,12 @@
-import fs from "fs";
-import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
-import crypto from "crypto";
 import { createSession, setSessionCookie } from "@/lib/session";
 import { sendEmail, emailTemplates } from "@/lib/email";
-import { db, isProduction } from "@/lib/db";
+import { db } from "@/lib/db";
 import { validateUsername } from "@/lib/profanity-filter";
 import formidable from 'formidable';
-
-// Verification token management
-interface VerificationToken {
-  token: string;
-  email: string;
-  createdAt: string;
-  used: boolean;
-}
-
-const TOKENS_FILE = path.join(process.cwd(), 'public', 'data', 'verification-tokens.json');
-
-function ensureDirectoryExists() {
-  const dir = path.dirname(TOKENS_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
-
-function readVerificationTokens(): VerificationToken[] {
-  ensureDirectoryExists();
-  if (!fs.existsSync(TOKENS_FILE)) {
-    fs.writeFileSync(TOKENS_FILE, JSON.stringify([]));
-    return [];
-  }
-  const data = fs.readFileSync(TOKENS_FILE, 'utf8');
-  return JSON.parse(data);
-}
-
-function writeVerificationTokens(tokens: VerificationToken[]) {
-  ensureDirectoryExists();
-  fs.writeFileSync(TOKENS_FILE, JSON.stringify(tokens, null, 2));
-}
+import fs from 'fs';
+import path from 'path';
 
 function generateVerificationToken(): string {
   // Generate a 6-digit verification code
@@ -52,58 +19,6 @@ export const config = {
     bodyParser: false,
   },
 };
-
-const USERS_PATH = path.resolve("public/data/users.json");
-
-function readUsers() {
-  try {
-    if (!fs.existsSync(USERS_PATH)) {
-      // Create the file with proper structure
-      const initialData = { users: [] };
-      fs.writeFileSync(USERS_PATH, JSON.stringify(initialData, null, 2));
-      return [];
-    }
-    
-    const fileContent = fs.readFileSync(USERS_PATH, "utf-8");
-    const data = JSON.parse(fileContent);
-    
-    // Handle both old flat array format and new object format
-    if (Array.isArray(data)) {
-      return data;
-    } else if (data.users && Array.isArray(data.users)) {
-      return data.users;
-    } else {
-      return [];
-    }
-  } catch (error) {
-    console.error("Error reading users file:", error);
-    return [];
-  }
-}
-
-function writeUsers(users: any[]) {
-  try {
-    // Ensure directory exists
-    const dir = path.dirname(USERS_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    
-    // Write in the expected format (object with users array)
-    const data = { users };
-    const jsonString = JSON.stringify(data, null, 2);
-    
-    // Write synchronously to ensure completion
-    fs.writeFileSync(USERS_PATH, jsonString, { encoding: 'utf-8', flag: 'w' });
-    
-    console.log(`📁 File written to: ${USERS_PATH}`);
-    console.log(`📊 File size: ${jsonString.length} bytes`);
-    
-  } catch (error) {
-    console.error("Error writing users file:", error);
-    throw new Error("Failed to save user data");
-  }
-}
 
 // Parse FormData using formidable
 function parseForm(req: NextApiRequest): Promise<{ fields: any; files: any }> {
@@ -210,27 +125,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "You must be at least 13 years old to register" });
   }
 
-  // Check for existing users (database in production, files in development)
-  if (isProduction()) {
-    console.log("🔐 Production mode: Checking for existing users in database");
-    const existingEmail = await db.getUser(email);
-    if (existingEmail) {
-      return res.status(400).json({ error: "Email already registered" });
-    }
+  // Check for existing users in database
+  const existingEmail = await db.getUser(email.toLowerCase());
+  if (existingEmail) {
+    return res.status(400).json({ error: "Email already registered" });
+  }
 
-    const existingUsername = await db.getUserByUsername(username);
-    if (existingUsername) {
-      return res.status(400).json({ error: "Username already taken" });
-    }
-  } else {
-    console.log("🔓 Development mode: Checking for existing users in files");
-    const users = readUsers();
-    if (users.some((u: any) => u.email === email)) {
-      return res.status(400).json({ error: "Email already registered" });
-    }
-    if (users.some((u: any) => u.username === username)) {
-      return res.status(400).json({ error: "Username already taken" });
-    }
+  const existingUsername = await db.getUserByUsername(username);
+  if (existingUsername) {
+    return res.status(400).json({ error: "Username already taken" });
   }
 
   // Hash password for development file storage only
@@ -241,48 +144,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   let avatarPath = null;
   if (avatarFile) {
     try {
-      const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'avatars');
+      const { put } = await import('@vercel/blob');
       
-      // Create directory if it doesn't exist
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
+      // Read file buffer
+      const fileBuffer = fs.readFileSync(avatarFile.filepath);
       
       // Generate unique filename
       const timestamp = Date.now();
       const ext = path.extname(avatarFile.originalFilename || '.jpg');
-      const filename = `${username.toLowerCase()}_${timestamp}${ext}`;
-      const destPath = path.join(uploadDir, filename);
+      const filename = `avatars/${username.toLowerCase()}_${timestamp}${ext}`;
       
-      // Copy file from temp location to uploads folder
-      const fileData = fs.readFileSync(avatarFile.filepath);
-      fs.writeFileSync(destPath, fileData);
+      // Upload to Vercel Blob Storage
+      const blob = await put(filename, fileBuffer, {
+        access: 'public',
+        contentType: avatarFile.mimetype || 'image/jpeg',
+      });
       
-      // Set avatar path (relative to public folder)
-      avatarPath = `/uploads/avatars/${filename}`;
+      // Use Blob URL instead of local path
+      avatarPath = blob.url;
       
-      console.log('✅ Avatar uploaded:', avatarPath);
+      console.log('✅ Avatar uploaded to Vercel Blob:', avatarPath);
     } catch (err) {
       console.error('❌ Avatar upload failed:', err);
       // Continue registration without avatar
     }
   }
   
-  const newUser = {
-    id: Date.now(),
+  console.log("📝 Registering new user:", {
+    username,
+    email
+  });
+
+  // Create user in database
+  const savedUser = await db.createUser({
     username,
     email,
-    password: hash,
-    tier: "New Member",
-    banned: false,
-    verified: false,
-    email_verified: false, // Email verification status
-    joinDate: new Date().toISOString().split('T')[0],
-    lastLogin: null,
-    wallet: 0,
-    guildCoins: 100, // Welcome bonus
-    guildTokens: 100, // Alternative name for compatibility
-    // Personal information (flattened for compatibility)
+    password: password,
+    tier: "Initiate",
     firstName,
     lastName,
     dateOfBirth,
@@ -291,108 +189,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     city: city || null,
     phoneNumber: phoneNumber || null,
     referralSource: referralSource || null,
-    // Profile information
-    avatar: avatarPath,
-    bio: "",
-    // Preferences
     agreeToMarketing: agreeToMarketing || false,
-    emailNotifications: true,
-    pushNotifications: false,
-    theme: "dark",
-    language: "en",
-    // Stats
-    totalPledges: 0,
-    totalVotes: 0,
-    dropsJoined: 0,
-    followers: 0,
-    following: 0,
-    profileViews: 0,
-    createdAt: new Date().toISOString(),
-    loginCount: 0,
-    // Marketing preferences
-    marketingEmails: agreeToMarketing || false,
-    productUpdates: true,
-    orderUpdates: true,
-    updatedAt: new Date().toISOString()
-  };
-
-  console.log("📝 Registering new user:", {
-    username,
-    email,
-    useDatabase: isProduction()
+    avatar: avatarPath
   });
-
-  let savedUser: any;
-
-  // Save user to database (production) or file (development)
-  if (isProduction()) {
-    console.log("🔐 Production mode: Creating user in database");
-    savedUser = await db.createUser({
-      username,
-      email,
-      password: password,
-      tier: "Initiate",
-      firstName,
-      lastName,
-      dateOfBirth,
-      country,
-      state: state || null,
-      city: city || null,
-      phoneNumber: phoneNumber || null,
-      referralSource: referralSource || null,
-      agreeToMarketing: agreeToMarketing || false
-    });
-    console.log("✅ User created in database:", savedUser.id);
-  } else {
-    console.log("🔓 Development mode: Creating user in files");
-    const users = readUsers();
-    const newUser = {
-      id: Date.now(),
-      username,
-      email,
-      password: hash,
-      tier: "New Member",
-      banned: false,
-      verified: false,
-      email_verified: false,
-      joinDate: new Date().toISOString().split('T')[0],
-      lastLogin: null,
-      wallet: 0,
-      guildCoins: 100,
-      guildTokens: 100,
-      firstName,
-      lastName,
-      dateOfBirth,
-      country,
-      state: state || null,
-      city: city || null,
-      phoneNumber: phoneNumber || null,
-      referralSource: referralSource || null,
-      avatar: avatarPath,
-      bio: "",
-      agreeToMarketing: agreeToMarketing || false,
-      emailNotifications: true,
-      pushNotifications: false,
-      theme: "dark",
-      language: "en",
-      totalPledges: 0,
-      totalVotes: 0,
-      dropsJoined: 0,
-      followers: 0,
-      following: 0,
-      profileViews: 0,
-      createdAt: new Date().toISOString(),
-      loginCount: 0,
-      marketingEmails: agreeToMarketing || false,
-      productUpdates: true,
-      orderUpdates: true,
-      updatedAt: new Date().toISOString()
-    };
-    users.push(newUser);
-    writeUsers(users);
-    savedUser = newUser;
-    console.log("✅ User created in files:", savedUser.id);
-  }
+  console.log("✅ User created in database:", savedUser.id);
   
   // Create server-side session for auto-login
   const sessionToken = await createSession(savedUser.id, savedUser.username, savedUser.email, savedUser.tier);
@@ -405,38 +205,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const verificationCode = generateVerificationToken();
     
-    if (isProduction()) {
-      console.log("🔐 Production mode: Storing verification token in database");
-      try {
-        // Store in database
-        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-        await db.createVerificationToken(savedUser.email, verificationCode, expiresAt);
-        console.log("✅ Verification token stored in database");
-      } catch (dbError) {
-        console.error("❌ Database error, falling back to file storage:", dbError);
-        // Fallback to file storage
-        const tokens = readVerificationTokens();
-        const filteredTokens = tokens.filter(t => t.email !== newUser.email);
-        filteredTokens.push({
-          token: verificationCode,
-          email: newUser.email,
-          createdAt: new Date().toISOString(),
-          used: false,
-        });
-        writeVerificationTokens(filteredTokens);
-      }
-    } else {
-      console.log("🔓 Development mode: Storing verification token in file");
-      const tokens = readVerificationTokens();
-      const filteredTokens = tokens.filter(t => t.email !== newUser.email);
-      filteredTokens.push({
-        token: verificationCode,
-        email: newUser.email,
-        createdAt: new Date().toISOString(),
-        used: false,
-      });
-      writeVerificationTokens(filteredTokens);
-    }
+    // Store verification token in database
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    await db.createVerificationToken(savedUser.email, verificationCode, expiresAt);
+    console.log("✅ Verification token stored in database");
     
     const template = emailTemplates.emailVerification(savedUser.username, verificationCode, 60);
     

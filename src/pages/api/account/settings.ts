@@ -1,25 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
 import { requireAuth } from '@/lib/session';
-
-const settingsPath = path.join(process.cwd(), 'public', 'data', 'settings.json');
-
-function ensureSettingsFile() {
-  if (!fs.existsSync(settingsPath)) {
-    fs.writeFileSync(settingsPath, '{}');
-  }
-}
-
-function getSettings() {
-  ensureSettingsFile();
-  const data = fs.readFileSync(settingsPath, 'utf-8');
-  return JSON.parse(data);
-}
-
-function saveSettings(settings: any) {
-  fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
-}
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Require authentication
@@ -29,31 +10,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const allSettings = getSettings();
-    const userIdStr = session.userId.toString();
-
     if (req.method === 'GET') {
-      const userSettings = allSettings[userIdStr] || {
-        notifications: true,
-        emailUpdates: true,
-        privacy: 'public',
-        theme: 'dark'
-      };
+      let userSettings = await db.getUserSettings(session.userId);
+      
+      if (!userSettings) {
+        userSettings = {
+          notifications: true,
+          email_notifications: true,
+          email_updates: true,
+          privacy: 'public',
+          theme: 'dark'
+        };
+      }
+      
       return res.status(200).json({
         success: true,
         data: userSettings
       });
     } else if (req.method === 'PUT') {
       const updatedSettings = req.body;
-      allSettings[userIdStr] = {
-        ...allSettings[userIdStr],
-        ...updatedSettings,
-        updatedAt: new Date().toISOString()
-      };
-      saveSettings(allSettings);
-      return res.status(200).json({ 
-        success: true, 
-        data: allSettings[userIdStr],
+      
+      const settings = await db.updateUserSettings(session.userId, {
+        showOnlineStatus: updatedSettings.showOnlineStatus,
+        allowMessages: updatedSettings.allowMessages,
+        emailNotifications: updatedSettings.emailUpdates || updatedSettings.emailNotifications,
+        marketingEmails: updatedSettings.marketingEmails,
+        preferences: updatedSettings.preferences
+      });
+      
+      return res.status(200).json({
+        success: true,
+        data: settings,
         message: 'Settings updated successfully'
       });
     } else {

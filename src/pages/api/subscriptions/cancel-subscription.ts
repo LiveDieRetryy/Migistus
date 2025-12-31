@@ -1,8 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import { db } from '@/lib/db';
-import fs from 'fs';
-import path from 'path';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-12-15.clover',
@@ -12,29 +10,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 const PRICE_IDS = {
   guild: process.env.STRIPE_GUILD_PRICE_ID || '',
   elite: process.env.STRIPE_ELITE_PRICE_ID || '',
-};
-
-// Check if running in production
-const isProduction = () => {
-  return process.env.NEXT_PUBLIC_USE_DATABASE === 'true' || 
-         process.env.NODE_ENV === 'production';
-};
-
-// Update user in file for development
-const updateUserInFile = (userId: number, updates: any) => {
-  try {
-    const usersPath = path.join(process.cwd(), 'public', 'data', 'users.json');
-    const data = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
-    const userIndex = data.users.findIndex((u: any) => u.id === userId);
-    
-    if (userIndex !== -1) {
-      data.users[userIndex] = { ...data.users[userIndex], ...updates };
-      fs.writeFileSync(usersPath, JSON.stringify(data, null, 2));
-      console.log(`✅ Updated user ${userId} in file:`, updates);
-    }
-  } catch (error) {
-    console.error('Error updating users file:', error);
-  }
 };
 
 export default async function handler(
@@ -112,33 +87,9 @@ export default async function handler(
         : null,
     };
 
-    if (isProduction()) {
-      await db.updateUser(userId, updates);
-    } else {
-      updateUserInFile(userId, updates);
-      
-      // Also update the session file in development
-      try {
-        const sessionsPath = path.join(process.cwd(), 'public', 'data', 'sessions.json');
-        const sessionFileData = fs.readFileSync(sessionsPath, 'utf8');
-        const sessions = JSON.parse(sessionFileData);
-        
-        // Update all sessions for this user
-        for (const token in sessions) {
-          if (sessions[token] && sessions[token].userId === userId) {
-            sessions[token].tier = 'Initiate';
-            sessions[token].stripeSubscriptionStatus = 'canceling';
-          }
-        }
-        
-        fs.writeFileSync(sessionsPath, JSON.stringify(sessions, null, 2));
-        console.log(`✅ Updated session for user ${userId} to Initiate tier (canceling)`);
-      } catch (error) {
-        console.error('Error updating session file:', error);
-      }
-    }
+    await db.updateUser(userId, updates);
 
-    console.log(`✅ Updated user ${userId} to Initiate tier (${isProduction() ? 'database' : 'file'})`);
+    console.log(`✅ Updated user ${userId} to ${newTier} tier`);
 
     res.status(200).json({ 
       success: true,

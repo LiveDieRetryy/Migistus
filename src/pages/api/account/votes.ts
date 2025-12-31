@@ -1,22 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
 import { requireAuth } from '@/lib/session';
-
-const votesPath = path.join(process.cwd(), 'public', 'data', 'votes.json');
-
-function ensureVotesFile() {
-  if (!fs.existsSync(votesPath)) {
-    fs.writeFileSync(votesPath, JSON.stringify({ votes: [] }, null, 2));
-  }
-}
-
-function getVotes() {
-  ensureVotesFile();
-  const data = fs.readFileSync(votesPath, 'utf-8');
-  const parsed = JSON.parse(data);
-  return Array.isArray(parsed) ? parsed : (parsed.votes || []);
-}
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Require authentication
@@ -26,11 +10,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const allVotes = getVotes();
-
     if (req.method === 'GET') {
-      // Return only the authenticated user's votes
-      const userVotes = allVotes.filter((vote: any) => vote.userId === session.userId);
+      // Get user's votes from database
+      const userVotes = await db.getUserVotes(session.userId);
       
       return res.status(200).json({
         success: true,
@@ -49,3 +31,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 }
+

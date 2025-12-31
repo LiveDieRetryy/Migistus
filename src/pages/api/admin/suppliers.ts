@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
+import { db } from '@/lib/db';
 
 interface Supplier {
   id: string;
@@ -20,34 +19,27 @@ interface Supplier {
   rating: number;
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
-      const suppliersPath = path.join(process.cwd(), 'public', 'data', 'suppliers.json');
-      
-      if (!fs.existsSync(suppliersPath)) {
-        return res.status(200).json({ suppliers: [] });
-      }
-
-      const suppliersData = fs.readFileSync(suppliersPath, 'utf8');
-      const suppliers: Supplier[] = JSON.parse(suppliersData);
+      const suppliers = await db.getAllSuppliers();
       
       // Return suppliers without passwords for security
-      const safeSuppliers = suppliers.map(supplier => ({
+      const safeSuppliers = suppliers.map((supplier: any) => ({
         id: supplier.id,
         name: supplier.name,
         email: supplier.email,
-        supplierCode: supplier.supplierCode,
-        companyName: supplier.companyName,
+        supplierCode: supplier.supplier_code,
+        companyName: supplier.company_name,
         status: supplier.status,
-        joinedDate: supplier.joinedDate,
-        contactPerson: supplier.contactPerson,
+        joinedDate: supplier.created_at,
+        contactPerson: supplier.contact_person,
         phone: supplier.phone,
         address: supplier.address,
-        productCategories: supplier.productCategories,
-        totalProducts: supplier.totalProducts,
-        totalSales: supplier.totalSales,
-        rating: supplier.rating
+        productCategories: supplier.product_categories || [],
+        totalProducts: supplier.total_products || 0,
+        totalSales: supplier.total_sales || 0,
+        rating: supplier.rating || 0
       }));
 
       return res.status(200).json({ suppliers: safeSuppliers });

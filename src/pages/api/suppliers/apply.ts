@@ -1,23 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
-
-interface SupplierApplication {
-  id: string;
-  companyName: string;
-  contactName: string;
-  email: string;
-  phone: string;
-  website: string;
-  category: string;
-  description: string;
-  experience: string;
-  motivation: string;
-  status: 'pending' | 'approved' | 'rejected';
-  submittedAt: string;
-  reviewedAt?: string;
-  reviewNotes?: string;
-}
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -44,29 +26,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
-    // Create new application
-    const newApplication: SupplierApplication = {
-      id: Date.now().toString(),
-      ...applicationData,
-      status: 'pending',
-      submittedAt: new Date().toISOString()
-    };
-
-    // Read existing applications
-    const applicationsPath = path.join(process.cwd(), 'public', 'data', 'supplier-applications.json');
-    let applications: SupplierApplication[] = [];
+    // Check for duplicate email (query existing applications)
+    const existingApps = await db.getSupplierApplications();
+    const existingApplication = existingApps.find((app: any) => app.email === applicationData.email);
     
-    try {
-      if (fs.existsSync(applicationsPath)) {
-        const fileContent = fs.readFileSync(applicationsPath, 'utf8');
-        applications = JSON.parse(fileContent);
-      }
-    } catch (error) {
-      console.warn('Could not read existing applications, starting fresh');
-    }
-
-    // Check for duplicate email
-    const existingApplication = applications.find(app => app.email === applicationData.email);
     if (existingApplication) {
       return res.status(409).json({ 
         error: 'An application with this email already exists',
@@ -74,40 +37,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Add new application
-    applications.push(newApplication);
-
-    // Save applications
-    try {
-      fs.writeFileSync(applicationsPath, JSON.stringify(applications, null, 2));
-    } catch (error) {
-      console.error('Error saving application:', error);
-      return res.status(500).json({ error: 'Failed to save application' });
-    }
+    // Create new application (userId can be 0 for guest applications)
+    const newApplication = await db.createSupplierApplication(0, {
+      companyName: applicationData.companyName,
+      email: applicationData.email,
+      phone: applicationData.phone || null,
+      website: applicationData.website || null,
+      description: applicationData.description,
+      productCategories: applicationData.category ? [applicationData.category] : []
+    });
 
     // Record analytics event
     try {
-      const analyticsPath = path.join(process.cwd(), 'public', 'data', 'live-tracking.json');
-      let events = [];
-      
-      if (fs.existsSync(analyticsPath)) {
-        const fileContent = fs.readFileSync(analyticsPath, 'utf8');
-        events = JSON.parse(fileContent);
-      }
-
-      events.push({
-        id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        type: 'supplier_application',
-        timestamp: new Date().toISOString(),
-        userId: `guest_${Date.now()}`,
+      await db.createAnalyticsEvent({
+        eventType: 'supplier_application',
+        userId: undefined,
         metadata: {
           companyName: applicationData.companyName,
           category: applicationData.category,
           email: applicationData.email
         }
       });
-
-      fs.writeFileSync(analyticsPath, JSON.stringify(events, null, 2));
     } catch (error) {
       console.warn('Could not record analytics event:', error);
     }

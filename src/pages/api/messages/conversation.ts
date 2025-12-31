@@ -2,8 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { sql } from '@vercel/postgres';
 import { getSessionFromRequest } from '@/lib/session';
-import fs from 'fs';
-import path from 'path';
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // GET - Fetch messages
@@ -44,17 +43,6 @@ async function handleGetMessages(req: NextApiRequest, res: NextApiResponse) {
 
     if (conversation.rows.length === 0) {
       return res.status(403).json({ error: 'Access denied' });
-    }
-
-    // Load users from JSON file (users are stored in JSON, not DB)
-    let jsonUsers: any[] = [];
-    try {
-      const usersPath = path.join(process.cwd(), 'public', 'data', 'users.json');
-      const usersData = JSON.parse(fs.readFileSync(usersPath, 'utf-8'));
-      jsonUsers = usersData.users || [];
-      console.log('[conversation] Loaded', jsonUsers.length, 'users from JSON');
-    } catch (err) {
-      console.error('[conversation] Error reading users JSON:', err);
     }
 
     // Fetch messages (without user join since users are in JSON)
@@ -113,9 +101,6 @@ async function handleGetMessages(req: NextApiRequest, res: NextApiResponse) {
     }
 
     console.log('[conversation] Found', messages.rows.length, 'messages');
-    if (messages.rows.length > 0) {
-      console.log('[conversation] First message sender_id:', messages.rows[0].sender_id, 'type:', typeof messages.rows[0].sender_id);
-    }
 
     // Mark messages as read
     await sql`
@@ -124,23 +109,30 @@ async function handleGetMessages(req: NextApiRequest, res: NextApiResponse) {
       WHERE conversation_id = ${conversationId} AND sender_id != ${userId} AND read = false
     `;
 
+    // Get unique sender IDs and fetch users from database
+    const senderIds: number[] = [];
+    const seenIds = new Set<number>();
+    for (const row of messages.rows) {
+      const id = typeof row.sender_id === 'string' ? parseInt(row.sender_id) : row.sender_id;
+      if (!seenIds.has(id)) {
+        seenIds.add(id);
+        senderIds.push(id);
+      }
+    }
+    
+    const users = await Promise.all(senderIds.map(id => db.getUserById(id)));
+    const userMap = new Map(users.map(u => u ? [u.id, u] : null).filter(Boolean) as [number, any][]);
+
     return res.status(200).json({
       messages: messages.rows.map(row => {
-        // Convert sender_id to number (PostgreSQL returns it as string)
         const senderId = typeof row.sender_id === 'string' ? parseInt(row.sender_id) : row.sender_id;
-        
-        // Get sender info from JSON users - match by numeric ID
-        const sender = jsonUsers.find((u: any) => u.id === senderId);
-
-        if (!sender) {
-          console.log('[conversation] Could not find user for sender_id:', senderId, 'type:', typeof senderId);
-        }
+        const sender = userMap.get(senderId);
 
         // Parse reply data if exists
         let replyTo = null;
         if (row.reply_to_id && row.reply_content) {
           const replySenderId = typeof row.reply_sender_id === 'string' ? parseInt(row.reply_sender_id) : row.reply_sender_id;
-          const replySender = jsonUsers.find((u: any) => u.id === replySenderId);
+          const replySender = userMap.get(replySenderId);
           replyTo = {
             id: row.reply_to_id,
             senderName: replySender?.username || 'Unknown',

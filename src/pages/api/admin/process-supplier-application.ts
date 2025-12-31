@@ -1,8 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
 import bcrypt from 'bcryptjs';
-import { db, isProduction } from '@/lib/db';
+import { db } from '@/lib/db';
 import { sendEmail } from '@/lib/email';
 
 interface SupplierApplication {
@@ -117,8 +115,6 @@ Best regards, The MIGISTUS Team`,
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    const useProduction = isProduction();
-
     try {
       const { applicationId, action } = req.body;
 
@@ -130,165 +126,85 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Action must be "approve" or "reject"' });
       }
 
-      if (useProduction) {
-        // ============================================
-        // PRODUCTION: Use database
-        // ============================================
-        const appId = parseInt(applicationId);
-        const application = await db.getSupplierApplication(appId);
+      const appId = parseInt(applicationId);
+      const application = await db.getSupplierApplication(appId);
 
-        if (!application) {
-          return res.status(404).json({ error: 'Application not found' });
+      if (!application) {
+        return res.status(404).json({ error: 'Application not found' });
+      }
+
+      if (action === 'approve') {
+        // Generate temporary password and supplier code
+        const temporaryPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12).toUpperCase();
+        const supplierCode = generateSupplierCode(application.company_name);
+
+        // 1. Create user account with 'Supplier' tier
+        const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+        const newUser = await db.createUser({
+          username: application.company_name.toLowerCase().replace(/\\s+/g, '_'),
+          email: application.email,
+          password: hashedPassword,
+          tier: 'Supplier',
+          firstName: application.contact_person.split(' ')[0] || application.contact_person,
+          lastName: application.contact_person.split(' ').slice(1).join(' ') || ''
+        });
+
+        if (!newUser) {
+          return res.status(500).json({ error: 'Failed to create user account' });
         }
 
-        if (action === 'approve') {
-          // Generate temporary password and supplier code
-          const temporaryPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12).toUpperCase();
-          const supplierCode = generateSupplierCode(application.company_name);
+        // 2. Update application status to approved
+        await db.updateSupplierApplication(appId, newUser.id, {
+          status: 'approved',
+          reviewNotes: 'Application approved and account created'
+        });
 
-          // 1. Create user account with 'Supplier' tier
-          const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
-          const newUser = await db.createUser({
-            username: application.company_name.toLowerCase().replace(/\\s+/g, '_'),
-            email: application.email,
-            password: hashedPassword,
-            tier: 'Supplier',
-            firstName: application.contact_person.split(' ')[0] || application.contact_person,
-            lastName: application.contact_person.split(' ').slice(1).join(' ') || ''
-          });
+        // 3. Create supplier profile
+        await db.createSupplierProfile(newUser.id, {
+          companyName: application.company_name,
+          slug: application.company_name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          email: application.email,
+          phone: application.phone,
+          website: application.website || undefined,
+          description: application.business_description || undefined,
+          productCategories: application.product_categories ? application.product_categories.split(',').map((c: string) => c.trim()) : []
+        });
 
-          if (!newUser) {
-            return res.status(500).json({ error: 'Failed to create user account' });
-          }
+        // 4. Send welcome email with credentials
+        const emailSent = await sendSupplierWelcomeEmail(
+          application.email,
+          application.company_name,
+          supplierCode,
+          temporaryPassword
+        );
 
-          // 2. Update application status to approved
-          await db.updateSupplierApplication(appId, newUser.id, {
-            status: 'approved',
-            reviewNotes: 'Application approved and account created'
-          });
+        if (!emailSent) {
+          console.warn('Email sending failed, but supplier account was created');
+        }
 
-          // 3. Create supplier profile
-          await db.createSupplierProfile(newUser.id, {
-            companyName: application.company_name,
-            slug: application.company_name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-            email: application.email,
-            phone: application.phone,
-            website: application.website || undefined,
-            description: application.business_description || undefined,
-            productCategories: application.product_categories ? application.product_categories.split(',').map((c: string) => c.trim()) : []
-          });
-
-          // 4. Send welcome email with credentials
-          const emailSent = await sendSupplierWelcomeEmail(
-            application.email,
-            application.company_name,
+        return res.status(200).json({
+          success: true,
+          message: 'Application approved and supplier account created',
+          supplier: {
+            id: newUser.id,
+            email: newUser.email,
+            username: newUser.username,
             supplierCode,
-            temporaryPassword
-          );
-
-          if (!emailSent) {
-            console.warn('Email sending failed, but supplier account was created');
+            emailSent
           }
-
-          return res.status(200).json({
-            success: true,
-            message: 'Application approved and supplier account created',
-            supplier: {
-              id: newUser.id,
-              email: newUser.email,
-              username: newUser.username,
-              supplierCode,
-              emailSent
-            }
-          });
-
-        } else {
-          // Reject application
-          await db.updateSupplierApplication(appId, 0, {
-            status: 'rejected',
-            reviewNotes: 'Application rejected by admin'
-          });
-
-          return res.status(200).json({
-            success: true,
-            message: 'Application rejected'
-          });
-        }
+        });
 
       } else {
-        // ============================================
-        // DEVELOPMENT: Use file system (legacy)
-        // ============================================
-        const applicationsPath = path.join(process.cwd(), 'public', 'data', 'supplier-applications.json');
-        if (!fs.existsSync(applicationsPath)) {
-          return res.status(404).json({ error: 'Applications file not found' });
-        }
+        // Reject application
+        await db.updateSupplierApplication(appId, 0, {
+          status: 'rejected',
+          reviewNotes: 'Application rejected by admin'
+        });
 
-        const applicationsData = fs.readFileSync(applicationsPath, 'utf8');
-        let applications: SupplierApplication[] = JSON.parse(applicationsData);
-
-        const applicationIndex = applications.findIndex(app => app.id === applicationId);
-        if (applicationIndex === -1) {
-          return res.status(404).json({ error: 'Application not found' });
-        }
-
-        const application = applications[applicationIndex];
-        applications[applicationIndex].status = action === 'approve' ? 'approved' : 'rejected';
-        fs.writeFileSync(applicationsPath, JSON.stringify(applications, null, 2));
-
-        if (action === 'approve') {
-          const supplierCode = generateSupplierCode(application.companyName);
-          const temporaryPassword = Math.random().toString(36).slice(-12);
-
-          const newSupplier: Supplier = {
-            id: Date.now().toString(),
-            name: application.companyName,
-            email: application.email,
-            password: '',
-            supplierCode: supplierCode,
-            companyName: application.companyName,
-            status: 'active',
-            joinedDate: new Date().toISOString(),
-            contactPerson: application.contactPerson,
-            phone: application.phone,
-            address: application.address,
-            productCategories: application.productCategories.split(',').map(cat => cat.trim()),
-            totalProducts: 0,
-            totalSales: 0,
-            rating: 5.0
-          };
-
-          const suppliersPath = path.join(process.cwd(), 'public', 'data', 'suppliers.json');
-          let suppliers: Supplier[] = [];
-
-          if (fs.existsSync(suppliersPath)) {
-            const suppliersData = fs.readFileSync(suppliersPath, 'utf8');
-            suppliers = JSON.parse(suppliersData);
-          }
-
-          suppliers.push(newSupplier);
-          fs.writeFileSync(suppliersPath, JSON.stringify(suppliers, null, 2));
-
-          // Note: In dev mode, real emails won't be sent (would need environment configured)
-          console.log(`[DEV] Supplier account created for ${application.email} with code ${supplierCode}`);
-          console.log(`[DEV] Temporary password: ${temporaryPassword}`);
-
-          return res.status(200).json({
-            success: true,
-            message: 'Application approved and supplier account created',
-            supplier: {
-              id: newSupplier.id,
-              email: newSupplier.email,
-              supplierCode: newSupplier.supplierCode,
-              emailSent: false
-            }
-          });
-        } else {
-          return res.status(200).json({
-            success: true,
-            message: 'Application rejected'
-          });
-        }
+        return res.status(200).json({
+          success: true,
+          message: 'Application rejected'
+        });
       }
 
     } catch (error) {

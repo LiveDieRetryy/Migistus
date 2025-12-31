@@ -1,16 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
-
-const ordersFilePath = path.join(process.cwd(), 'public/data/product-orders.json');
+import { db } from '@/lib/db';
 
 interface ProductOrder {
   id: string;
-  productId: number;
-  userId: number;
+  product_id: number;
+  user_id: number;
   username: string;
   quantity: number;
-  orderDate: string;
+  order_date: string;
   status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
 }
 
@@ -21,40 +18,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   res.setHeader('Expires', '0');
 
   try {
-    // Read orders file
-    let orders: ProductOrder[] = [];
-    if (fs.existsSync(ordersFilePath)) {
-      const ordersData = fs.readFileSync(ordersFilePath, 'utf-8');
-      orders = JSON.parse(ordersData);
-    }
-
     if (req.method === 'GET') {
       const { productId, userId } = req.query;
 
       // Get specific user's order for a product
       if (productId && userId) {
-        const order = orders.find(
-          o => 
-            o.productId === Number(productId) && 
-            o.userId === Number(userId) &&
-            o.status !== 'cancelled'
-        );
-        return res.status(200).json({ order: order || null });
+        const orders = await db.getProductOrders({
+          productId: Number(productId),
+          userId: Number(userId)
+        });
+        return res.status(200).json({ order: orders[0] || null });
       }
 
       // Get all orders for a product
       if (productId) {
-        const productOrders = orders.filter(o => o.productId === Number(productId));
-        return res.status(200).json({ orders: productOrders });
+        const orders = await db.getProductOrders({ productId: Number(productId) });
+        return res.status(200).json({ orders });
       }
 
       // Get all orders for a user
       if (userId) {
-        const userOrders = orders.filter(o => o.userId === Number(userId));
-        return res.status(200).json({ orders: userOrders });
+        const orders = await db.getProductOrders({ userId: Number(userId) });
+        return res.status(200).json({ orders });
       }
 
       // Return all orders
+      const orders = await db.getProductOrders();
       return res.status(200).json({ orders });
     }
 
@@ -66,35 +55,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       // Check if user already has an order for this product
-      const existingOrder = orders.find(
-        o => 
-          o.productId === Number(productId) && 
-          o.userId === Number(userId) &&
-          o.status !== 'cancelled'
-      );
+      const existingOrders = await db.getProductOrders({
+        productId: Number(productId),
+        userId: Number(userId)
+      });
 
-      if (existingOrder) {
+      if (existingOrders.length > 0) {
         return res.status(400).json({ 
           error: 'You have already placed an order for this product',
-          order: existingOrder
+          order: existingOrders[0]
         });
       }
 
       // Create new order
-      const newOrder: ProductOrder = {
-        id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      const newOrder = await db.createProductOrder({
         productId: Number(productId),
         userId: Number(userId),
         username,
-        quantity: Number(quantity),
-        orderDate: new Date().toISOString(),
-        status: 'pending'
-      };
-
-      orders.push(newOrder);
-
-      // Save to file
-      fs.writeFileSync(ordersFilePath, JSON.stringify(orders, null, 2));
+        quantity: Number(quantity)
+      });
 
       return res.status(201).json({ order: newOrder });
     }
@@ -106,18 +85,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      const orderIndex = orders.findIndex(o => o.id === orderId);
+      const order = await db.updateProductOrderStatus(orderId, status);
       
-      if (orderIndex === -1) {
+      if (!order) {
         return res.status(404).json({ error: 'Order not found' });
       }
 
-      orders[orderIndex].status = status;
-
-      // Save to file
-      fs.writeFileSync(ordersFilePath, JSON.stringify(orders, null, 2));
-
-      return res.status(200).json({ order: orders[orderIndex] });
+      return res.status(200).json({ order });
     }
 
     if (req.method === 'DELETE') {
@@ -127,19 +101,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Order ID required' });
       }
 
-      const orderIndex = orders.findIndex(o => o.id === orderId);
+      // Mark as cancelled instead of deleting
+      const order = await db.updateProductOrderStatus(orderId as string, 'cancelled');
       
-      if (orderIndex === -1) {
+      if (!order) {
         return res.status(404).json({ error: 'Order not found' });
       }
 
-      // Mark as cancelled instead of deleting
-      orders[orderIndex].status = 'cancelled';
-
-      // Save to file
-      fs.writeFileSync(ordersFilePath, JSON.stringify(orders, null, 2));
-
-      return res.status(200).json({ message: 'Order cancelled', order: orders[orderIndex] });
+      return res.status(200).json({ message: 'Order cancelled', order });
     }
 
     return res.status(405).json({ error: 'Method not allowed' });

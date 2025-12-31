@@ -2,8 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { sql } from '@vercel/postgres';
 import { getSessionFromRequest } from '@/lib/session';
-import fs from 'fs';
-import path from 'path';
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -20,17 +19,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const userId = session.userId;
     const status = req.query.status as string; // 'accepted', 'pending', 'ignored', or undefined for all
-
-    // Load users from JSON file first (since users are stored in JSON, not DB)
-    let jsonUsers: any[] = [];
-    try {
-      const usersPath = path.join(process.cwd(), 'public', 'data', 'users.json');
-      const usersData = JSON.parse(fs.readFileSync(usersPath, 'utf-8'));
-      jsonUsers = usersData.users || [];
-      console.log('[conversations] Loaded', jsonUsers.length, 'users from JSON');
-    } catch (err) {
-      console.error('[conversations] Error reading users JSON:', err);
-    }
 
     // Build query with optional status filter
     let conversations;
@@ -120,24 +108,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('[conversations] Found', conversations.rows.length, 'conversations for user', userId, 'with status:', status || 'accepted');
 
+    // Get user details from database for all other_user_ids
+    const otherUserIds = conversations.rows.map(row => 
+      typeof row.other_user_id === 'string' ? parseInt(row.other_user_id) : row.other_user_id
+    );
+    
+    const users = await Promise.all(
+      otherUserIds.map(id => db.getUserById(id))
+    );
+
     return res.status(200).json({
       conversations: conversations.rows
-        .map(row => {
-          // Convert other_user_id to number (PostgreSQL returns it as string)
-          const otherUserId = typeof row.other_user_id === 'string' ? parseInt(row.other_user_id) : row.other_user_id;
-          
-          // Get username from JSON users - match by numeric ID
-          const jsonUser = jsonUsers.find((u: any) => u.id === otherUserId);
-
-          if (!jsonUser) {
-            console.log('[conversations] Could not find user for other_user_id:', otherUserId, 'type:', typeof otherUserId);
-          }
+        .map((row, index) => {
+          const otherUserId = otherUserIds[index];
+          const user = users[index];
 
           return {
             id: row.id.toString(),
             otherUserId: otherUserId,
-            otherUserName: jsonUser?.username || 'Unknown User',
-            otherUserAvatar: jsonUser?.avatar || null,
+            otherUserName: user?.username || 'Unknown User',
+            otherUserAvatar: user?.avatar || null,
             lastMessage: row.last_message || '',
             lastMessageAt: row.last_message_at,
             unreadCount: parseInt(row.unread_count) || 0,

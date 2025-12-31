@@ -55,6 +55,7 @@ export const db = {
     phoneNumber?: string;
     referralSource?: string;
     agreeToMarketing?: boolean;
+    avatar?: string | null;
   }) {
     const passwordHash = await bcrypt.hash(data.password, 10);
     
@@ -62,13 +63,14 @@ export const db = {
       INSERT INTO users (
         username, email, password_hash, tier,
         first_name, last_name, date_of_birth, country, state, city,
-        phone_number, referral_source, agree_to_marketing
+        phone_number, referral_source, agree_to_marketing, avatar
       )
       VALUES (
         ${data.username}, ${data.email}, ${passwordHash}, ${data.tier || 'Initiate'},
         ${data.firstName || null}, ${data.lastName || null}, ${data.dateOfBirth || null},
         ${data.country || null}, ${data.state || null}, ${data.city || null},
-        ${data.phoneNumber || null}, ${data.referralSource || null}, ${data.agreeToMarketing || false}
+        ${data.phoneNumber || null}, ${data.referralSource || null}, ${data.agreeToMarketing || false},
+        ${data.avatar || null}
       )
       RETURNING *
     `;
@@ -282,6 +284,52 @@ export const db = {
     `;
   },
 
+  async getAllActiveSessions(userId?: number) {
+    if (userId) {
+      const result = await sql`
+        SELECT * FROM sessions 
+        WHERE user_id = ${userId} 
+          AND expires_at > CURRENT_TIMESTAMP
+          AND is_active = true
+        ORDER BY last_active DESC
+      `;
+      return result.rows;
+    } else {
+      const result = await sql`
+        SELECT s.*, u.username, u.email, u.tier
+        FROM sessions s
+        JOIN users u ON s.user_id = u.id
+        WHERE s.expires_at > CURRENT_TIMESTAMP
+          AND s.is_active = true
+        ORDER BY s.last_active DESC
+      `;
+      return result.rows;
+    }
+  },
+
+  async endSession(sessionId: string) {
+    const result = await sql`
+      UPDATE sessions
+      SET is_active = false, updated_at = CURRENT_TIMESTAMP
+      WHERE session_id = ${sessionId}
+      RETURNING *
+    `;
+    return result.rows[0] || null;
+  },
+
+  async updateSessionPage(sessionId: string, currentPage: string, ipAddress?: string, userAgent?: string) {
+    const result = await sql`
+      UPDATE sessions
+      SET current_page = ${currentPage},
+          last_active = CURRENT_TIMESTAMP,
+          ip_address = COALESCE(${ipAddress || null}, ip_address),
+          user_agent = COALESCE(${userAgent || null}, user_agent)
+      WHERE session_id = ${sessionId}
+      RETURNING *
+    `;
+    return result.rows[0] || null;
+  },
+
   // Votes
   async hasUserVotedToday(userId: number, productId: number) {
     const result = await sql`
@@ -463,7 +511,7 @@ export const db = {
 
   async getUserPledges(userId: number) {
     const result = await sql`
-      SELECT * FROM pledges WHERE user_id = ${userId} ORDER BY created_at DESC
+      SELECT * FROM pledges WHERE user_id = ${userId} ORDER BY timestamp DESC
     `;
     return result.rows;
   },
@@ -2304,6 +2352,29 @@ export const db = {
     return result.rows[0] || null;
   },
 
+  async getAllSuppliers(limit: number = 100) {
+    const result = await sql`
+      SELECT sp.*, u.username, u.email, u.tier,
+        (SELECT COUNT(*) FROM products WHERE supplier_id = sp.user_id) as total_products
+      FROM supplier_profiles sp
+      JOIN users u ON sp.user_id = u.id
+      WHERE sp.is_active = true
+      ORDER BY sp.created_at DESC
+      LIMIT ${limit}
+    `;
+    return result.rows;
+  },
+
+  async getSupplierByEmailAndCode(email: string, supplierCode: string) {
+    const result = await sql`
+      SELECT sp.*, u.email
+      FROM supplier_profiles sp
+      JOIN users u ON sp.user_id = u.id
+      WHERE u.email = ${email} AND sp.supplier_code = ${supplierCode}
+    `;
+    return result.rows[0] || null;
+  },
+
   async updateSupplierProfile(userId: number, data: any) {
     const updates: string[] = [];
     const values: any[] = [userId];
@@ -2467,6 +2538,111 @@ export const db = {
     return result.rows[0] || null;
   },
 
+  // Supplier Products
+  async getSupplierProducts(supplierId?: number, status?: string) {
+    let query = `
+      SELECT p.*, sp.company_name as supplier_name, u.username
+      FROM products p
+      LEFT JOIN supplier_profiles sp ON p.supplier_id = sp.user_id
+      LEFT JOIN users u ON p.supplier_id = u.id
+      WHERE p.supplier_id IS NOT NULL
+    `;
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    if (supplierId) {
+      query += ` AND p.supplier_id = $${paramIndex++}`;
+      params.push(supplierId);
+    }
+
+    if (status) {
+      query += ` AND p.status = $${paramIndex++}`;
+      params.push(status);
+    }
+
+    query += ' ORDER BY p.created_at DESC';
+
+    const result = await sql.query(query, params);
+    return result.rows;
+  },
+
+  async createSupplierProduct(supplierId: number, data: {
+    name: string;
+    description: string;
+    category: string;
+    price: number;
+    images?: string[];
+    specifications?: any;
+    features?: string[];
+    status?: string;
+  }) {
+    const result = await sql`
+      INSERT INTO products (
+        supplier_id, name, description, category, price, 
+        images, specifications, features, status
+      )
+      VALUES (
+        ${supplierId},
+        ${data.name},
+        ${data.description},
+        ${data.category},
+        ${data.price},
+        ${JSON.stringify(data.images || [])},
+        ${JSON.stringify(data.specifications || {})},
+        ${JSON.stringify(data.features || [])},
+        ${data.status || 'pending'}
+      )
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async updateSupplierProduct(productId: number, supplierId: number, data: any) {
+    const updates: string[] = [];
+    const values: any[] = [productId, supplierId];
+    let paramIndex = 3;
+
+    const allowedFields = [
+      'name', 'description', 'category', 'price', 'original_price', 
+      'discount', 'images', 'specifications', 'features', 'status'
+    ];
+
+    for (const field of allowedFields) {
+      if (data[field] !== undefined) {
+        updates.push(`${field} = $${paramIndex++}`);
+        
+        if (typeof data[field] === 'object') {
+          values.push(JSON.stringify(data[field]));
+        } else {
+          values.push(data[field]);
+        }
+      }
+    }
+
+    if (updates.length === 0) return null;
+
+    updates.push('updated_at = CURRENT_TIMESTAMP');
+
+    const query = `
+      UPDATE products 
+      SET ${updates.join(', ')}
+      WHERE id = $1 AND supplier_id = $2
+      RETURNING *
+    `;
+
+    const result = await sql.query(query, values);
+    return result.rows[0] || null;
+  },
+
+  async deleteSupplierProduct(productId: number, supplierId: number) {
+    const result = await sql`
+      DELETE FROM products 
+      WHERE id = ${productId} AND supplier_id = ${supplierId}
+      RETURNING *
+    `;
+    return result.rows[0] || null;
+  },
+
   // Product Reviews
   async createProductReview(productId: number, userId: number, data: {
     rating: number;
@@ -2614,6 +2790,26 @@ export const db = {
     }
   },
 
+  async updateReviewHelpful(reviewId: number, helpful: boolean) {
+    if (helpful) {
+      const result = await sql`
+        UPDATE product_reviews 
+        SET helpful_count = helpful_count + 1
+        WHERE id = ${reviewId}
+        RETURNING *
+      `;
+      return result.rows[0];
+    } else {
+      const result = await sql`
+        UPDATE product_reviews 
+        SET not_helpful_count = not_helpful_count + 1
+        WHERE id = ${reviewId}
+        RETURNING *
+      `;
+      return result.rows[0];
+    }
+  },
+
   async updateProductRating(productId: number) {
     const result = await sql`
       SELECT AVG(rating)::DECIMAL(3,2) as avg_rating, COUNT(*) as review_count
@@ -2738,6 +2934,23 @@ export const db = {
       OFFSET ${offset}
     `;
     return result.rows;
+  },
+
+  async hasUserPurchasedProduct(userId: number, productId: number): Promise<{ purchased: boolean; orderId?: number }> {
+    const result = await sql`
+      SELECT o.id as order_id
+      FROM orders o
+      INNER JOIN order_items oi ON o.id = oi.order_id
+      WHERE o.user_id = ${userId} 
+        AND oi.product_id = ${productId}
+        AND o.status IN ('completed', 'delivered', 'shipped')
+      LIMIT 1
+    `;
+    
+    if (result.rows.length > 0) {
+      return { purchased: true, orderId: result.rows[0].order_id };
+    }
+    return { purchased: false };
   },
 
   async updateOrderStatus(orderId: number, status: string, data?: {
@@ -4833,7 +5046,7 @@ export const db = {
     return result.rows;
   },
 
-  // User Sessions
+  // User Sessions (Updated to use sessions table)
   async createUserSession(data: {
     userId: number;
     sessionId: string;
@@ -4841,38 +5054,56 @@ export const db = {
     userAgent?: string;
     ipAddress?: string;
   }) {
-    const result = await sql`
-      INSERT INTO user_sessions (
-        user_id, session_id, current_page, user_agent, ip_address
-      )
-      VALUES (
-        ${data.userId},
-        ${data.sessionId},
-        ${data.currentPage || null},
-        ${data.userAgent || null},
-        ${data.ipAddress || null}
-      )
-      ON CONFLICT (session_id) DO UPDATE SET
-        last_activity = CURRENT_TIMESTAMP,
-        current_page = EXCLUDED.current_page,
-        is_active = true
-      RETURNING *
+    // Check if session already exists
+    const existing = await sql`
+      SELECT * FROM sessions WHERE session_id = ${data.sessionId}
     `;
-    return result.rows[0];
+    
+    if (existing.rows.length > 0) {
+      // Update existing session
+      const result = await sql`
+        UPDATE sessions
+        SET 
+          last_active = CURRENT_TIMESTAMP,
+          current_page = ${data.currentPage || null},
+          user_agent = COALESCE(${data.userAgent || null}, user_agent),
+          ip_address = COALESCE(${data.ipAddress || null}, ip_address),
+          is_active = true
+        WHERE session_id = ${data.sessionId}
+        RETURNING *
+      `;
+      return result.rows[0];
+    } else {
+      // Create new session (expires in 24 hours by default)
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const result = await sql`
+        INSERT INTO sessions (
+          session_id, user_id, expires_at, current_page, user_agent, ip_address
+        )
+        VALUES (
+          ${data.sessionId},
+          ${data.userId},
+          ${expiresAt.toISOString()},
+          ${data.currentPage || null},
+          ${data.userAgent || null},
+          ${data.ipAddress || null}
+        )
+        RETURNING *
+      `;
+      return result.rows[0];
+    }
   },
 
   async updateUserSession(sessionId: string, data: {
     currentPage?: string;
     isActive?: boolean;
-    logoutTime?: string;
   }) {
     const result = await sql`
-      UPDATE user_sessions
+      UPDATE sessions
       SET 
-        last_activity = CURRENT_TIMESTAMP,
+        last_active = CURRENT_TIMESTAMP,
         current_page = COALESCE(${data.currentPage || null}, current_page),
-        is_active = COALESCE(${data.isActive !== undefined ? data.isActive : null}, is_active),
-        logout_time = COALESCE(${data.logoutTime || null}, logout_time)
+        is_active = COALESCE(${data.isActive !== undefined ? data.isActive : null}, is_active)
       WHERE session_id = ${sessionId}
       RETURNING *
     `;
@@ -4881,38 +5112,20 @@ export const db = {
 
   async getUserSession(sessionId: string) {
     const result = await sql`
-      SELECT * FROM user_sessions 
+      SELECT * FROM sessions 
       WHERE session_id = ${sessionId}
     `;
     return result.rows[0] || null;
   },
 
   async getActiveSessions(userId?: number) {
-    if (userId) {
-      const result = await sql`
-        SELECT * FROM user_sessions 
-        WHERE user_id = ${userId} AND is_active = true
-        ORDER BY last_activity DESC
-      `;
-      return result.rows;
-    } else {
-      const result = await sql`
-        SELECT * FROM user_sessions 
-        WHERE is_active = true
-        ORDER BY last_activity DESC
-      `;
-      return result.rows;
-    }
+    // Updated to use sessions table instead of user_sessions
+    return this.getAllActiveSessions(userId);
   },
 
   async endUserSession(sessionId: string) {
-    const result = await sql`
-      UPDATE user_sessions
-      SET is_active = false, logout_time = CURRENT_TIMESTAMP
-      WHERE session_id = ${sessionId}
-      RETURNING *
-    `;
-    return result.rows[0] || null;
+    // Updated to use sessions table instead of user_sessions
+    return this.endSession(sessionId);
   },
 
   // Analytics Aggregates
@@ -5940,6 +6153,526 @@ export const db = {
       description: description || `Admin adjustment${adminId ? ` by admin #${adminId}` : ''}`,
       metadata: { adminId }
     });
+  },
+
+  // Community Polls Management
+  async createCommunityPoll(data: {
+    title: string;
+    description: string;
+    category?: string;
+    options?: any[];
+    createdBy?: number;
+  }) {
+    const result = await sql`
+      INSERT INTO community_polls (title, description, category, status, created_by, vote_count)
+      VALUES (
+        ${data.title},
+        ${data.description},
+        ${data.category || 'general'},
+        'pending',
+        ${data.createdBy || null},
+        0
+      )
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async getCommunityPolls(status?: string) {
+    if (status) {
+      const result = await sql`
+        SELECT * FROM community_polls
+        WHERE status = ${status}
+        ORDER BY created_at DESC
+      `;
+      return result.rows;
+    }
+    
+    const result = await sql`
+      SELECT * FROM community_polls
+      ORDER BY created_at DESC
+    `;
+    return result.rows;
+  },
+
+  async getCommunityPoll(pollId: number) {
+    const result = await sql`
+      SELECT * FROM community_polls
+      WHERE id = ${pollId}
+      LIMIT 1
+    `;
+    return result.rows[0] || null;
+  },
+
+  async updateCommunityPoll(pollId: number, updates: {
+    status?: string;
+    title?: string;
+    description?: string;
+    category?: string;
+    endDate?: Date;
+  }) {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    if (updates.status !== undefined) {
+      fields.push(`status = $${paramIndex++}`);
+      values.push(updates.status);
+    }
+    if (updates.title !== undefined) {
+      fields.push(`title = $${paramIndex++}`);
+      values.push(updates.title);
+    }
+    if (updates.description !== undefined) {
+      fields.push(`description = $${paramIndex++}`);
+      values.push(updates.description);
+    }
+    if (updates.category !== undefined) {
+      fields.push(`category = $${paramIndex++}`);
+      values.push(updates.category);
+    }
+    if (updates.endDate !== undefined) {
+      fields.push(`end_date = $${paramIndex++}`);
+      values.push(updates.endDate);
+    }
+
+    if (fields.length === 0) {
+      return await this.getCommunityPoll(pollId);
+    }
+
+    fields.push(`updated_at = NOW()`);
+    values.push(pollId);
+
+    const result = await sql.query(
+      `UPDATE community_polls SET ${fields.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
+      values
+    );
+    return result.rows[0];
+  },
+
+  async deleteCommunityPoll(pollId: number) {
+    await sql`
+      DELETE FROM community_polls
+      WHERE id = ${pollId}
+    `;
+    return { success: true };
+  },
+
+  async incrementPollVoteCount(pollId: number) {
+    const result = await sql`
+      UPDATE community_polls
+      SET vote_count = vote_count + 1
+      WHERE id = ${pollId}
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async getCommunityPollStats() {
+    const result = await sql`
+      SELECT 
+        COUNT(*) FILTER (WHERE status = 'active') as active_polls,
+        COUNT(*) FILTER (WHERE status = 'pending') as pending_approval,
+        COUNT(*) FILTER (WHERE status = 'ended') as ended_polls,
+        COALESCE(SUM(vote_count), 0) as total_votes
+      FROM community_polls
+    `;
+    
+    const stats = result.rows[0];
+    return {
+      activePolls: parseInt(stats.active_polls) || 0,
+      totalVotes: parseInt(stats.total_votes) || 0,
+      pendingApproval: parseInt(stats.pending_approval) || 0,
+      endedPolls: parseInt(stats.ended_polls) || 0
+    };
+  },
+
+  // Product Orders
+  async getProductOrders(filters?: { productId?: number; userId?: number }) {
+    let query;
+    
+    if (filters?.productId && filters?.userId) {
+      query = sql`
+        SELECT * FROM product_orders
+        WHERE product_id = ${filters.productId} 
+          AND user_id = ${filters.userId}
+          AND status != 'cancelled'
+        ORDER BY order_date DESC
+      `;
+    } else if (filters?.productId) {
+      query = sql`
+        SELECT * FROM product_orders
+        WHERE product_id = ${filters.productId}
+        ORDER BY order_date DESC
+      `;
+    } else if (filters?.userId) {
+      query = sql`
+        SELECT * FROM product_orders
+        WHERE user_id = ${filters.userId}
+        ORDER BY order_date DESC
+      `;
+    } else {
+      query = sql`
+        SELECT * FROM product_orders
+        ORDER BY order_date DESC
+      `;
+    }
+    
+    const result = await query;
+    return result.rows;
+  },
+
+  async getProductOrderById(orderId: string) {
+    const result = await sql`
+      SELECT * FROM product_orders
+      WHERE id = ${orderId}
+    `;
+    return result.rows[0] || null;
+  },
+
+  async createProductOrder(data: {
+    productId: number;
+    userId: number;
+    username: string;
+    quantity: number;
+  }) {
+    const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const result = await sql`
+      INSERT INTO product_orders (
+        id, product_id, user_id, username, quantity, order_date, status
+      )
+      VALUES (
+        ${orderId}, ${data.productId}, ${data.userId}, ${data.username}, 
+        ${data.quantity}, NOW(), 'pending'
+      )
+      RETURNING *
+    `;
+    
+    return result.rows[0];
+  },
+
+  async updateProductOrderStatus(orderId: string, status: string) {
+    const result = await sql`
+      UPDATE product_orders
+      SET status = ${status}
+      WHERE id = ${orderId}
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  // Product Lifecycle Configuration
+  async getProductLifecycleConfig() {
+    const result = await sql`
+      SELECT * FROM product_lifecycle_config
+      ORDER BY last_updated DESC
+      LIMIT 1
+    `;
+    
+    if (result.rows[0]) {
+      return result.rows[0];
+    }
+    
+    // Return default config if none exists
+    return {
+      voting_to_coming_soon_threshold: 50,
+      coming_soon_duration: 7,
+      community_drops_duration: 14,
+      auto_promotion_enabled: true
+    };
+  },
+
+  async updateProductLifecycleConfig(data: {
+    votingToComingSoonThreshold: number;
+    comingSoonDuration: number;
+    communityDropsDuration: number;
+    autoPromotionEnabled: boolean;
+    updatedBy?: string;
+  }) {
+    const result = await sql`
+      INSERT INTO product_lifecycle_config (
+        voting_to_coming_soon_threshold,
+        coming_soon_duration,
+        community_drops_duration,
+        auto_promotion_enabled,
+        last_updated,
+        updated_by
+      )
+      VALUES (
+        ${data.votingToComingSoonThreshold},
+        ${data.comingSoonDuration},
+        ${data.communityDropsDuration},
+        ${data.autoPromotionEnabled},
+        NOW(),
+        ${data.updatedBy || 'admin'}
+      )
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async getProductsForLifecycleProcessing() {
+    const result = await sql`
+      SELECT id, name, votes, stage, stage_entered_at, promoted_at, completed_at
+      FROM products
+      WHERE stage IN ('voting', 'coming-soon', 'community-drops')
+      ORDER BY id
+    `;
+    return result.rows;
+  },
+
+  async updateProductStage(productId: number, stage: string, promotedAt?: string) {
+    const result = await sql`
+      UPDATE products
+      SET 
+        stage = ${stage},
+        stage_entered_at = NOW(),
+        promoted_at = ${promotedAt || new Date().toISOString()},
+        completed_at = CASE WHEN ${stage} = 'completed' THEN NOW() ELSE completed_at END
+      WHERE id = ${productId}
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async getProductStageStats() {
+    const result = await sql`
+      SELECT 
+        stage,
+        COUNT(*) as count
+      FROM products
+      GROUP BY stage
+    `;
+    
+    const stats: any = {
+      voting: 0,
+      'coming-soon': 0,
+      'community-drops': 0,
+      completed: 0
+    };
+    
+    for (const row of result.rows) {
+      const stage = row.stage || 'voting';
+      stats[stage] = parseInt(row.count);
+    }
+    
+    return stats;
+  },
+
+  // Moderation System
+  async getModerationSettings() {
+    const result = await sql`
+      SELECT * FROM moderation_settings
+      ORDER BY updated_at DESC
+      LIMIT 1
+    `;
+    
+    if (result.rows[0]) {
+      return {
+        profanityList: result.rows[0].profanity_list || [],
+        filterSettings: result.rows[0].filter_settings || {}
+      };
+    }
+    
+    return {
+      profanityList: [],
+      filterSettings: {}
+    };
+  },
+
+  async updateModerationSettings(data: {
+    profanityList: string[];
+    filterSettings: any;
+  }) {
+    const result = await sql`
+      INSERT INTO moderation_settings (profanity_list, filter_settings, updated_at)
+      VALUES (${JSON.stringify(data.profanityList)}, ${JSON.stringify(data.filterSettings)}, NOW())
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async getModerationLogs(limit: number = 100) {
+    const result = await sql`
+      SELECT * FROM moderation_logs
+      ORDER BY timestamp DESC
+      LIMIT ${limit}
+    `;
+    return result.rows;
+  },
+
+  async createModerationLog(data: {
+    type: string;
+    action: string;
+    reportId?: number;
+    moderatorId: number;
+    reportedUserId?: number;
+  }) {
+    const result = await sql`
+      INSERT INTO moderation_logs (
+        type, action, report_id, moderator_id, reported_user_id, timestamp
+      )
+      VALUES (
+        ${data.type}, ${data.action}, ${data.reportId || null},
+        ${data.moderatorId}, ${data.reportedUserId || null}, NOW()
+      )
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  // Maintenance Status
+  async getMaintenanceStatus() {
+    const result = await sql`
+      SELECT maintenance_mode FROM site_settings
+      ORDER BY updated_at DESC
+      LIMIT 1
+    `;
+    return result.rows[0]?.maintenance_mode || false;
+  },
+
+  async setMaintenanceMode(enabled: boolean) {
+    const result = await sql`
+      INSERT INTO site_settings (maintenance_mode, updated_at)
+      VALUES (${enabled}, NOW())
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  // Email Campaigns
+  async getEmailCampaigns() {
+    const result = await sql`
+      SELECT * FROM email_campaigns
+      ORDER BY created_at DESC
+    `;
+    return result.rows;
+  },
+
+  async getEmailCampaign(id: number) {
+    const result = await sql`
+      SELECT * FROM email_campaigns
+      WHERE id = ${id}
+    `;
+    return result.rows[0];
+  },
+
+  async createEmailCampaign(data: {
+    name: string;
+    subject: string;
+    content: string;
+    targetTier?: string;
+    scheduledFor?: string;
+    status: string;
+  }) {
+    const result = await sql`
+      INSERT INTO email_campaigns (name, subject, content, target_tier, scheduled_for, status, created_at)
+      VALUES (${data.name}, ${data.subject}, ${data.content}, ${data.targetTier || null}, ${data.scheduledFor || null}, ${data.status}, NOW())
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async updateEmailCampaign(id: number, updates: {
+    name?: string;
+    subject?: string;
+    content?: string;
+    targetTier?: string;
+    scheduledFor?: string;
+    status?: string;
+    sentAt?: string;
+  }) {
+    const result = await sql`
+      UPDATE email_campaigns
+      SET 
+        name = COALESCE(${updates.name || null}, name),
+        subject = COALESCE(${updates.subject || null}, subject),
+        content = COALESCE(${updates.content || null}, content),
+        target_tier = COALESCE(${updates.targetTier || null}, target_tier),
+        scheduled_for = COALESCE(${updates.scheduledFor || null}, scheduled_for),
+        status = COALESCE(${updates.status || null}, status),
+        sent_at = COALESCE(${updates.sentAt || null}, sent_at),
+        updated_at = NOW()
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  // Password Reset Tokens
+  async createPasswordResetToken(email: string, token: string, expiresAt: Date) {
+    const result = await sql`
+      INSERT INTO password_reset_tokens (email, token, expires_at, created_at)
+      VALUES (${email}, ${token}, ${expiresAt.toISOString()}, NOW())
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async getPasswordResetToken(token: string) {
+    const result = await sql`
+      SELECT * FROM password_reset_tokens
+      WHERE token = ${token} AND expires_at > NOW() AND used = false
+    `;
+    return result.rows[0];
+  },
+
+  async markPasswordResetTokenUsed(token: string) {
+    const result = await sql`
+      UPDATE password_reset_tokens
+      SET used = true, used_at = NOW()
+      WHERE token = ${token}
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async cleanupExpiredResetTokens() {
+    await sql`
+      DELETE FROM password_reset_tokens
+      WHERE expires_at < NOW() OR used = true
+    `;
+  },
+
+  // Product Chat Messages
+  async getChatMessages(productId: number, limit: number = 100, offset: number = 0) {
+    const result = await sql`
+      SELECT * FROM product_chat_messages
+      WHERE product_id = ${productId}
+      ORDER BY created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+    return result.rows.reverse(); // Return in chronological order
+  },
+
+  async createChatMessage(data: {
+    productId: number;
+    senderId: number;
+    senderName: string;
+    message: string;
+    filtered: boolean;
+  }) {
+    const result = await sql`
+      INSERT INTO product_chat_messages (product_id, sender_id, sender_name, message, filtered, created_at)
+      VALUES (${data.productId}, ${data.senderId}, ${data.senderName}, ${data.message}, ${data.filtered}, NOW())
+      RETURNING *
+    `;
+    return result.rows[0];
+  },
+
+  async deleteChatMessage(id: number) {
+    await sql`
+      DELETE FROM product_chat_messages
+      WHERE id = ${id}
+    `;
+  },
+
+  async clearProductChat(productId: number) {
+    await sql`
+      DELETE FROM product_chat_messages
+      WHERE product_id = ${productId}
+    `;
   }
 };
 

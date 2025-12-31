@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { db } from '@/lib/db';
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { userId } = req.query;
 
   if (!userId) {
@@ -9,23 +10,26 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   if (req.method === 'GET') {
     try {
-      const followData = JSON.parse(localStorage?.getItem('migistus_follows') || '[]');
       const userIdNum = parseInt(userId as string);
       
-      const followers = followData.filter((follow: any) => follow.followingId === userIdNum);
-      const following = followData.filter((follow: any) => follow.followerId === userIdNum);
+      const [followers, following] = await Promise.all([
+        db.getFollowers(userIdNum),
+        db.getFollowing(userIdNum)
+      ]);
       
       return res.status(200).json({
         userId: userIdNum,
         followersCount: followers.length,
         followingCount: following.length,
         followers: followers.map((f: any) => ({
-          userId: f.followerId,
-          timestamp: f.timestamp
+          userId: f.id,
+          username: f.username,
+          avatar: f.avatar
         })),
         following: following.map((f: any) => ({
-          userId: f.followingId,
-          timestamp: f.timestamp
+          userId: f.id,
+          username: f.username,
+          avatar: f.avatar
         }))
       });
     } catch (error) {

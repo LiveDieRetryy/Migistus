@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
+import { productStorage } from '@/utils/productStorageV2';
 
 interface Product {
   id: string;
@@ -22,7 +21,7 @@ interface Product {
   updatedAt?: string;
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -49,31 +48,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       return res.status(400).json({ error: 'Missing required fields: id, name, description' });
     }
 
-    const productsPath = path.join(process.cwd(), 'public', 'data', 'products.json');
-    
-    let productsData: any = [];
-    if (fs.existsSync(productsPath)) {
-      const fileContent = fs.readFileSync(productsPath, 'utf8');
-      productsData = JSON.parse(fileContent);
-    }
-
-    // Handle both array and object with products array formats
-    let products: Product[] = [];
-    if (Array.isArray(productsData)) {
-      products = productsData;
-    } else if (productsData.products && Array.isArray(productsData.products)) {
-      products = productsData.products;
-    }
-
-    // Find the product to update
-    const productIndex = products.findIndex(p => p.id === id);
-    if (productIndex === -1) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
     // Update the product
-    const updatedProduct: Product = {
-      ...products[productIndex],
+    const updatedProduct = await productStorage.updateProduct(id, {
       name,
       description,
       category,
@@ -87,27 +63,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       features: features || [],
       specifications: specifications || {},
       updatedAt: new Date().toISOString()
-    };
-
-    products[productIndex] = updatedProduct;
-
-    // Save back to file
-    const dataToSave = Array.isArray(productsData) ? products : { ...productsData, products };
-    fs.writeFileSync(productsPath, JSON.stringify(dataToSave, null, 2));
-
-    // Send cache invalidation signal to all clients
-    if (typeof window !== 'undefined') {
-      // This is client-side - trigger a cache invalidation event
-      window.dispatchEvent(new CustomEvent('productUpdated', { 
-        detail: { productId: id, action: 'update' } 
-      }));
-    }
+    });
 
     res.status(200).json({ 
       success: true, 
       message: 'Product updated successfully',
-      product: updatedProduct,
-      cacheInvalidate: true // Signal to frontend to invalidate cache
+      product: updatedProduct
     });
 
   } catch (error) {

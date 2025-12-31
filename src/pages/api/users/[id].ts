@@ -1,39 +1,5 @@
-import fs from "fs";
-import path from "path";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { db, isProduction } from '@/lib/db';
-
-const usersFilePath = path.resolve("public/data/users.json");
-
-function ensureDataDirectory() {
-  const dataDir = path.dirname(usersFilePath);
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-}
-
-function readUsers() {
-  ensureDataDirectory();
-  if (!fs.existsSync(usersFilePath)) {
-    fs.writeFileSync(usersFilePath, JSON.stringify({ users: [] }, null, 2));
-  }
-  try {
-    const data = JSON.parse(fs.readFileSync(usersFilePath, "utf-8"));
-    return Array.isArray(data.users) ? data.users : [];
-  } catch (error) {
-    console.error('Error reading users file:', error);
-    return [];
-  }
-}
-
-function writeUsers(users: any[]) {
-  ensureDataDirectory();
-  try {
-    fs.writeFileSync(usersFilePath, JSON.stringify({ users }, null, 2));
-  } catch (error) {
-    console.error('Error writing users file:', error);
-  }
-}
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
@@ -41,16 +7,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === "GET") {
     try {
-      let user;
-      
-      if (isProduction()) {
-        console.log("🔐 Production mode: Fetching user from database");
-        user = await db.getUserById(userId);
-      } else {
-        console.log("🔓 Development mode: Using file-based storage");
-        const users = readUsers();
-        user = users.find((u: any) => u.id === userId);
-      }
+      console.log("🔐 Fetching user from database");
+      const user = await db.getUserById(userId);
       
       if (!user) {
         return res.status(404).json({ error: "User not found" });
@@ -72,13 +30,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       // Handle enforcement actions
       if (action) {
-        if (!isProduction()) {
-          return res.status(501).json({ 
-            error: 'Enforcement actions are only available in production mode',
-            message: 'Development mode uses file storage which does not support enforcement features'
-          });
-        }
-
         console.log(`⚖️ Enforcement action: ${action} for user ${userId}`);
         
         let result;
@@ -124,41 +75,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       
       // Regular user update
-      let updatedUser;
+      console.log("🔐 Updating user in database");
+      const updatedUser = await db.updateUser(userId, updateData);
       
-      if (isProduction()) {
-        console.log("🔐 Production mode: Updating user in database");
-        updatedUser = await db.updateUser(userId, updateData);
-        
-        if (!updatedUser) {
-          console.error(`❌ User ${userId} not found in database`);
-          return res.status(404).json({ error: "User not found" });
-        }
-        
-        console.log(`✅ User ${updatedUser.username} updated successfully`);
-      } else {
-        console.log("🔓 Development mode: Using file-based storage");
-        const users = readUsers();
-        const userIndex = users.findIndex((u: any) => u.id === userId);
-        
-        if (userIndex === -1) {
-          console.error(`❌ User ${userId} not found in database`);
-          return res.status(404).json({ error: "User not found" });
-        }
-        
-        console.log(`🎯 Found user: ${users[userIndex].username} at index ${userIndex}`);
-        
-        // Merge the updates with existing user data
-        users[userIndex] = { 
-          ...users[userIndex], 
-          ...updateData,
-          updatedAt: new Date().toISOString()
-        };
-        
-        writeUsers(users);
-        console.log(`✅ User ${users[userIndex].username} updated successfully`);
-        updatedUser = users[userIndex];
+      if (!updatedUser) {
+        console.error(`❌ User ${userId} not found in database`);
+        return res.status(404).json({ error: "User not found" });
       }
+      
+      console.log(`✅ User ${updatedUser.username} updated successfully`);
       
       return res.status(200).json({ success: true, user: updatedUser });
     } catch (error) {
@@ -173,67 +98,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === "DELETE") {
     try {
       console.log(`🗑️ DELETE request for user ID: ${userId}`);
+      console.log("🔐 Deleting user from database");
       
-      let deletedUser;
+      const deletedUser = await db.deleteUser(userId);
       
-      if (isProduction()) {
-        console.log("🔐 Production mode: Deleting user from database");
-        deletedUser = await db.deleteUser(userId);
-        
-        if (!deletedUser) {
-          console.error(`❌ User ${userId} not found for deletion`);
-          return res.status(404).json({ error: "User not found" });
-        }
-        
-        console.log(`✅ User ${deletedUser.username} deleted successfully`);
-      } else {
-        console.log("🔓 Development mode: Using file-based storage");
-        const users = readUsers();
-        console.log(`📊 Total users before delete: ${users.length}`);
-        
-        const userToDelete = users.find((u: any) => u.id === userId);
-      
-        if (!userToDelete) {
-          console.error(`❌ User ${userId} not found in database`);
-          return res.status(404).json({ error: "User not found" });
-        }
-
-        console.log(`🎯 Found user to delete: ${userToDelete.username} (ID: ${userId})`);
-        const filteredUsers = users.filter((u: any) => u.id !== userId);
-        console.log(`📊 Users after filter: ${filteredUsers.length}`);
-        
-        writeUsers(filteredUsers);
-        console.log(`✅ User ${userToDelete.username} removed from users.json`);
-
-        // Clean up chat messages/reports
-        try {
-          const chatPath = path.resolve("public/data/chat-messages.json");
-          if (fs.existsSync(chatPath)) {
-            const messages = JSON.parse(fs.readFileSync(chatPath, "utf-8"));
-            const filteredMessages = messages.filter((msg: any) => msg.userId !== userId);
-            fs.writeFileSync(chatPath, JSON.stringify(filteredMessages, null, 2));
-            console.log(`🧹 Cleaned up chat messages for user ${userId}`);
-          }
-
-          const reportsPath = path.resolve("public/data/reported-chats.json");
-          if (fs.existsSync(reportsPath)) {
-            const reports = JSON.parse(fs.readFileSync(reportsPath, "utf-8"));
-            const filteredReports = reports.filter((report: any) => 
-              report.reportedUserId !== userId && 
-              report.reporterId !== userId
-            );
-            fs.writeFileSync(reportsPath, JSON.stringify(filteredReports, null, 2));
-            console.log(`🧹 Cleaned up reports for user ${userId}`);
-          }
-        } catch (cleanupError) {
-          console.error('⚠️ Error during cleanup:', cleanupError);
-          // Non-fatal error, continue
-        }
-        
-        deletedUser = userToDelete;
+      if (!deletedUser) {
+        console.error(`❌ User ${userId} not found for deletion`);
+        return res.status(404).json({ error: "User not found" });
       }
-
+      
+      console.log(`✅ User ${deletedUser.username} deleted successfully`);
       console.log(`✅ Successfully deleted user ${deletedUser.username} (ID: ${userId})`);
+      
       return res.status(200).json({
         success: true,
         message: `User ${deletedUser.username} and all associated data has been permanently deleted`,

@@ -1,8 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { sql } from '@vercel/postgres';
 import { getSessionFromRequest } from '@/lib/session';
-import fs from 'fs';
-import path from 'path';
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -54,32 +53,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       requestingUserId: userId
     });
 
-    // Get username from JSON users file
-    let otherUserName = 'Unknown User';
+    // Get user details from database
     const otherUserId = conv.other_user_id;
-
+    let otherUser = null;
+    
     if (otherUserId) {
       try {
-        const usersPath = path.join(process.cwd(), 'public', 'data', 'users.json');
-        const usersData = JSON.parse(fs.readFileSync(usersPath, 'utf-8'));
-        const jsonUser = usersData.users.find((u: any) => {
-          const jsonUserId = typeof u.id === 'string' ? parseInt(u.id) : u.id;
-          return jsonUserId === otherUserId;
-        });
-        if (jsonUser) {
-          otherUserName = jsonUser.username;
-          console.log('[conversation-info] Found username in JSON:', otherUserName);
-        }
+        otherUser = await db.getUserById(otherUserId);
       } catch (err) {
-        console.error('[conversation-info] Error reading users JSON:', err);
+        console.error('[conversation-info] Error fetching user:', err);
       }
     }
 
     const response = {
       id: conv.id.toString(),
       otherUserId: otherUserId,
-      otherUserName: otherUserName,
-      otherUserAvatar: null,
+      otherUserName: otherUser?.username || 'Unknown User',
+      otherUserAvatar: otherUser?.avatar || null,
       lastMessage: conv.last_message || 'No messages yet',
       lastMessageAt: conv.last_message_at
     };

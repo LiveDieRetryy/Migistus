@@ -1,8 +1,7 @@
 // Admin endpoint to remove a follow relationship for testing
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
 import { getSessionFromRequest } from '@/lib/session';
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -21,15 +20,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'followerId and followingId required' });
     }
 
-    const followersPath = path.join(process.cwd(), 'public', 'data', 'followers.json');
-    const followersData = JSON.parse(fs.readFileSync(followersPath, 'utf-8'));
-
-    // Remove the follow relationship
-    followersData.follows = followersData.follows.filter((follow: any) => 
-      !(follow.followerId === followerId && follow.followingId === followingId)
-    );
-
-    fs.writeFileSync(followersPath, JSON.stringify(followersData, null, 2));
+    // Remove the follow relationship from database
+    await db.unfollowUser(followerId, followingId);
 
     console.log(`[admin] Removed follow: ${followerId} -> ${followingId}`);
 

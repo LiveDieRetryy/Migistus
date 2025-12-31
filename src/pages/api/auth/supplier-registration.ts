@@ -1,24 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
+import { db } from '@/lib/db';
 
-interface SupplierApplication {
-  id: string;
-  companyName: string;
-  contactPerson: string;
-  email: string;
-  phone: string;
-  address: string;
-  productCategories: string;
-  businessDescription: string;
-  website: string;
-  yearsInBusiness: string;
-  expectedVolume: string;
-  status: 'pending' | 'approved' | 'rejected';
-  submittedAt: string;
-}
-
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     try {
       const {
@@ -46,17 +29,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         return res.status(400).json({ error: 'Invalid email format' });
       }
 
-      // Load existing applications
-      const applicationsPath = path.join(process.cwd(), 'public', 'data', 'supplier-applications.json');
-      let applications: SupplierApplication[] = [];
-
-      if (fs.existsSync(applicationsPath)) {
-        const applicationsData = fs.readFileSync(applicationsPath, 'utf8');
-        applications = JSON.parse(applicationsData);
-      }
-
-      // Check if email already exists
-      const existingApplication = applications.find(app => 
+      // Check if email already has an application
+      const existingApplications = await db.getSupplierApplications();
+      const existingApplication = existingApplications.find((app: any) => 
         app.email.toLowerCase() === email.toLowerCase()
       );
 
@@ -66,34 +41,16 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         });
       }
 
-      // Create new application
-      const newApplication: SupplierApplication = {
-        id: Date.now().toString(),
-        companyName,
-        contactPerson,
-        email,
+      // Create new application in database
+      const newApplication = await db.createSupplierApplication(0, {
+        companyName: companyName,
+        email: email.toLowerCase(),
         phone,
-        address,
-        productCategories,
-        businessDescription,
         website: website || '',
-        yearsInBusiness,
-        expectedVolume,
-        status: 'pending',
-        submittedAt: new Date().toISOString()
-      };
-
-      // Add to applications array
-      applications.push(newApplication);
-
-      // Ensure directory exists
-      const dataDir = path.join(process.cwd(), 'public', 'data');
-      if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-      }
-
-      // Save updated applications
-      fs.writeFileSync(applicationsPath, JSON.stringify(applications, null, 2));
+        description: businessDescription,
+        productCategories: [productCategories],
+        certifications: []
+      });
 
       return res.status(200).json({ 
         message: 'Application submitted successfully',
@@ -107,15 +64,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   } else if (req.method === 'GET') {
     // GET endpoint for admin to view applications
     try {
-      const applicationsPath = path.join(process.cwd(), 'public', 'data', 'supplier-applications.json');
-      
-      if (!fs.existsSync(applicationsPath)) {
-        return res.status(200).json({ applications: [] });
-      }
-
-      const applicationsData = fs.readFileSync(applicationsPath, 'utf8');
-      const applications = JSON.parse(applicationsData);
-
+      const applications = await db.getSupplierApplications();
       return res.status(200).json({ applications });
     } catch (error) {
       console.error('Error fetching applications:', error);

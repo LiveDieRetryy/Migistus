@@ -1,148 +1,83 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import fs from "fs";
-import path from "path";
-
-const productsPath = path.join(process.cwd(), "public", "data", "products.json");
-const lifecycleConfigPath = path.join(process.cwd(), "public", "data", "product-lifecycle-config.json");
+import { db } from "@/lib/db";
 
 interface Product {
   id: number;
   name: string;
   votes: number;
   stage?: string;
-  stageEnteredAt?: string;
-  promotedAt?: string;
-  [key: string]: any;
+  stage_entered_at?: string;
+  promoted_at?: string;
+  completed_at?: string;
 }
 
 interface LifecycleConfig {
-  votingToComingSoonThreshold: number;
-  comingSoonDuration: number;
-  communityDropsDuration: number;
-  autoPromotionEnabled: boolean;
+  voting_to_coming_soon_threshold: number;
+  coming_soon_duration: number;
+  community_drops_duration: number;
+  auto_promotion_enabled: boolean;
 }
 
-const getProducts = (): Product[] => {
-  try {
-    return JSON.parse(fs.readFileSync(productsPath, "utf8"));
-  } catch (error) {
-    console.error("Error reading products:", error);
-    return [];
-  }
-};
-
-const saveProducts = (products: Product[]) => {
-  try {
-    fs.writeFileSync(productsPath, JSON.stringify(products, null, 2));
-  } catch (error) {
-    console.error("Error saving products:", error);
-    throw error;
-  }
-};
-
-const getLifecycleConfig = (): LifecycleConfig => {
-  try {
-    return JSON.parse(fs.readFileSync(lifecycleConfigPath, "utf8"));
-  } catch (error) {
-    console.error("Error reading lifecycle config:", error);
-    // Return default config if file doesn't exist
-    return {
-      votingToComingSoonThreshold: 50,
-      comingSoonDuration: 7,
-      communityDropsDuration: 14,
-      autoPromotionEnabled: true
-    };
-  }
-};
-
-const processProductLifecycle = (products: Product[], config: LifecycleConfig) => {
+const processProductLifecycle = async (products: any[], config: any) => {
   const now = new Date();
-  const updatedProducts: Product[] = [];
   const promotions: Array<{ productId: number; fromStage: string; toStage: string; reason: string }> = [];
 
   for (const product of products) {
-    const updatedProduct = { ...product };
-    
-    // Initialize stage if not set
-    if (!updatedProduct.stage) {
-      updatedProduct.stage = "voting";
-      updatedProduct.stageEnteredAt = now.toISOString();
-    }
-
-    const stageEnteredAt = new Date(updatedProduct.stageEnteredAt || now);
+    const currentStage = product.stage || "voting";
+    const stageEnteredAt = product.stage_entered_at ? new Date(product.stage_entered_at) : now;
     const daysSinceStageEntered = Math.floor((now.getTime() - stageEnteredAt.getTime()) / (1000 * 60 * 60 * 24));
 
-    switch (updatedProduct.stage) {
+    switch (currentStage) {
       case "voting":
         // Check if product has enough votes to move to coming-soon
-        if (updatedProduct.votes >= config.votingToComingSoonThreshold) {
-          updatedProduct.stage = "coming-soon";
-          updatedProduct.stageEnteredAt = now.toISOString();
-          updatedProduct.promotedAt = now.toISOString();
+        if (product.votes >= config.voting_to_coming_soon_threshold) {
+          await db.updateProductStage(product.id, "coming-soon", now.toISOString());
           promotions.push({
-            productId: updatedProduct.id,
+            productId: product.id,
             fromStage: "voting",
             toStage: "coming-soon",
-            reason: `Reached ${config.votingToComingSoonThreshold} votes threshold`
+            reason: `Reached ${config.voting_to_coming_soon_threshold} votes threshold`
           });
         }
         break;
 
       case "coming-soon":
         // Check if product should move to community-drops after duration
-        if (daysSinceStageEntered >= config.comingSoonDuration) {
-          updatedProduct.stage = "community-drops";
-          updatedProduct.stageEnteredAt = now.toISOString();
-          updatedProduct.promotedAt = now.toISOString();
+        if (daysSinceStageEntered >= config.coming_soon_duration) {
+          await db.updateProductStage(product.id, "community-drops", now.toISOString());
           promotions.push({
-            productId: updatedProduct.id,
+            productId: product.id,
             fromStage: "coming-soon",
             toStage: "community-drops",
-            reason: `Completed ${config.comingSoonDuration} days in coming-soon stage`
+            reason: `Completed ${config.coming_soon_duration} days in coming-soon stage`
           });
         }
         break;
 
       case "community-drops":
         // Check if product should move to completed after duration
-        if (daysSinceStageEntered >= config.communityDropsDuration) {
-          updatedProduct.stage = "completed";
-          updatedProduct.stageEnteredAt = now.toISOString();
-          updatedProduct.promotedAt = now.toISOString();
-          updatedProduct.completedAt = now.toISOString();
+        if (daysSinceStageEntered >= config.community_drops_duration) {
+          await db.updateProductStage(product.id, "completed", now.toISOString());
           promotions.push({
-            productId: updatedProduct.id,
+            productId: product.id,
             fromStage: "community-drops",
             toStage: "completed",
-            reason: `Completed ${config.communityDropsDuration} days in community-drops stage`
+            reason: `Completed ${config.community_drops_duration} days in community-drops stage`
           });
         }
         break;
-
-      case "completed":
-        // Products stay in completed stage
-        break;
-
-      default:
-        // Handle unknown stages by setting to voting
-        updatedProduct.stage = "voting";
-        updatedProduct.stageEnteredAt = now.toISOString();
-        break;
     }
-
-    updatedProducts.push(updatedProduct);
   }
 
-  return { updatedProducts, promotions };
+  return promotions;
 };
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     try {
-      const products = getProducts();
-      const config = getLifecycleConfig();
+      const config = await db.getProductLifecycleConfig();
 
-      if (!config.autoPromotionEnabled) {
+      if (!config.auto_promotion_enabled) {
         return res.status(200).json({ 
           message: "Auto-promotion is disabled",
           promotions: [],
@@ -150,10 +85,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         });
       }
 
-      const { updatedProducts, promotions } = processProductLifecycle(products, config);
-
-      // Save updated products
-      saveProducts(updatedProducts);
+      const products = await db.getProductsForLifecycleProcessing();
+      const promotions = await processProductLifecycle(products, config);
 
       // Log promotions for tracking
       if (promotions.length > 0) {
@@ -163,7 +96,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       res.status(200).json({
         message: "Product lifecycle processed successfully",
         promotions,
-        processedCount: updatedProducts.length,
+        processedCount: products.length,
         timestamp: new Date().toISOString()
       });
 
@@ -176,21 +109,21 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   else if (req.method === "GET") {
     // Get status of all products and their stages
     try {
-      const products = getProducts();
-      const config = getLifecycleConfig();
+      const config = await db.getProductLifecycleConfig();
+      const stageStats = await db.getProductStageStats();
       
-      const stageStats = {
-        voting: products.filter(p => p.stage === "voting" || !p.stage).length,
-        "coming-soon": products.filter(p => p.stage === "coming-soon").length,
-        "community-drops": products.filter(p => p.stage === "community-drops").length,
-        completed: products.filter(p => p.stage === "completed").length
-      };
+      const totalProducts = Object.values(stageStats).reduce((sum: number, count) => sum + (count as number), 0);
 
       res.status(200).json({
-        config,
+        config: {
+          votingToComingSoonThreshold: config.voting_to_coming_soon_threshold,
+          comingSoonDuration: config.coming_soon_duration,
+          communityDropsDuration: config.community_drops_duration,
+          autoPromotionEnabled: config.auto_promotion_enabled
+        },
         stageStats,
-        totalProducts: products.length,
-        autoPromotionEnabled: config.autoPromotionEnabled
+        totalProducts,
+        autoPromotionEnabled: config.auto_promotion_enabled
       });
 
     } catch (error) {

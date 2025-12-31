@@ -1,35 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import fs from "fs";
-import path from "path";
+import { db } from '@/lib/db';
 
-const staffPicksFilePath = path.join(process.cwd(), "public", "data", "staff-picks.json");
-
-// Initialize staff picks file if it doesn't exist
-const initializeStaffPicksFile = () => {
-  if (!fs.existsSync(staffPicksFilePath)) {
-    fs.writeFileSync(staffPicksFilePath, JSON.stringify([], null, 2));
-  }
-};
-
-type StaffPickData = {
-  id: string;
-  productId: number;
-  pickDate: string;
-  dropStartDate: string;
-  dropEndDate: string;
-  limitedQuantity?: number;
-  staffNote?: string;
-  priority: number;
-  createdBy: string;
-  isActive: boolean;
-};
-
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  initializeStaffPicksFile();
-
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     try {
-      const staffPicks = JSON.parse(fs.readFileSync(staffPicksFilePath, "utf8"));
+      const staffPicks = await db.getAllStaffPicks();
       res.status(200).json(staffPicks);
     } catch (error) {
       console.error("Error reading staff picks:", error);
@@ -39,29 +14,17 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   else if (req.method === "POST") {
     try {
-      const { productId, dropStartDate, dropEndDate, limitedQuantity, staffNote, priority, createdBy } = req.body;
+      const { productId, dropEndDate, staffNote } = req.body;
 
-      if (!productId || !dropStartDate || !dropEndDate || !priority || !createdBy) {
-        return res.status(400).json({ error: "Missing required fields" });
+      if (!productId || !dropEndDate) {
+        return res.status(400).json({ error: "Missing required fields: productId and dropEndDate" });
       }
 
-      const staffPicks = JSON.parse(fs.readFileSync(staffPicksFilePath, "utf8"));
-      
-      const newStaffPick: StaffPickData = {
-        id: Date.now().toString(),
-        productId,
-        pickDate: new Date().toISOString(),
-        dropStartDate,
-        dropEndDate,
-        limitedQuantity,
-        staffNote,
-        priority,
-        createdBy,
-        isActive: true
-      };
-
-      staffPicks.push(newStaffPick);
-      fs.writeFileSync(staffPicksFilePath, JSON.stringify(staffPicks, null, 2));
+      const newStaffPick = await db.createStaffPick({
+        productId: parseInt(productId),
+        featuredUntil: dropEndDate,
+        reason: staffNote || 'Added via admin panel'
+      });
 
       res.status(201).json(newStaffPick);
     } catch (error) {
@@ -78,13 +41,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         return res.status(400).json({ error: "Product ID is required" });
       }
 
-      const staffPicks = JSON.parse(fs.readFileSync(staffPicksFilePath, "utf8"));
+      const numProductId = parseInt(productId as string);
       
-      const updatedStaffPicks = staffPicks.filter((pick: StaffPickData) => 
-        pick.productId !== parseInt(productId as string)
-      );
-
-      fs.writeFileSync(staffPicksFilePath, JSON.stringify(updatedStaffPicks, null, 2));
+      // Mark as not featured by setting featured_until to past
+      await db.updateStaffPick(numProductId, {
+        featuredUntil: new Date(0).toISOString()
+      });
 
       res.status(200).json({ message: "Staff pick removed successfully" });
     } catch (error) {
@@ -95,24 +57,21 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   else if (req.method === "PUT") {
     try {
-      const { id, ...updates } = req.body;
+      const { productId, featuredUntil, reason } = req.body;
 
-      if (!id) {
-        return res.status(400).json({ error: "Staff pick ID is required" });
+      if (!productId) {
+        return res.status(400).json({ error: "Product ID is required" });
       }
 
-      const staffPicks = JSON.parse(fs.readFileSync(staffPicksFilePath, "utf8"));
+      const numProductId = parseInt(productId);
       
-      const pickIndex = staffPicks.findIndex((pick: StaffPickData) => pick.id === id);
-      
-      if (pickIndex === -1) {
-        return res.status(404).json({ error: "Staff pick not found" });
-      }
+      await db.updateStaffPick(numProductId, {
+        featuredUntil,
+        reason
+      });
 
-      staffPicks[pickIndex] = { ...staffPicks[pickIndex], ...updates };
-      fs.writeFileSync(staffPicksFilePath, JSON.stringify(staffPicks, null, 2));
-
-      res.status(200).json(staffPicks[pickIndex]);
+      const updated = await db.getStaffPick(numProductId);
+      res.status(200).json(updated);
     } catch (error) {
       console.error("Error updating staff pick:", error);
       res.status(500).json({ error: "Failed to update staff pick" });

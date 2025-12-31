@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
+import { productStorage } from '@/utils/productStorageV2';
 
 // Function to generate slug from product name
 function generateSlug(name: string): string {
@@ -12,7 +11,7 @@ function generateSlug(name: string): string {
     .trim();
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
 
   if (!id || typeof id !== 'string') {
@@ -20,38 +19,16 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
-    const productsPath = path.join(process.cwd(), 'public', 'data', 'products.json');
-    
-    if (!fs.existsSync(productsPath)) {
-      return res.status(404).json({ error: 'Products data not found' });
-    }
-
-    const fileContent = fs.readFileSync(productsPath, 'utf-8');
-    let productsData;
-    
-    try {
-      productsData = JSON.parse(fileContent);
-    } catch (parseError) {
-      return res.status(500).json({ error: 'Invalid products data format' });
-    }
-
-    // Handle both array and object with products array formats
-    let products: any[] = [];
-    if (Array.isArray(productsData)) {
-      products = productsData;
-    } else if (productsData.products && Array.isArray(productsData.products)) {
-      products = productsData.products;
-    } else {
-      return res.status(500).json({ error: 'Invalid products data structure' });
-    }
-
     if (req.method === 'GET') {
-      // Find the product by ID or slug
-      const product = products.find(p => 
-        p.id === id || 
-        p.id === parseInt(id, 10) || 
-        p.slug === id
-      );
+      // Find the product by ID or slug - try as number first, then slug
+      let product;
+      const numericId = parseInt(id, 10);
+      if (!isNaN(numericId)) {
+        product = await productStorage.getProduct(numericId);
+      }
+      if (!product) {
+        product = await productStorage.getProductBySlug(id);
+      }
 
       if (!product) {
         return res.status(404).json({ error: 'Product not found' });
@@ -103,31 +80,26 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   } else if (req.method === 'PUT') {
     // Update product
     const updatedProduct = req.body;
+    const numericId = parseInt(id, 10);
     
-    // Find and update the product
-    const productIndex = products.findIndex(p => p.id === id || p.id === parseInt(id, 10));
-    
-    if (productIndex === -1) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
-    // Ensure slug is generated if not provided or if name changed
-    if (!updatedProduct.slug || updatedProduct.name !== products[productIndex].name) {
+    // Ensure slug is generated if name changed
+    if (updatedProduct.name && !updatedProduct.slug) {
       updatedProduct.slug = generateSlug(updatedProduct.name);
     }
 
     // Ensure data consistency
-    updatedProduct.pledges = typeof updatedProduct.pledges === "number" ? updatedProduct.pledges : 0;
-    updatedProduct.pricingTiers = Array.isArray(updatedProduct.pricingTiers) ? updatedProduct.pricingTiers : [];
+    if (updatedProduct.pledges !== undefined) {
+      updatedProduct.pledges = typeof updatedProduct.pledges === "number" ? updatedProduct.pledges : 0;
+    }
+    if (updatedProduct.pricingTiers !== undefined) {
+      updatedProduct.pricingTiers = Array.isArray(updatedProduct.pricingTiers) ? updatedProduct.pricingTiers : [];
+    }
     
     // Update the product
-    products[productIndex] = { ...products[productIndex], ...updatedProduct };
+    const updated = await productStorage.updateProduct(numericId, updatedProduct);
     
-    // Write back to file
-    if (Array.isArray(productsData)) {
-      fs.writeFileSync(productsPath, JSON.stringify(products, null, 2));
-    } else {
-      fs.writeFileSync(productsPath, JSON.stringify({ ...productsData, products }, null, 2));
+    if (!updated) {
+      return res.status(404).json({ error: 'Product not found' });
     }
     
     console.log(`Product ${id} updated successfully`);
@@ -137,25 +109,13 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     
-    res.status(200).json({ success: true, product: products[productIndex] });
+    res.status(200).json({ success: true, product: updated });
 
   } else if (req.method === 'DELETE') {
     // Delete product
-    const productIndex = products.findIndex(p => p.id === id || p.id === parseInt(id, 10));
+    const numericId = parseInt(id, 10);
     
-    if (productIndex === -1) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
-    // Remove the product
-    products.splice(productIndex, 1);
-    
-    // Write back to file
-    if (Array.isArray(productsData)) {
-      fs.writeFileSync(productsPath, JSON.stringify(products, null, 2));
-    } else {
-      fs.writeFileSync(productsPath, JSON.stringify({ ...productsData, products }, null, 2));
-    }
+    await productStorage.deleteProduct(numericId);
     
     console.log(`Product ${id} deleted successfully`);
     res.status(200).json({ success: true });

@@ -1,31 +1,22 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import fs from "fs";
-import path from "path";
+import { db } from "@/lib/db";
 
-const lifecycleConfigPath = path.join(process.cwd(), "public", "data", "product-lifecycle-config.json");
-
-// Initialize config file if it doesn't exist
-const initializeConfigFile = () => {
-  if (!fs.existsSync(lifecycleConfigPath)) {
-    const defaultConfig = {
-      votingToComingSoonThreshold: 50, // votes needed to move from voting to coming soon
-      comingSoonDuration: 7, // days to stay in coming soon
-      communityDropsDuration: 14, // days to stay in community drops
-      autoPromotionEnabled: true,
-      lastUpdated: new Date().toISOString(),
-      createdBy: "system"
-    };
-    fs.writeFileSync(lifecycleConfigPath, JSON.stringify(defaultConfig, null, 2));
-  }
-};
-
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  initializeConfigFile();
-
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     try {
-      const config = JSON.parse(fs.readFileSync(lifecycleConfigPath, "utf8"));
-      res.status(200).json(config);
+      const config = await db.getProductLifecycleConfig();
+      
+      // Map snake_case to camelCase for frontend
+      const formattedConfig = {
+        votingToComingSoonThreshold: config.voting_to_coming_soon_threshold,
+        comingSoonDuration: config.coming_soon_duration,
+        communityDropsDuration: config.community_drops_duration,
+        autoPromotionEnabled: config.auto_promotion_enabled,
+        lastUpdated: config.last_updated,
+        createdBy: config.updated_by || 'system'
+      };
+      
+      res.status(200).json(formattedConfig);
     } catch (error) {
       console.error("Error reading lifecycle config:", error);
       res.status(500).json({ error: "Failed to load lifecycle configuration" });
@@ -48,16 +39,13 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         return res.status(400).json({ error: "Missing required configuration fields" });
       }
 
-      const config = {
+      const config = await db.updateProductLifecycleConfig({
         votingToComingSoonThreshold: parseInt(votingToComingSoonThreshold),
         comingSoonDuration: parseInt(comingSoonDuration),
         communityDropsDuration: parseInt(communityDropsDuration),
         autoPromotionEnabled: Boolean(autoPromotionEnabled),
-        lastUpdated: new Date().toISOString(),
         updatedBy: updatedBy || "admin"
-      };
-
-      fs.writeFileSync(lifecycleConfigPath, JSON.stringify(config, null, 2));
+      });
 
       res.status(200).json(config);
     } catch (error) {

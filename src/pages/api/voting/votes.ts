@@ -1,24 +1,5 @@
-import fs from 'fs';
-import path from 'path';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-const VOTES_PATH = path.resolve('public/data/votes.json');
-
-function readVotesData() {
-  try {
-    if (!fs.existsSync(VOTES_PATH)) {
-      const initialData = { votes: [] };
-      fs.writeFileSync(VOTES_PATH, JSON.stringify(initialData, null, 2));
-      return initialData;
-    }
-    
-    const fileContent = fs.readFileSync(VOTES_PATH, 'utf-8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    console.error('Error reading votes file:', error);
-    return { votes: [] };
-  }
-}
+import { db } from '@/lib/db';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -27,8 +8,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const votesData = readVotesData();
-    res.status(200).json(votesData);
+    // Get all product votes (not community poll votes)
+    const votes = await db.getVotes();
+    res.status(200).json({ votes });
   } catch (error) {
     console.error('Error fetching votes:', error);
     res.status(500).json({ error: 'Failed to fetch votes' });

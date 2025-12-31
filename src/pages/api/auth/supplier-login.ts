@@ -1,26 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
+import { db } from '@/lib/db';
 
-interface Supplier {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-  supplierCode: string;
-  companyName: string;
-  status: 'active' | 'pending' | 'suspended';
-  joinedDate: string;
-  contactPerson: string;
-  phone: string;
-  address: string;
-  productCategories: string[];
-  totalProducts: number;
-  totalSales: number;
-  rating: number;
-}
-
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     try {
       const { email, supplierCode } = req.body;
@@ -29,37 +10,33 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         return res.status(400).json({ error: 'Email and supplier code are required' });
       }
 
-      // Load suppliers data
-      const suppliersPath = path.join(process.cwd(), 'public', 'data', 'suppliers.json');
-      let suppliers: Supplier[] = [];
-
-      if (fs.existsSync(suppliersPath)) {
-        const suppliersData = fs.readFileSync(suppliersPath, 'utf8');
-        suppliers = JSON.parse(suppliersData);
-      } else {        // Create empty suppliers array if file doesn't exist
-        suppliers = [];
-        fs.writeFileSync(suppliersPath, JSON.stringify(suppliers, null, 2));}
-
       // Find supplier by email and supplier code
-      const supplier = suppliers.find(s => 
-        s.email.toLowerCase() === email.toLowerCase() && 
-        s.supplierCode === supplierCode
-      );
+      const supplier = await db.getSupplierByEmailAndCode(email.toLowerCase(), supplierCode);
 
       if (!supplier) {
         return res.status(401).json({ error: 'Invalid email or supplier code' });
       }
 
       // Check if supplier is active
-      if (supplier.status !== 'active') {
+      if (supplier.is_active !== true) {
         return res.status(403).json({ error: 'Supplier account is not active. Please contact support.' });
       }
 
-      // Return supplier data (excluding password for security)
-      const { password: _, ...supplierData } = supplier;
+      // Return supplier data
       return res.status(200).json({ 
         message: 'Login successful', 
-        supplier: supplierData 
+        supplier: {
+          id: supplier.id,
+          userId: supplier.user_id,
+          email: supplier.email,
+          supplierCode: supplier.supplier_code,
+          companyName: supplier.company_name,
+          status: supplier.status,
+          contactPerson: supplier.contact_person,
+          phone: supplier.phone,
+          address: supplier.address,
+          productCategories: supplier.product_categories
+        } 
       });
 
     } catch (error) {
