@@ -108,20 +108,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('[conversations] Found', conversations.rows.length, 'conversations for user', userId, 'with status:', status || 'accepted');
 
-    // Get user details from database for all other_user_ids
+    // Get user details from database for all other_user_ids - batch query optimization
     const otherUserIds = conversations.rows.map(row => 
       typeof row.other_user_id === 'string' ? parseInt(row.other_user_id) : row.other_user_id
     );
     
-    const users = await Promise.all(
-      otherUserIds.map(id => db.getUserById(id))
-    );
+    const users = await db.getUsersByIds(otherUserIds);
+    const userMap = new Map(users.map(u => [u.id, u]));
 
     return res.status(200).json({
       conversations: conversations.rows
-        .map((row, index) => {
-          const otherUserId = otherUserIds[index];
-          const user = users[index];
+        .map((row) => {
+          const otherUserId = typeof row.other_user_id === 'string' ? parseInt(row.other_user_id) : row.other_user_id;
+          const user = userMap.get(otherUserId);
 
           return {
             id: row.id.toString(),

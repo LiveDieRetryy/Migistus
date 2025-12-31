@@ -109,7 +109,7 @@ async function handleGetMessages(req: NextApiRequest, res: NextApiResponse) {
       WHERE conversation_id = ${conversationId} AND sender_id != ${userId} AND read = false
     `;
 
-    // Get unique sender IDs and fetch users from database
+    // Get unique sender IDs and fetch users from database - batch query optimization
     const senderIds: number[] = [];
     const seenIds = new Set<number>();
     for (const row of messages.rows) {
@@ -120,8 +120,8 @@ async function handleGetMessages(req: NextApiRequest, res: NextApiResponse) {
       }
     }
     
-    const users = await Promise.all(senderIds.map(id => db.getUserById(id)));
-    const userMap = new Map(users.map(u => u ? [u.id, u] : null).filter(Boolean) as [number, any][]);
+    const users = await db.getUsersByIds(senderIds);
+    const userMap = new Map(users.map(u => [u.id, u]));
 
     return res.status(200).json({
       messages: messages.rows.map(row => {

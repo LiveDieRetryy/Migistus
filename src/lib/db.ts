@@ -18,6 +18,14 @@ export const db = {
     return result.rows[0] || null;
   },
 
+  async getUsersByIds(ids: number[]) {
+    if (!ids || ids.length === 0) return [];
+    const result = await sql`
+      SELECT * FROM users WHERE id = ANY(${ids})
+    `;
+    return result.rows;
+  },
+
   async getUserByUsername(username: string) {
     const result = await sql`
       SELECT * FROM users WHERE username = ${username} LIMIT 1
