@@ -69,10 +69,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     `;
     console.log('✅ Created password_reset_tokens table');
 
+    // 5. Create followers table for social features
+    await sql`
+      CREATE TABLE IF NOT EXISTS followers (
+        id SERIAL PRIMARY KEY,
+        follower_id INTEGER NOT NULL,
+        following_id INTEGER NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(follower_id, following_id)
+      )
+    `;
+    console.log('✅ Created followers table');
+
     return res.status(200).json({
       success: true,
       message: 'Missing tables created successfully',
-      tables: ['site_settings', 'email_campaigns', 'chat_messages', 'password_reset_tokens']
+      tables: ['site_settings', 'email_campaigns', 'chat_messages', 'password_reset_tokens', 'followers']
     });
 
   } catch (error: any) {
