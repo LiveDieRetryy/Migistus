@@ -78,6 +78,14 @@ const NAVIGATION_ITEMS = [
     category: "analytics"
   },
   {
+    id: "monitoring",
+    title: "Monitoring",
+    icon: "📡",
+    href: "/kingdom/monitoring",
+    description: "System metrics & errors",
+    category: "analytics"
+  },
+  {
     id: "content",
     title: "Content",
     icon: "🎨",
