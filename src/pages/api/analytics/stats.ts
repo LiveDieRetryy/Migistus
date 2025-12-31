@@ -81,21 +81,107 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         customEventCounts.set(e.name, (customEventCounts.get(e.name) || 0) + 1);
       });
 
-      return res.status(200).json({
-        success: true,
-        timeWindow: window,
-        stats: {
-          totalEvents: events.length,
-          pageviews,
-          actions,
-          customEvents,
-          uniqueSessions,
-          topPages,
-          topActions,
-          vitals,
-          customEventBreakdown: Object.fromEntries(customEventCounts)
+      // Group page views with more details
+      const pageViewsDetailed = Array.from(pageCounts.entries()).map(([page, views]) => {
+        const pageEvents = pageviewEvents.filter(e => e.page === page);
+        const uniqueUsers = new Set(pageEvents.map(e => e.userId).filter(Boolean)).size;
+        const times = pageEvents.map(e => e.data?.timeOnPage || 0).filter(t => t > 0);
+        const avgTime = times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0;
+        return { page, views, uniqueUsers, avgTime };
+      }).sort((a, b) => b.views - a.views);
+
+      // User actions with timestamps
+      const userActionsDetailed = Array.from(actionCounts.entries()).map(([action, count]) => {
+        const lastEvent = actionEvents.filter(e => e.name === action).sort((a, b) => b.receivedAt - a.receivedAt)[0];
+        return { 
+          action, 
+          count,
+          lastOccurred: lastEvent ? new Date(lastEvent.receivedAt).toISOString() : new Date().toISOString()
+        };
+      }).sort((a, b) => b.count - a.count);
+
+      // Web Vitals formatted
+      const webVitalsFormatted = {
+        lcp: {
+          avg: vitals['LCP']?.avg || 0,
+          rating: vitals['LCP']?.avg < 2500 ? 'good' : vitals['LCP']?.avg < 4000 ? 'needs-improvement' : 'poor'
         },
-        timestamp: Date.now()
+        fid: {
+          avg: vitals['FID']?.avg || 0,
+          rating: vitals['FID']?.avg < 100 ? 'good' : vitals['FID']?.avg < 300 ? 'needs-improvement' : 'poor'
+        },
+        cls: {
+          avg: vitals['CLS']?.avg || 0,
+          rating: vitals['CLS']?.avg < 0.1 ? 'good' : vitals['CLS']?.avg < 0.25 ? 'needs-improvement' : 'poor'
+        },
+        pageLoad: {
+          avg: vitals['PageLoad']?.avg || 0,
+          rating: vitals['PageLoad']?.avg < 2000 ? 'good' : vitals['PageLoad']?.avg < 4000 ? 'needs-improvement' : 'poor'
+        }
+      };
+
+      // Custom events detailed
+      const customEventsDetailed = Array.from(customEventCounts.entries()).map(([event, count]) => {
+        const eventData = events.filter(e => e.type === 'custom' && e.name === event).map(e => e.data);
+        return { event, count, data: eventData[0] || {} };
+      }).sort((a, b) => b.count - a.count);
+
+      // Top products from custom events
+      const productViews = events.filter(e => e.type === 'custom' && e.name === 'product_view');
+      const productVotes = events.filter(e => e.type === 'custom' && e.name === 'vote');
+      const productCartAdds = events.filter(e => e.type === 'custom' && e.name === 'add_to_cart');
+      const productPurchases = events.filter(e => e.type === 'custom' && (e.name === 'buy_now' || e.name === 'purchase'));
+      
+      const productStats = new Map<number, { id: number; name: string; views: number; votes: number; cartAdds: number; purchases: number }>();
+      
+      productViews.forEach(e => {
+        const id = e.data?.productId;
+        const name = e.data?.productName;
+        if (id) {
+          if (!productStats.has(id)) {
+            productStats.set(id, { id, name: name || 'Unknown', views: 0, votes: 0, cartAdds: 0, purchases: 0 });
+          }
+          productStats.get(id)!.views++;
+        }
+      });
+
+      productVotes.forEach(e => {
+        const id = e.data?.productId;
+        if (id && productStats.has(id)) {
+          productStats.get(id)!.votes++;
+        }
+      });
+
+      productCartAdds.forEach(e => {
+        const id = e.data?.productId;
+        if (id && productStats.has(id)) {
+          productStats.get(id)!.cartAdds++;
+        }
+      });
+
+      productPurchases.forEach(e => {
+        const id = e.data?.productId;
+        if (id && productStats.has(id)) {
+          productStats.get(id)!.purchases++;
+        }
+      });
+
+      const topProducts = Array.from(productStats.values())
+        .sort((a, b) => b.views - a.views)
+        .slice(0, 10);
+
+      return res.status(200).json({
+        pageViews: pageViewsDetailed,
+        userActions: userActionsDetailed,
+        webVitals: webVitalsFormatted,
+        customEvents: customEventsDetailed,
+        topProducts,
+        meta: {
+          totalEvents: events.length,
+          uniqueSessions,
+          timeWindow: window,
+          timestamp: Date.now()
+        }
       });
     }
 

@@ -49,10 +49,43 @@ interface SystemMetrics {
   };
 }
 
+interface FrontendAnalytics {
+  pageViews: Array<{
+    page: string;
+    views: number;
+    uniqueUsers: number;
+    avgTime: number;
+  }>;
+  userActions: Array<{
+    action: string;
+    count: number;
+    lastOccurred: string;
+  }>;
+  webVitals: {
+    lcp: { avg: number; rating: string };
+    fid: { avg: number; rating: string };
+    cls: { avg: number; rating: string };
+    pageLoad: { avg: number; rating: string };
+  };
+  customEvents: Array<{
+    event: string;
+    count: number;
+    data: any;
+  }>;
+  topProducts: Array<{
+    id: number;
+    name: string;
+    views: number;
+    votes: number;
+    cartAdds: number;
+    purchases: number;
+  }>;
+}
+
 export default function KingdomAnalytics() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'business' | 'system'>('business');
+  const [activeTab, setActiveTab] = useState<'business' | 'system' | 'frontend'>('business');
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     userGrowth: { thisMonth: 0, lastMonth: 0, change: 0 },
     votingTrends: { totalVotes: 0, activePolls: 0, avgVotesPerPoll: 0 },
@@ -60,6 +93,7 @@ export default function KingdomAnalytics() {
     engagement: { dailyActiveUsers: 0, avgSessionTime: 0, bounceRate: 0 }
   });
   const [systemMetrics, setSystemMetrics] = useState<SystemMetrics | null>(null);
+  const [frontendAnalytics, setFrontendAnalytics] = useState<FrontendAnalytics | null>(null);
   const [timeRange, setTimeRange] = useState('7d');
   const [metricsWindow, setMetricsWindow] = useState(60000); // 1 minute
 
@@ -73,6 +107,8 @@ export default function KingdomAnalytics() {
         loadAnalyticsData();
         if (activeTab === 'system') {
           loadSystemMetrics();
+        } else if (activeTab === 'frontend') {
+          loadFrontendAnalytics();
         }
       }
     }
@@ -82,8 +118,23 @@ export default function KingdomAnalytics() {
     if (activeTab === 'system') {
       const interval = setInterval(loadSystemMetrics, 5000);
       return () => clearInterval(interval);
+    } else if (activeTab === 'frontend') {
+      const interval = setInterval(loadFrontendAnalytics, 5000);
+      return () => clearInterval(interval);
     }
   }, [activeTab, metricsWindow]);
+
+  const loadFrontendAnalytics = async () => {
+    try {
+      const res = await fetch(`/api/analytics/stats?timeWindow=${metricsWindow}`);
+      if (res.ok) {
+        const data = await res.json();
+        setFrontendAnalytics(data);
+      }
+    } catch (error) {
+      console.error('Failed to load frontend analytics:', error);
+    }
+  };
 
   const loadSystemMetrics = async () => {
     try {
@@ -177,7 +228,7 @@ export default function KingdomAnalytics() {
                 <option value="1y">Last year</option>
               </select>
             )}
-            {activeTab === 'system' && (
+            {(activeTab === 'system' || activeTab === 'frontend') && (
               <select
                 value={metricsWindow}
                 onChange={(e) => setMetricsWindow(Number(e.target.value))}
@@ -214,6 +265,16 @@ export default function KingdomAnalytics() {
               }`}
             >
               📡 System Metrics
+            </button>
+            <button
+              onClick={() => setActiveTab('frontend')}
+              className={`pb-3 px-4 font-medium transition-colors ${
+                activeTab === 'frontend'
+                  ? 'text-yellow-400 border-b-2 border-yellow-400'
+                  : 'text-zinc-400 hover:text-zinc-300'
+              }`}
+            >
+              👤 User Analytics
             </button>
           </div>
         </div>
@@ -522,6 +583,234 @@ export default function KingdomAnalytics() {
                       💡 System performing well with {systemMetrics.metrics.requestsPerMinute} requests/min and {systemMetrics.metrics.avgResponseTime}ms avg response time.
                     </p>
                   </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Frontend Analytics Tab */}
+        {activeTab === 'frontend' && frontendAnalytics && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {/* Page Views Card */}
+              <div className="bg-zinc-900 border border-blue-500 rounded-lg p-6">
+                <h3 className="text-sm text-zinc-400 mb-2">📄 Total Page Views</h3>
+                <p className="text-3xl font-bold text-blue-400">
+                  {frontendAnalytics.pageViews.reduce((sum, p) => sum + p.views, 0).toLocaleString()}
+                </p>
+                <p className="text-xs text-zinc-500 mt-2">
+                  {frontendAnalytics.pageViews.reduce((sum, p) => sum + p.uniqueUsers, 0).toLocaleString()} unique users
+                </p>
+              </div>
+
+              {/* User Actions Card */}
+              <div className="bg-zinc-900 border border-purple-500 rounded-lg p-6">
+                <h3 className="text-sm text-zinc-400 mb-2">🎯 User Actions</h3>
+                <p className="text-3xl font-bold text-purple-400">
+                  {frontendAnalytics.userActions.reduce((sum, a) => sum + a.count, 0).toLocaleString()}
+                </p>
+                <p className="text-xs text-zinc-500 mt-2">
+                  {frontendAnalytics.userActions.length} action types
+                </p>
+              </div>
+
+              {/* Web Vitals Score */}
+              <div className="bg-zinc-900 border border-green-500 rounded-lg p-6">
+                <h3 className="text-sm text-zinc-400 mb-2">⚡ Performance Score</h3>
+                <p className="text-3xl font-bold text-green-400">
+                  {frontendAnalytics.webVitals.lcp.rating}
+                </p>
+                <p className="text-xs text-zinc-500 mt-2">
+                  LCP: {frontendAnalytics.webVitals.lcp.avg.toFixed(0)}ms
+                </p>
+              </div>
+
+              {/* Custom Events */}
+              <div className="bg-zinc-900 border border-orange-500 rounded-lg p-6">
+                <h3 className="text-sm text-zinc-400 mb-2">🎨 Custom Events</h3>
+                <p className="text-3xl font-bold text-orange-400">
+                  {frontendAnalytics.customEvents.reduce((sum, e) => sum + e.count, 0).toLocaleString()}
+                </p>
+                <p className="text-xs text-zinc-500 mt-2">
+                  {frontendAnalytics.customEvents.length} event types
+                </p>
+              </div>
+            </div>
+
+            {/* Top Pages */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-yellow-400 mb-4">📊 Top Pages</h3>
+                <div className="space-y-4">
+                  {frontendAnalytics.pageViews.slice(0, 5).map((page, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-zinc-800 rounded">
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{page.page}</p>
+                        <p className="text-xs text-zinc-400">
+                          {page.uniqueUsers} users · {(page.avgTime / 1000).toFixed(1)}s avg time
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-blue-400">{page.views.toLocaleString()}</p>
+                        <p className="text-xs text-zinc-500">views</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Web Vitals Details */}
+              <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-yellow-400 mb-4">⚡ Web Vitals</h3>
+                <div className="space-y-4">
+                  <div className="p-4 bg-zinc-800 rounded">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-zinc-300">LCP (Largest Contentful Paint)</span>
+                      <span className={`font-bold ${
+                        frontendAnalytics.webVitals.lcp.rating === 'good' ? 'text-green-400' :
+                        frontendAnalytics.webVitals.lcp.rating === 'needs-improvement' ? 'text-yellow-400' :
+                        'text-red-400'
+                      }`}>{frontendAnalytics.webVitals.lcp.avg.toFixed(0)}ms</span>
+                    </div>
+                    <div className="w-full bg-zinc-700 rounded-full h-2">
+                      <div className={`h-2 rounded-full ${
+                        frontendAnalytics.webVitals.lcp.rating === 'good' ? 'bg-green-400' :
+                        frontendAnalytics.webVitals.lcp.rating === 'needs-improvement' ? 'bg-yellow-400' :
+                        'bg-red-400'
+                      }`} style={{ width: `${Math.min((2500 / frontendAnalytics.webVitals.lcp.avg) * 100, 100)}%` }}></div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-zinc-800 rounded">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-zinc-300">FID (First Input Delay)</span>
+                      <span className={`font-bold ${
+                        frontendAnalytics.webVitals.fid.rating === 'good' ? 'text-green-400' :
+                        frontendAnalytics.webVitals.fid.rating === 'needs-improvement' ? 'text-yellow-400' :
+                        'text-red-400'
+                      }`}>{frontendAnalytics.webVitals.fid.avg.toFixed(0)}ms</span>
+                    </div>
+                    <div className="w-full bg-zinc-700 rounded-full h-2">
+                      <div className={`h-2 rounded-full ${
+                        frontendAnalytics.webVitals.fid.rating === 'good' ? 'bg-green-400' :
+                        frontendAnalytics.webVitals.fid.rating === 'needs-improvement' ? 'bg-yellow-400' :
+                        'bg-red-400'
+                      }`} style={{ width: `${Math.min((100 / frontendAnalytics.webVitals.fid.avg) * 100, 100)}%` }}></div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-zinc-800 rounded">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-zinc-300">CLS (Cumulative Layout Shift)</span>
+                      <span className={`font-bold ${
+                        frontendAnalytics.webVitals.cls.rating === 'good' ? 'text-green-400' :
+                        frontendAnalytics.webVitals.cls.rating === 'needs-improvement' ? 'text-yellow-400' :
+                        'text-red-400'
+                      }`}>{frontendAnalytics.webVitals.cls.avg.toFixed(3)}</span>
+                    </div>
+                    <div className="w-full bg-zinc-700 rounded-full h-2">
+                      <div className={`h-2 rounded-full ${
+                        frontendAnalytics.webVitals.cls.rating === 'good' ? 'bg-green-400' :
+                        frontendAnalytics.webVitals.cls.rating === 'needs-improvement' ? 'bg-yellow-400' :
+                        'bg-red-400'
+                      }`} style={{ width: `${Math.max(100 - (frontendAnalytics.webVitals.cls.avg * 1000), 0)}%` }}></div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-zinc-800 rounded">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-zinc-300">Page Load Time</span>
+                      <span className={`font-bold ${
+                        frontendAnalytics.webVitals.pageLoad.rating === 'good' ? 'text-green-400' :
+                        frontendAnalytics.webVitals.pageLoad.rating === 'needs-improvement' ? 'text-yellow-400' :
+                        'text-red-400'
+                      }`}>{frontendAnalytics.webVitals.pageLoad.avg.toFixed(0)}ms</span>
+                    </div>
+                    <div className="w-full bg-zinc-700 rounded-full h-2">
+                      <div className={`h-2 rounded-full ${
+                        frontendAnalytics.webVitals.pageLoad.rating === 'good' ? 'bg-green-400' :
+                        frontendAnalytics.webVitals.pageLoad.rating === 'needs-improvement' ? 'bg-yellow-400' :
+                        'bg-red-400'
+                      }`} style={{ width: `${Math.min((2000 / frontendAnalytics.webVitals.pageLoad.avg) * 100, 100)}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Top Products Performance */}
+            <div className="grid grid-cols-1 gap-6 mb-8">
+              <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-yellow-400 mb-4">🏆 Top Products</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-zinc-700">
+                        <th className="text-left py-3 px-4 text-zinc-400 font-medium">Product</th>
+                        <th className="text-right py-3 px-4 text-zinc-400 font-medium">Views</th>
+                        <th className="text-right py-3 px-4 text-zinc-400 font-medium">Votes</th>
+                        <th className="text-right py-3 px-4 text-zinc-400 font-medium">Cart Adds</th>
+                        <th className="text-right py-3 px-4 text-zinc-400 font-medium">Purchases</th>
+                        <th className="text-right py-3 px-4 text-zinc-400 font-medium">Conv. Rate</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {frontendAnalytics.topProducts.map((product, index) => (
+                        <tr key={product.id} className="border-b border-zinc-800 hover:bg-zinc-800 transition">
+                          <td className="py-3 px-4">
+                            <span className="text-white font-medium">{product.name}</span>
+                          </td>
+                          <td className="py-3 px-4 text-right text-blue-400">{product.views.toLocaleString()}</td>
+                          <td className="py-3 px-4 text-right text-purple-400">{product.votes.toLocaleString()}</td>
+                          <td className="py-3 px-4 text-right text-green-400">{product.cartAdds.toLocaleString()}</td>
+                          <td className="py-3 px-4 text-right text-yellow-400">{product.purchases.toLocaleString()}</td>
+                          <td className="py-3 px-4 text-right">
+                            <span className={`font-bold ${
+                              (product.purchases / product.views * 100) > 5 ? 'text-green-400' :
+                              (product.purchases / product.views * 100) > 2 ? 'text-yellow-400' :
+                              'text-red-400'
+                            }`}>
+                              {((product.purchases / product.views) * 100).toFixed(1)}%
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* User Actions Breakdown */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-yellow-400 mb-4">🎯 User Actions</h3>
+                <div className="space-y-3">
+                  {frontendAnalytics.userActions.slice(0, 10).map((action, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-zinc-800 rounded">
+                      <div>
+                        <p className="text-white font-medium">{action.action}</p>
+                        <p className="text-xs text-zinc-500">{new Date(action.lastOccurred).toLocaleString()}</p>
+                      </div>
+                      <span className="text-purple-400 font-bold text-lg">{action.count.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-yellow-400 mb-4">🎨 Custom Events</h3>
+                <div className="space-y-3">
+                  {frontendAnalytics.customEvents.slice(0, 10).map((event, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-zinc-800 rounded">
+                      <div>
+                        <p className="text-white font-medium">{event.event}</p>
+                        <p className="text-xs text-zinc-500">{JSON.stringify(event.data).substring(0, 50)}...</p>
+                      </div>
+                      <span className="text-orange-400 font-bold text-lg">{event.count.toLocaleString()}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
