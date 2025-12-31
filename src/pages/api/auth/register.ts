@@ -6,6 +6,7 @@ import crypto from "crypto";
 import { createSession, setSessionCookie } from "@/lib/session";
 import { sendEmail, emailTemplates } from "@/lib/email";
 import { db, isProduction } from "@/lib/db";
+import { validateUsername } from "@/lib/profanity-filter";
 import formidable from 'formidable';
 
 // Verification token management
@@ -177,6 +178,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     console.log('❌ Missing required fields:', missing);
     return res.status(400).json({ error: `Missing required fields: ${missing.join(', ')}` });
+  }
+
+  // Validate username for profanity and format
+  const usernameValidation = validateUsername(username);
+  if (!usernameValidation.isValid) {
+    return res.status(400).json({ error: usernameValidation.error });
   }
 
   // Validate terms agreement
