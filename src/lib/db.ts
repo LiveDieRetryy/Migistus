@@ -20,9 +20,12 @@ export const db = {
 
   async getUsersByIds(ids: number[]) {
     if (!ids || ids.length === 0) return [];
-    const result = await sql`
-      SELECT * FROM users WHERE id = ANY(${ids})
-    `;
+    // Use IN clause instead of ANY for compatibility with Vercel Postgres
+    const placeholders = ids.map((_, i) => `$${i + 1}`).join(',');
+    const result = await sql.query(
+      `SELECT * FROM users WHERE id IN (${placeholders})`,
+      ids
+    );
     return result.rows;
   },
 
