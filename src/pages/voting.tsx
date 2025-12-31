@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import MainNavbar from "@/components/nav/MainNavbar";
 import { useAuth } from "@/context/AuthContext";
+import { usePageView, useTimeOnPage } from "@/hooks/useAnalytics";
 import Image from "next/image";
 import Link from "next/link";
 import { UserStorage3 as UserStorage } from "@/utils/userStorage";
@@ -66,6 +67,10 @@ interface UserWithTier {
 export default function VotingPage() {
   const { user: authUser, isAuthenticated } = useAuth();
   const user = authUser as UserWithTier | null;
+  
+  // Analytics tracking
+  usePageView('voting');
+  useTimeOnPage('voting');
   
   // Data states
   const [products, setProducts] = useState<Product[]>([]);

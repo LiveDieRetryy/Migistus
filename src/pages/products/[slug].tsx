@@ -4,6 +4,7 @@ import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 import { getSupplierAvatar } from "../../lib/utils";
+import { useTimeOnPage } from "@/hooks/useAnalytics";
 import { 
   ArrowLeft, 
   Vote, 
@@ -138,7 +139,11 @@ export default function ProductPage() {
   const router = useRouter();
   const { slug } = router.query;
   const { user, isAuthenticated } = useAuth();
-    const [product, setProduct] = useState<Product | null>(null);
+  
+  // Analytics tracking
+  useTimeOnPage(`product-${slug}`);
+  
+  const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
@@ -198,6 +203,17 @@ export default function ProductPage() {
       fetchProduct();
     }
   }, [slug]);
+  
+  // Track product view when product data is loaded
+  useEffect(() => {
+    if (product?.id && product?.name) {
+      const analytics = async () => {
+        const { getAnalytics } = await import('@/lib/analytics');
+        getAnalytics().trackProductView(product.id, product.name);
+      };
+      analytics();
+    }
+  }, [product?.id, product?.name]);
   
   useEffect(() => {
     // Load voting config and votes
@@ -666,6 +682,12 @@ export default function ProductPage() {
         setHasVoted(true);
         setShowVotePrompt(true); // Show chat unlock prompt
         
+        // Track vote in analytics
+        if (typeof window !== 'undefined') {
+          const { getAnalytics } = await import('@/lib/analytics');
+          getAnalytics().trackVote(product.id, 'upvote');
+        }
+        
         // Show success toast
         setVoteToast({ show: true, message: 'Vote cast! 🎉', type: 'success' });
         setTimeout(() => setVoteToast({ show: false, message: '', type: 'success' }), 3000);
@@ -790,6 +812,14 @@ export default function ProductPage() {
         
         if (response.ok) {
           setIsWishlist(true);
+          
+          // Track wishlist action
+          const { getAnalytics } = await import('@/lib/analytics');
+          getAnalytics().trackCustom('wishlist_add', {
+            productId: product.id,
+            productName: product.name
+          });
+          
           setWishlistToast({ show: true, message: 'Added to wishlist!', type: 'added' });
           setTimeout(() => setWishlistToast({ show: false, message: '', type: 'added' }), 3000);
         } else {
@@ -814,12 +844,30 @@ export default function ProductPage() {
           text: product.description,
           url: window.location.href,
         });
+        
+        // Track share action
+        const { getAnalytics } = await import('@/lib/analytics');
+        getAnalytics().trackCustom('product_share', {
+          productId: product.id,
+          productName: product.name,
+          method: 'native'
+        });
       } catch (error) {
         console.log("Error sharing:", error);
       }
     } else {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.href);
+      
+      // Track copy action
+      if (product) {
+        const { getAnalytics } = await import('@/lib/analytics');
+        getAnalytics().trackCustom('product_share', {
+          productId: product.id,
+          productName: product.name,
+          method: 'clipboard'
+        });
+      }
     }
   };
 
@@ -847,6 +895,15 @@ export default function ProductPage() {
       });
 
       if (response.ok) {
+        // Track add to cart
+        const { getAnalytics } = await import('@/lib/analytics');
+        getAnalytics().trackCustom('add_to_cart', {
+          productId: product.id,
+          productName: product.name,
+          quantity: quantity,
+          price: product.price
+        });
+        
         // Show success toast
         setVoteToast({ show: true, message: `Added ${quantity} item(s) to cart!`, type: 'success' });
         setTimeout(() => setVoteToast({ show: false, message: '', type: 'success' }), 3000);
@@ -887,6 +944,15 @@ export default function ProductPage() {
       });
 
       if (response.ok) {
+        // Track buy now
+        const { getAnalytics } = await import('@/lib/analytics');
+        getAnalytics().trackCustom('buy_now', {
+          productId: product.id,
+          productName: product.name,
+          quantity: quantity,
+          price: product.price
+        });
+        
         // Redirect to checkout immediately
         router.push('/checkout');
       } else {
