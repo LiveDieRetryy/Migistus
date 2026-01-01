@@ -205,6 +205,22 @@ export default function UserProfilePage() {
   const [mounted, setMounted] = useState(false);
   const [wishlist, setWishlist] = useState<any[]>([]);
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  
+  // Banner editing states
+  const [bannerPosition, setBannerPosition] = useState({ x: 0, y: 0 });
+  const [bannerScale, setBannerScale] = useState(1);
+  const [isDraggingBanner, setIsDraggingBanner] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isEditingBanner, setIsEditingBanner] = useState(false);
+  const bannerRef = useRef<HTMLDivElement>(null);
+  
+  // Avatar editing states
+  const [avatarPosition, setAvatarPosition] = useState({ x: 0, y: 0 });
+  const [avatarScale, setAvatarScale] = useState(1);
+  const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
+  const [avatarDragStart, setAvatarDragStart] = useState({ x: 0, y: 0 });
+  const [isEditingAvatar, setIsEditingAvatar] = useState(false);
+  const avatarRef = useRef<HTMLDivElement>(null);
 
   const handlePostCreated = (newPost: any) => {
     // Convert Post type to SocialPost type if needed
@@ -241,6 +257,33 @@ export default function UserProfilePage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Lock page scroll when editing banner
+  useEffect(() => {
+    if (isEditingBanner) {
+      // Store original overflow
+      const originalOverflow = document.body.style.overflow;
+      // Lock scroll
+      document.body.style.overflow = 'hidden';
+      
+      // Cleanup: restore scroll when done
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isEditingBanner]);
+  
+  // Lock scroll when editing avatar
+  useEffect(() => {
+    if (isEditingAvatar) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isEditingAvatar]);
 
   // Real-time update interval
   // Load wishlist for own profile
@@ -573,7 +616,7 @@ export default function UserProfilePage() {
         detail: { userId: profile.id }
       }));
     } catch (error) {
-      console.error("Failed to save profile:", error);
+      console.error('Failed to save profile:', error);
     }
   };
 
@@ -585,6 +628,9 @@ export default function UserProfilePage() {
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
       setEditForm(prev => ({ ...prev, avatar: dataUrl }));
+      setIsEditingAvatar(true);
+      setAvatarPosition({ x: 0, y: 0 });
+      setAvatarScale(1);
     };
     reader.readAsDataURL(file);
   };
@@ -597,9 +643,209 @@ export default function UserProfilePage() {
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
       setEditForm(prev => ({ ...prev, banner: dataUrl }));
+      setIsEditingBanner(true);
+      setBannerPosition({ x: 0, y: 0 });
+      setBannerScale(1);
     };
     reader.readAsDataURL(file);
   };
+  
+  const handleBannerMouseDown = (e: React.MouseEvent) => {
+    if (!isEditingBanner || !isEditing) return;
+    e.preventDefault();
+    setIsDraggingBanner(true);
+    setDragStart({
+      x: e.clientX - bannerPosition.x,
+      y: e.clientY - bannerPosition.y
+    });
+  };
+
+  const handleBannerMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingBanner) return;
+    e.preventDefault();
+    const newX = e.clientX - dragStart.x;
+    const newY = e.clientY - dragStart.y;
+    setBannerPosition({ x: newX, y: newY });
+  };
+
+  const handleBannerMouseUp = () => {
+    setIsDraggingBanner(false);
+  };
+
+  const handleBannerWheel = (e: React.WheelEvent) => {
+    if (!isEditingBanner || !isEditing) return;
+    e.preventDefault();
+    e.stopPropagation();
+    // Calculate zoom delta - smoother and more responsive
+    const delta = e.deltaY > 0 ? -0.05 : 0.05;
+    setBannerScale(prev => {
+      const newScale = prev + delta;
+      return Math.max(0.3, Math.min(5, newScale));
+    });
+  };
+
+  const handleCenterBanner = () => {
+    setBannerPosition({ x: 0, y: 0 });
+  };
+
+  const handleApplyBannerPosition = async () => {
+    if (!bannerRef.current) return;
+    
+    try {
+      const container = bannerRef.current;
+      const containerRect = container.getBoundingClientRect();
+      
+      // Create canvas matching the exact banner container size
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d', { alpha: true });
+      if (!ctx) return;
+      
+      // Set canvas to exact display size
+      canvas.width = containerRect.width;
+      canvas.height = containerRect.height;
+      
+      // Clear canvas (transparent background to support PNG with transparency)
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Load the image
+      const img = new window.Image();
+      img.crossOrigin = 'anonymous';
+      
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = reject;
+        img.src = editForm.banner || '';
+      });
+      
+      // Calculate the displayed image dimensions after scaling
+      const scaledWidth = img.naturalWidth * bannerScale;
+      const scaledHeight = img.naturalHeight * bannerScale;
+      
+      // Calculate the position (centered + offset)
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const imgX = centerX + bannerPosition.x - (scaledWidth / 2);
+      const imgY = centerY + bannerPosition.y - (scaledHeight / 2);
+      
+      // Draw the image with the current transform
+      ctx.drawImage(
+        img,
+        imgX,
+        imgY,
+        scaledWidth,
+        scaledHeight
+      );
+      
+      // Convert to PNG to preserve transparency, with high quality
+      const croppedImage = canvas.toDataURL('image/png');
+      setEditForm(prev => ({ ...prev, banner: croppedImage }));
+      setIsEditingBanner(false);
+      setBannerPosition({ x: 0, y: 0 });
+      setBannerScale(1);
+    } catch (error) {
+      console.error('Error applying banner position:', error);
+      alert('Failed to save banner. Please try again.');
+    }
+  };
+  
+  // Avatar editing handlers
+  const handleAvatarMouseDown = (e: React.MouseEvent) => {
+    if (!isEditingAvatar || !isEditing) return;
+    e.preventDefault();
+    setIsDraggingAvatar(true);
+    setAvatarDragStart({
+      x: e.clientX - avatarPosition.x,
+      y: e.clientY - avatarPosition.y
+    });
+  };
+
+  const handleAvatarMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingAvatar) return;
+    e.preventDefault();
+    const newX = e.clientX - avatarDragStart.x;
+    const newY = e.clientY - avatarDragStart.y;
+    setAvatarPosition({ x: newX, y: newY });
+  };
+
+  const handleAvatarMouseUp = () => {
+    setIsDraggingAvatar(false);
+  };
+
+  const handleAvatarWheel = (e: React.WheelEvent) => {
+    if (!isEditingAvatar || !isEditing) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const delta = e.deltaY > 0 ? -0.05 : 0.05;
+    setAvatarScale(prev => {
+      const newScale = prev + delta;
+      return Math.max(0.3, Math.min(5, newScale));
+    });
+  };
+
+  const handleCenterAvatar = () => {
+    setAvatarPosition({ x: 0, y: 0 });
+  };
+
+  const handleApplyAvatarPosition = async () => {
+    if (!avatarRef.current) return;
+    
+    try {
+      const container = avatarRef.current;
+      const containerRect = container.getBoundingClientRect();
+      
+      // Create canvas matching the exact avatar container size
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d', { alpha: true });
+      if (!ctx) return;
+      
+      // Set canvas to exact display size
+      canvas.width = containerRect.width;
+      canvas.height = containerRect.height;
+      
+      // Clear canvas (transparent background to support PNG with transparency)
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Load the image
+      const img = new window.Image();
+      img.crossOrigin = 'anonymous';
+      
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = reject;
+        img.src = editForm.avatar || '';
+      });
+      
+      // Calculate the displayed image dimensions after scaling
+      const scaledWidth = img.naturalWidth * avatarScale;
+      const scaledHeight = img.naturalHeight * avatarScale;
+      
+      // Calculate the position (centered + offset)
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const imgX = centerX + avatarPosition.x - (scaledWidth / 2);
+      const imgY = centerY + avatarPosition.y - (scaledHeight / 2);
+      
+      // Draw the image with the current transform
+      ctx.drawImage(
+        img,
+        imgX,
+        imgY,
+        scaledWidth,
+        scaledHeight
+      );
+      
+      // Convert to PNG to preserve transparency
+      const croppedImage = canvas.toDataURL('image/png');
+      setEditForm(prev => ({ ...prev, avatar: croppedImage }));
+      setIsEditingAvatar(false);
+      setAvatarPosition({ x: 0, y: 0 });
+      setAvatarScale(1);
+    } catch (error) {
+      console.error('Error applying avatar position:', error);
+      alert('Failed to save avatar. Please try again.');
+    }
+  };
+
   const getAvatarSrc = () => {
     if (!mounted) return "/Icons/New Member.png";
     return (isEditing ? editForm.avatar : profile?.avatar) || "/Icons/New Member.png";
@@ -653,34 +899,152 @@ export default function UserProfilePage() {
 
       <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black text-white">
         {/* Streamlined Banner Section */}
-        <div className="relative h-64 bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 overflow-hidden">
+        <div 
+          ref={bannerRef}
+          className="relative w-full bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 overflow-hidden max-h-[400px]" 
+          style={{ 
+            aspectRatio: '16/9',
+            touchAction: isEditingBanner ? 'none' : 'auto'
+          }}
+          onMouseDown={handleBannerMouseDown}
+          onMouseMove={handleBannerMouseMove}
+          onMouseUp={handleBannerMouseUp}
+          onMouseLeave={handleBannerMouseUp}
+          onWheel={handleBannerWheel}
+        >
           {/* Animated Background Elements */}
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl animate-pulse" />
             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
           </div>
           
           {/* Custom Banner */}
-          <div className="absolute inset-0">
-            <Image
-              src={(isEditing ? editForm.banner : profile?.banner) || "/Icons/BannerPlaceholder.png"}
-              alt="Profile Banner"
-              fill
-              className="object-cover"
-              priority
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "/Icons/BannerPlaceholder.png";
-              }}
-            />
+          <div className="absolute inset-0 bg-black overflow-hidden">
+            {(() => {
+              const bannerSrc = (isEditing ? editForm.banner : profile?.banner);
+              const hasCustomBanner = bannerSrc && bannerSrc !== "/Icons/BannerPlaceHolder.png";
+              const isDataUrl = bannerSrc?.startsWith('data:');
+              const isEditingThis = isEditing && isEditingBanner && isDataUrl;
+              
+              // Default "NEW INITIATE" banner
+              if (!hasCustomBanner) {
+                return (
+                  <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-950 to-black flex items-center justify-center overflow-hidden">
+                    {/* Animated stars background */}
+                    <div className="absolute inset-0">
+                      {[...Array(60)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute w-1 h-1 bg-yellow-400 rounded-full animate-pulse"
+                          style={{
+                            left: `${Math.random() * 100}%`,
+                            top: `${Math.random() * 100}%`,
+                            opacity: Math.random() * 0.7 + 0.3,
+                            animationDelay: `${Math.random() * 3}s`,
+                            animationDuration: `${Math.random() * 2 + 2}s`,
+                            boxShadow: '0 0 4px rgba(250, 204, 21, 0.8)'
+                          }}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Golden glow effects */}
+                    <div className="absolute inset-0 pointer-events-none">
+                      <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl" />
+                      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-yellow-600/5 rounded-full blur-3xl" />
+                    </div>
+                    
+                    {/* NEW INITIATE Text */}
+                    <div className="relative z-10 text-center px-8">
+                      <div className="relative inline-block">
+                        <h2 
+                          className="text-6xl md:text-7xl lg:text-8xl font-bold tracking-wider"
+                          style={{
+                            background: 'linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #D97706 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text',
+                            textShadow: '0 0 40px rgba(251, 191, 36, 0.3)',
+                            filter: 'drop-shadow(0 2px 8px rgba(251, 191, 36, 0.4))'
+                          }}
+                        >
+                          NEW
+                        </h2>
+                        <div className="h-0.5 w-24 md:w-32 bg-gradient-to-r from-transparent via-yellow-500 to-transparent mx-auto my-2" />
+                        <h2 
+                          className="text-6xl md:text-7xl lg:text-8xl font-bold tracking-widest"
+                          style={{
+                            background: 'linear-gradient(180deg, #FCD34D 0%, #F59E0B 50%, #D97706 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text',
+                            textShadow: '0 0 40px rgba(251, 191, 36, 0.3)',
+                            filter: 'drop-shadow(0 2px 8px rgba(251, 191, 36, 0.4))'
+                          }}
+                        >
+                          INITIATE
+                        </h2>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              
+              // Custom banner image
+              return isDataUrl ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-950 via-zinc-900 to-black">
+                  <img
+                    src={bannerSrc}
+                    alt="Profile Banner"
+                    className={isEditingThis ? 'cursor-move select-none' : 'w-full h-full object-contain'}
+                    draggable={false}
+                    style={isEditingThis ? {
+                      transform: `translate(${bannerPosition.x}px, ${bannerPosition.y}px) scale(${bannerScale})`,
+                      transformOrigin: 'center center',
+                      willChange: 'transform',
+                      pointerEvents: 'none',
+                      userSelect: 'none'
+                    } : {
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain'
+                    }}
+                  />
+                </div>
+              ) : (
+                <Image
+                  src={bannerSrc}
+                  alt="Profile Banner"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              );
+            })()}
           </div>
           
-          {/* Banner Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+          {/* Grid Overlay for Editing */}
+          {isEditingBanner && isEditing && (
+            <div className="absolute inset-0 pointer-events-none z-10">
+              {/* Rule of thirds grid */}
+              <svg className="w-full h-full" style={{ opacity: 0.3 }}>
+                {/* Vertical lines */}
+                <line x1="33.33%" y1="0" x2="33.33%" y2="100%" stroke="#FCD34D" strokeWidth="1" strokeDasharray="5,5" />
+                <line x1="66.66%" y1="0" x2="66.66%" y2="100%" stroke="#FCD34D" strokeWidth="1" strokeDasharray="5,5" />
+                {/* Horizontal lines */}
+                <line x1="0" y1="33.33%" x2="100%" y2="33.33%" stroke="#FCD34D" strokeWidth="1" strokeDasharray="5,5" />
+                <line x1="0" y1="66.66%" x2="100%" y2="66.66%" stroke="#FCD34D" strokeWidth="1" strokeDasharray="5,5" />
+                {/* Center crosshair */}
+                <line x1="50%" y1="48%" x2="50%" y2="52%" stroke="#F59E0B" strokeWidth="2" />
+                <line x1="48%" y1="50%" x2="52%" y2="50%" stroke="#F59E0B" strokeWidth="2" />
+                <circle cx="50%" cy="50%" r="3" fill="none" stroke="#F59E0B" strokeWidth="2" />
+              </svg>
+            </div>
+          )}
           
           {/* Banner Edit Button */}
-          {isOwnProfile && isEditing && (
-            <label className="absolute top-4 right-4 bg-zinc-900/90 hover:bg-zinc-800/90 backdrop-blur-sm px-4 py-2 rounded-lg cursor-pointer transition-all border border-yellow-400/30 hover:border-yellow-400/60 group">
+          {isOwnProfile && isEditing && !isEditingBanner && (
+            <label className="absolute top-4 right-4 bg-zinc-900/90 hover:bg-zinc-800/90 backdrop-blur-sm px-4 py-2 rounded-lg cursor-pointer transition-all border border-yellow-400/30 hover:border-yellow-400/60 group z-10">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-yellow-400" />
                 <span className="text-yellow-400 text-sm font-semibold">Change Banner</span>
@@ -715,28 +1079,142 @@ export default function UserProfilePage() {
         <div className="max-w-7xl mx-auto px-3 sm:px-4 -mt-20 relative z-10">
           {/* Streamlined Profile Header */}
           <div className="bg-gradient-to-br from-zinc-900/95 to-zinc-800/95 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 sm:p-5 mb-6 shadow-2xl">
+            {/* Banner Editing Controls */}
+            {isEditingBanner && isEditing && (
+              <div className="mb-4 bg-zinc-800/50 rounded-lg p-3 border border-yellow-500/30">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="text-yellow-400 text-xs font-bold whitespace-nowrap">🎨 Position Banner:</span>
+                  
+                  {/* Zoom control */}
+                  <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                    <span className="text-gray-300 text-xs">Zoom:</span>
+                    <input
+                      type="range"
+                      min={0.3}
+                      max={5}
+                      step={0.05}
+                      value={bannerScale}
+                      onChange={(e) => setBannerScale(Number(e.target.value))}
+                      className="flex-1 h-2 bg-zinc-700 rounded-lg accent-yellow-500 cursor-pointer"
+                    />
+                    <span className="text-yellow-400 text-xs font-mono font-bold w-12 text-right">{Math.round(bannerScale * 100)}%</span>
+                  </div>
+                  
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleCenterBanner}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all"
+                      title="Center the image"
+                    >
+                      🎯 Center
+                    </button>
+                    <button
+                      onClick={() => {
+                        setBannerPosition({ x: 0, y: 0 });
+                        setBannerScale(1);
+                      }}
+                      className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs font-bold transition-all"
+                      title="Reset position and zoom"
+                    >
+                      🔄 Reset
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingBanner(false);
+                        setEditForm(prev => ({ ...prev, banner: profile?.banner || null }));
+                        setBannerPosition({ x: 0, y: 0 });
+                        setBannerScale(1);
+                      }}
+                      className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs font-bold transition-all"
+                    >
+                      ✕ Cancel
+                    </button>
+                    <button
+                      onClick={handleApplyBannerPosition}
+                      className="px-3 py-1.5 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-black rounded-lg text-xs font-bold transition-all shadow-lg"
+                    >
+                      ✓ Save
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="flex flex-col lg:flex-row items-start gap-4 sm:gap-6">
               {/* Compact Avatar Section */}
               <div className="relative flex-shrink-0 group mx-auto lg:mx-0">
-                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl border-3 border-yellow-400/40 overflow-hidden bg-zinc-700 shadow-xl ring-2 ring-yellow-400/10 group-hover:ring-yellow-400/30 transition-all">
-                  <Image
-                    src={(isEditing ? editForm.avatar : profile?.avatar) || "/Icons/New Member.png"}
-                    alt={profile?.username || "Profile"}
-                    width={128}
-                    height={128}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    priority
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/Icons/New Member.png";
-                    }}
-                  />
+                <div 
+                  ref={avatarRef}
+                  className={`w-24 h-24 sm:w-32 sm:h-32 rounded-2xl border-3 border-yellow-400/40 overflow-hidden bg-gradient-to-br from-zinc-800 via-zinc-900 to-black shadow-xl ring-2 ring-yellow-400/10 group-hover:ring-yellow-400/30 transition-all flex items-center justify-center relative ${isEditingAvatar ? 'ring-4 ring-yellow-400' : ''}`}
+                  onMouseDown={handleAvatarMouseDown}
+                  onMouseMove={handleAvatarMouseMove}
+                  onMouseUp={handleAvatarMouseUp}
+                  onMouseLeave={handleAvatarMouseUp}
+                  onWheel={handleAvatarWheel}
+                  style={isEditingAvatar ? { touchAction: 'none' } : {}}
+                >
+                  {(() => {
+                    const avatarSrc = (isEditing ? editForm.avatar : profile?.avatar) || "/Icons/New Member.png";
+                    const isDataUrl = avatarSrc.startsWith('data:');
+                    const isEditingThis = isEditing && isEditingAvatar && isDataUrl;
+                    
+                    return isDataUrl ? (
+                      <img
+                        src={avatarSrc}
+                        alt={profile?.username || "Profile"}
+                        className={isEditingThis ? 'cursor-move select-none' : 'w-full h-full object-contain group-hover:scale-110 transition-transform duration-300'}
+                        draggable={false}
+                        style={isEditingThis ? {
+                          transform: `translate(${avatarPosition.x}px, ${avatarPosition.y}px) scale(${avatarScale})`,
+                          transformOrigin: 'center center',
+                          willChange: 'transform',
+                          pointerEvents: 'none',
+                          userSelect: 'none'
+                        } : {}}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/Icons/New Member.png";
+                        }}
+                      />
+                    ) : (
+                      <Image
+                        src={avatarSrc}
+                        alt={profile?.username || "Profile"}
+                        width={128}
+                        height={128}
+                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+                        priority
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/Icons/New Member.png";
+                        }}
+                      />
+                    );
+                  })()}
+                  
+                  {/* Grid Overlay for Avatar Editing */}
+                  {isEditingAvatar && isEditing && (
+                    <div className="absolute inset-0 pointer-events-none z-10">
+                      <svg className="w-full h-full" style={{ opacity: 0.3 }}>
+                        {/* Rule of thirds lines */}
+                        <line x1="33.33%" y1="0" x2="33.33%" y2="100%" stroke="#FCD34D" strokeWidth="1" strokeDasharray="5,5" />
+                        <line x1="66.66%" y1="0" x2="66.66%" y2="100%" stroke="#FCD34D" strokeWidth="1" strokeDasharray="5,5" />
+                        <line x1="0" y1="33.33%" x2="100%" y2="33.33%" stroke="#FCD34D" strokeWidth="1" strokeDasharray="5,5" />
+                        <line x1="0" y1="66.66%" x2="100%" y2="66.66%" stroke="#FCD34D" strokeWidth="1" strokeDasharray="5,5" />
+                        {/* Center crosshair */}
+                        <line x1="50%" y1="48%" x2="50%" y2="52%" stroke="#F59E0B" strokeWidth="2" />
+                        <line x1="48%" y1="50%" x2="52%" y2="50%" stroke="#F59E0B" strokeWidth="2" />
+                        <circle cx="50%" cy="50%" r="3" fill="none" stroke="#F59E0B" strokeWidth="2" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
                 
-                {/* Avatar Edit Button */}
-                {isOwnProfile && isEditing && (
-                  <label className="absolute bottom-1 right-1 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 p-2 rounded-full cursor-pointer transition-all shadow-lg border-2 border-zinc-900 hover:scale-110">
-                    <Shield className="w-4 h-4 text-black" />
+                {/* Avatar Change Button */}
+                {isOwnProfile && isEditing && !isEditingAvatar && (
+                  <label className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-zinc-800/90 hover:bg-zinc-700/90 backdrop-blur-sm px-3 py-1.5 rounded-lg cursor-pointer transition-all border border-yellow-500/30 hover:border-yellow-500/60">
+                    <span className="text-yellow-400 text-xs font-semibold whitespace-nowrap">Change Avatar</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -751,13 +1229,74 @@ export default function UserProfilePage() {
                   <span>{getTierIcon(profile?.tier)}</span>
                   <span>{profile?.tier || "New Member"}</span>
                 </div>
-
-                {/* Compact Reputation Badge */}
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-purple-500 px-3 py-1 rounded-full border-2 border-zinc-900 shadow-lg flex items-center gap-1">
-                  <Star className="w-3 h-3 text-yellow-300" />
-                  <span className="text-white text-xs font-bold">{liveStats.reputation}</span>
-                </div>
               </div>
+              
+              {/* Avatar Editing Controls */}
+              {isEditingAvatar && isEditing && (
+                <div className="w-full lg:hidden mb-4">
+                  <div className="bg-gradient-to-r from-zinc-800/80 to-zinc-900/80 backdrop-blur-sm rounded-xl p-3 border border-yellow-500/30 shadow-lg">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {/* Instructions */}
+                      <div className="flex items-center gap-2 text-yellow-400 text-xs font-bold">
+                        <span>🎨</span>
+                        <span className="hidden sm:inline">Position Avatar:</span>
+                        <span className="text-gray-400 font-normal">Drag • Scroll to zoom</span>
+                      </div>
+                      
+                      {/* Zoom control */}
+                      <div className="flex items-center gap-2 flex-1 min-w-[180px]">
+                        <span className="text-gray-300 text-xs font-semibold whitespace-nowrap">Zoom:</span>
+                        <input
+                          type="range"
+                          min={0.3}
+                          max={5}
+                          step={0.05}
+                          value={avatarScale}
+                          onChange={(e) => setAvatarScale(Number(e.target.value))}
+                          className="flex-1 h-2 bg-zinc-700 rounded-lg accent-yellow-500 cursor-pointer"
+                        />
+                        <span className="text-yellow-400 text-xs font-mono font-bold w-12 text-right">{Math.round(avatarScale * 100)}%</span>
+                      </div>
+                      
+                      {/* Action buttons */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={handleCenterAvatar}
+                          className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white rounded-lg text-xs font-bold transition-all hover:scale-105"
+                        >
+                          🎯 Center
+                        </button>
+                        <button
+                          onClick={() => {
+                            setAvatarPosition({ x: 0, y: 0 });
+                            setAvatarScale(1);
+                          }}
+                          className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs font-bold transition-all hover:scale-105"
+                        >
+                          🔄 Reset
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsEditingAvatar(false);
+                            setEditForm(prev => ({ ...prev, avatar: profile?.avatar || null }));
+                            setAvatarPosition({ x: 0, y: 0 });
+                            setAvatarScale(1);
+                          }}
+                          className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs font-bold transition-all hover:scale-105"
+                        >
+                          ✕ Cancel
+                        </button>
+                        <button
+                          onClick={handleApplyAvatarPosition}
+                          className="px-3 py-1.5 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-black rounded-lg text-xs font-bold transition-all hover:scale-105 shadow-lg"
+                        >
+                          ✓ Save
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Compact Profile Info */}
               <div className="flex-1 min-w-0 text-center lg:text-left">
@@ -891,6 +1430,73 @@ export default function UserProfilePage() {
                       </div>
                     )}
                   </div>
+                  
+                  {/* Banner Editing Controls - In Profile Section */}
+                  {isEditingBanner && isEditing && (
+                    <div className="w-full mt-4">
+                      <div className="bg-gradient-to-r from-zinc-800/80 to-zinc-900/80 backdrop-blur-sm rounded-xl p-3 border border-yellow-500/30 shadow-lg">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          {/* Instructions */}
+                          <div className="flex items-center gap-2 text-yellow-400 text-xs font-bold">
+                            <span>🎨</span>
+                            <span className="hidden sm:inline">Position Banner:</span>
+                            <span className="text-gray-400 font-normal">Drag • Scroll to zoom</span>
+                          </div>
+                          
+                          {/* Zoom control */}
+                          <div className="flex items-center gap-2 flex-1 min-w-[180px]">
+                            <span className="text-gray-300 text-xs font-semibold whitespace-nowrap">Zoom:</span>
+                            <input
+                              type="range"
+                              min={0.3}
+                              max={5}
+                              step={0.05}
+                              value={bannerScale}
+                              onChange={(e) => setBannerScale(Number(e.target.value))}
+                              className="flex-1 h-2 bg-zinc-700 rounded-lg accent-yellow-500 cursor-pointer"
+                            />
+                            <span className="text-yellow-400 text-xs font-mono font-bold w-12 text-right">{Math.round(bannerScale * 100)}%</span>
+                          </div>
+                          
+                          {/* Action buttons */}
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={handleCenterBanner}
+                              className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white rounded-lg text-xs font-bold transition-all hover:scale-105"
+                            >
+                              🎯 Center
+                            </button>
+                            <button
+                              onClick={() => {
+                                setBannerPosition({ x: 0, y: 0 });
+                                setBannerScale(1);
+                              }}
+                              className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs font-bold transition-all hover:scale-105"
+                            >
+                              🔄 Reset
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsEditingBanner(false);
+                                setEditForm(prev => ({ ...prev, banner: profile?.banner || null }));
+                                setBannerPosition({ x: 0, y: 0 });
+                                setBannerScale(1);
+                              }}
+                              className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs font-bold transition-all hover:scale-105"
+                            >
+                              ✕ Cancel
+                            </button>
+                            <button
+                              onClick={handleApplyBannerPosition}
+                              className="px-3 py-1.5 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-black rounded-lg text-xs font-bold transition-all hover:scale-105 shadow-lg"
+                            >
+                              ✓ Save
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>                {/* Bio Section */}
                 <div className="mb-6">
                   {isEditing ? (
