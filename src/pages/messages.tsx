@@ -21,7 +21,7 @@ export default function MessagesPage() {
   // Check authentication - only redirect if not loading and not authenticated
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
     }
   }, [isAuthenticated, loading, router]);
 

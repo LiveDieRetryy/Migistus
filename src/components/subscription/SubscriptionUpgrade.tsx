@@ -362,8 +362,7 @@ const SubscriptionUpgrade: React.FC<SubscriptionUpgradeProps> = ({
                   (isCurrent && stripeSubscriptionStatus !== 'canceling') || 
                   (isDowngrade && !stripeSubscriptionId) || 
                   loading || 
-                  cancelLoading || 
-                  (plan.id === 'initiate' && !stripeSubscriptionId)
+                  cancelLoading
                 }
                 className={`w-full py-3 px-6 rounded-lg font-semibold transition-all ${
                   isCurrent && stripeSubscriptionStatus === 'canceling'
@@ -372,10 +371,10 @@ const SubscriptionUpgrade: React.FC<SubscriptionUpgradeProps> = ({
                     ? 'bg-gray-700 text-gray-400 cursor-default'
                     : isDowngrade && stripeSubscriptionId
                     ? 'bg-red-600 hover:bg-red-700 text-white hover:scale-105'
+                    : isDowngrade && !stripeSubscriptionId
+                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                     : plan.id === 'initiate' && !stripeSubscriptionId
                     ? 'bg-gray-700 text-gray-400 cursor-default'
-                    : isDowngrade
-                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
                     : `bg-gradient-to-r ${plan.color} text-white hover:opacity-90 hover:scale-105`
                 } ${loading || cancelLoading ? 'opacity-50 cursor-wait' : ''}`}
               >
@@ -387,10 +386,10 @@ const SubscriptionUpgrade: React.FC<SubscriptionUpgradeProps> = ({
                   ? 'Current Plan'
                   : isDowngrade && stripeSubscriptionId
                   ? 'Downgrade'
+                  : isDowngrade && !stripeSubscriptionId
+                  ? 'Contact Support'
                   : plan.id === 'initiate' && !stripeSubscriptionId
                   ? 'Free Forever'
-                  : isDowngrade
-                  ? 'Contact Support'
                   : 'Upgrade Now'}
               </button>
             </div>

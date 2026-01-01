@@ -540,7 +540,7 @@ export default function SupplierProfilePage() {
 
   const handleFollow = async () => {
     if (!userProfile?.isLoggedIn) {
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
 

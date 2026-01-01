@@ -60,7 +60,7 @@ export default async function handler(
       });
     }
 
-    // Create Stripe Checkout Session
+    // Create Stripe Checkout Session with MIGISTUS branding
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: 'subscription',
@@ -86,6 +86,13 @@ export default async function handler(
       // Enable customer portal for subscription management
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
+      // MIGISTUS theme customization
+      ui_mode: 'hosted', // Use Stripe-hosted checkout page
+      custom_text: {
+        submit: {
+          message: 'Join the MIGISTUS guild and unlock exclusive features',
+        },
+      },
     });
 
     console.log(`✅ Created checkout session ${session.id} for user ${userId} - ${tier} tier`);

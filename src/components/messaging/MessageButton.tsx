@@ -24,7 +24,7 @@ export default function MessageButton({
   const handleMessage = async () => {
     if (!isAuthenticated) {
       console.log('Not authenticated, redirecting to login');
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
 

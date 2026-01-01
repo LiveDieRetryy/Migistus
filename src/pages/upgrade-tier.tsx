@@ -94,11 +94,17 @@ export default function UpgradeTier() {
       return;
     }
 
-    // Set selected tier and show purchase flow
-    setSelectedTier(tier);
+    // Redirect to subscription page for proper upgrade/downgrade handling
+    router.push('/account/subscription');
+  };
+
+  const handleDowngrade = (tier: string) => {
+    if (!isAuthenticated) {
+      return;
+    }
     
-    // In a real implementation, this would integrate with Stripe or similar
-    alert(`Upgrading to ${tier} tier - Payment integration coming soon!`);
+    // Redirect to subscription page for proper downgrade handling
+    router.push('/account/subscription');
   };
 
   const renderFeatureValue = (value: boolean | string) => {
@@ -223,8 +229,13 @@ export default function UpgradeTier() {
               </div>
 
               <button
+                onClick={() => currentTier !== "Initiate" && handleDowngrade("Initiate")}
                 disabled={currentTier === "Initiate"}
-                className="w-full py-3 bg-zinc-700 text-zinc-500 rounded-xl font-bold cursor-not-allowed"
+                className={`w-full py-3 rounded-xl font-bold transition-all ${
+                  currentTier === "Initiate"
+                    ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
+                    : "bg-red-600 hover:bg-red-700 text-white cursor-pointer"
+                }`}
               >
                 {currentTier === "Initiate" ? "Current Tier" : "Downgrade"}
               </button>
@@ -278,13 +289,20 @@ export default function UpgradeTier() {
               </div>
 
               <button
-                onClick={() => handleUpgrade("Guild")}
-                disabled={currentTier === "Guild" || currentTier === "MIGISTUS" || currentTier === "Admin"}
+                onClick={() => {
+                  if (currentTier === "Guild") return;
+                  if (currentTier === "MIGISTUS" || currentTier === "Admin") {
+                    handleDowngrade("Guild");
+                  } else {
+                    handleUpgrade("Guild");
+                  }
+                }}
+                disabled={currentTier === "Guild"}
                 className={`w-full py-4 rounded-xl font-bold transition-all ${
                   currentTier === "Guild" 
                     ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
                     : currentTier === "MIGISTUS" || currentTier === "Admin"
-                    ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
+                    ? "bg-red-600 hover:bg-red-700 text-white cursor-pointer"
                     : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black transform hover:scale-105"
                 }`}
               >
@@ -344,7 +362,10 @@ export default function UpgradeTier() {
               </div>
 
               <button
-                onClick={() => handleUpgrade("MIGISTUS")}
+                onClick={() => {
+                  if (currentTier === "MIGISTUS" || currentTier === "Admin") return;
+                  handleUpgrade("MIGISTUS");
+                }}
                 disabled={currentTier === "MIGISTUS" || currentTier === "Admin"}
                 className={`w-full py-4 rounded-xl font-bold transition-all ${
                   currentTier === "MIGISTUS" || currentTier === "Admin"

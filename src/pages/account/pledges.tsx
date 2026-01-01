@@ -51,7 +51,7 @@ export default function PledgesPage() {
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
 

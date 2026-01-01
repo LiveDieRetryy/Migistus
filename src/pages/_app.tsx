@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import { Analytics } from "@vercel/analytics/next";
 import { AuthProvider } from "@/context/AuthContext";
+import { ToastProvider } from "@/context/ToastContext";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { Web3Utils } from "@/utils/web3Utils";
 import MainLayout from "@/components/layout/MainLayout";
@@ -144,11 +145,13 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <AnalyticsProvider>
-          <MainLayout showFooter={showFooter}>
-            {getLayout(<Component {...pageProps} />)}
-          </MainLayout>
-        </AnalyticsProvider>
+        <ToastProvider>
+          <AnalyticsProvider>
+            <MainLayout showFooter={showFooter}>
+              {getLayout(<Component {...pageProps} />)}
+            </MainLayout>
+          </AnalyticsProvider>
+        </ToastProvider>
       </AuthProvider>
       <Analytics />
     </ErrorBoundary>

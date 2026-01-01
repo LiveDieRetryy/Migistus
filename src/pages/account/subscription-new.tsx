@@ -6,8 +6,6 @@ import {
 } from "lucide-react";
 import MainNavbar from "@/components/nav/MainNavbar";
 import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/context/ToastContext";
-import { useConfirm } from "@/components/ui/ConfirmModal";
 import { useRouter } from "next/router";
 
 interface TierFeature {
@@ -83,168 +81,30 @@ const tierFeatures: TierFeature[] = [
 export default function Subscription() {
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
-  const toast = useToast();
-  const { confirm, ConfirmDialog } = useConfirm();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
 
   const currentTier = user?.tier || "Initiate";
 
-  const handleUpgrade = async (planId: 'guild' | 'elite') => {
-    if (!isAuthenticated || !user) {
+  const handleUpgrade = (tier: string) => {
+    if (!isAuthenticated) {
+      // Open auth modal if not logged in
       if (typeof window !== 'undefined' && (window as any).openAuthModal) {
         (window as any).openAuthModal('register');
       }
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Create or get Stripe customer
-      const customerResponse = await fetch('/api/subscriptions/create-customer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userId: user.id, 
-          email: user.email, 
-          username: user.username 
-        }),
-      });
-
-      if (!customerResponse.ok) {
-        throw new Error('Failed to create customer');
-      }
-
-      const { customerId } = await customerResponse.json();
-
-      // Create checkout session
-      const sessionResponse = await fetch('/api/subscriptions/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          tier: planId,
-          customerId,
-        }),
-      });
-
-      if (!sessionResponse.ok) {
-        const errorData = await sessionResponse.json();
-        throw new Error(errorData.error || 'Failed to create checkout session');
-      }
-
-      const { url } = await sessionResponse.json();
-
-      if (url) {
-        window.location.href = url;
-      } else {
-        throw new Error('No checkout URL returned');
-      }
-    } catch (err) {
-      console.error('Upgrade error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to start upgrade process');
-      setLoading(false);
-    }
+    // Redirect to subscription page for proper upgrade/downgrade handling
+    router.push('/account/subscription');
   };
 
-  const handleDowngrade = async (targetTier: 'Initiate' | 'Guild') => {
-    if (!isAuthenticated || !user) {
+  const handleDowngrade = (tier: string) => {
+    if (!isAuthenticated) {
       return;
     }
-
-    confirm(
-      'Confirm Downgrade',
-      `Are you sure you want to downgrade to ${targetTier}? You will lose access to higher tier features.`,
-      async () => {
-        setLoading(true);
-        setError(null);
-
-        try {
-          // Get the subscription ID from the user or fetch it from the API
-          let subscriptionId = user.stripeSubscriptionId;
-          
-          // If not in user object, try to fetch fresh user data
-          if (!subscriptionId) {
-            const userResponse = await fetch(`/api/users/${user.id}`);
-            if (userResponse.ok) {
-              const userData = await userResponse.json();
-              subscriptionId = userData.stripeSubscriptionId;
-            }
-          }
-
-          // If still no subscription ID, just update the tier directly (for manually upgraded test accounts)
-          if (!subscriptionId) {
-            const response = await fetch(`/api/users/${user.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                tier: targetTier,
-              }),
-            });
-
-            if (!response.ok) {
-              throw new Error('Failed to update tier');
-            }
-
-            // Update localStorage
-            const sessionData = localStorage.getItem('userSession');
-            if (sessionData) {
-              const session = JSON.parse(sessionData);
-              session.user.tier = targetTier;
-              localStorage.setItem('userSession', JSON.stringify(session));
-            }
-
-            toast.success(`Tier updated to ${targetTier} successfully!`);
-            setTimeout(() => window.location.reload(), 1500);
-            return;
-          }
-
-          // If there's a subscription ID, cancel it through Stripe
-          const response = await fetch('/api/subscriptions/cancel-subscription', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userId: user.id,
-              subscriptionId: subscriptionId,
-              targetTier: targetTier,
-            }),
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to cancel subscription');
-          }
-
-          const data = await response.json();
-          
-          // Update localStorage
-          const sessionData = localStorage.getItem('userSession');
-          if (sessionData) {
-            const session = JSON.parse(sessionData);
-            session.user.tier = targetTier;
-            session.user.stripeSubscriptionStatus = 'canceling';
-            localStorage.setItem('userSession', JSON.stringify(session));
-          }
-          
-          toast.success(
-            `Subscription will be canceled at the end of your billing period${data.periodEnd ? `: ${data.periodEnd}` : ''}. You'll retain access until then.`,
-            7000
-          );
-          setTimeout(() => window.location.reload(), 2000);
-        } catch (err) {
-          console.error('Downgrade error:', err);
-          toast.error(err instanceof Error ? err.message : 'Failed to cancel subscription');
-          setError(err instanceof Error ? err.message : 'Failed to cancel subscription');
-          setLoading(false);
-        }
-      },
-      {
-        variant: 'warning',
-        confirmText: 'Downgrade'
-      }
-    );
+    
+    // Redirect to subscription page for proper downgrade handling
+    router.push('/account/subscription');
   };
 
   const renderFeatureValue = (value: boolean | string) => {
@@ -305,18 +165,9 @@ export default function Subscription() {
 
       <MainNavbar />
 
-      <div className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black text-white pt-5">
-        {/* Error Message */}
-        {error && (
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500 rounded-lg text-red-400">
-              {error}
-            </div>
-          </div>
-        )}
-
+      <div className="min-h-screen bg-gradient-to-b from-black via-zinc-900 to-black text-white pt-20">
         {/* Hero Section */}
-        <div className="max-w-7xl mx-auto px-4 py-10 text-center">
+        <div className="max-w-7xl mx-auto px-4 py-16 text-center">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-500/20 to-purple-500/20 px-6 py-2 rounded-full border border-yellow-500/30 mb-6">
             <Sparkles className="w-5 h-5 text-yellow-400" />
             <span className="text-sm font-semibold text-yellow-400">Unlock Your Full Potential</span>
@@ -379,14 +230,14 @@ export default function Subscription() {
 
               <button
                 onClick={() => currentTier !== "Initiate" && handleDowngrade("Initiate")}
-                disabled={currentTier === "Initiate" || loading}
+                disabled={currentTier === "Initiate"}
                 className={`w-full py-3 rounded-xl font-bold transition-all ${
-                  currentTier === "Initiate" || loading
+                  currentTier === "Initiate"
                     ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
                     : "bg-red-600 hover:bg-red-700 text-white cursor-pointer"
                 }`}
               >
-                {loading ? "Processing..." : currentTier === "Initiate" ? "Current Tier" : "Downgrade"}
+                {currentTier === "Initiate" ? "Current Tier" : "Downgrade"}
               </button>
             </div>
 
@@ -443,19 +294,19 @@ export default function Subscription() {
                   if (currentTier === "MIGISTUS" || currentTier === "Admin") {
                     handleDowngrade("Guild");
                   } else {
-                    handleUpgrade("guild");
+                    handleUpgrade("Guild");
                   }
                 }}
-                disabled={currentTier === "Guild" || loading}
+                disabled={currentTier === "Guild"}
                 className={`w-full py-4 rounded-xl font-bold transition-all ${
-                  currentTier === "Guild" || loading
+                  currentTier === "Guild" 
                     ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
                     : currentTier === "MIGISTUS" || currentTier === "Admin"
                     ? "bg-red-600 hover:bg-red-700 text-white cursor-pointer"
                     : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black transform hover:scale-105"
                 }`}
               >
-                {loading ? "Processing..." : currentTier === "Guild" ? "Current Tier" : currentTier === "MIGISTUS" || currentTier === "Admin" ? "Downgrade" : "Upgrade to Guild"}
+                {currentTier === "Guild" ? "Current Tier" : currentTier === "MIGISTUS" || currentTier === "Admin" ? "Downgrade" : "Upgrade to Guild"}
               </button>
             </div>
 
@@ -513,16 +364,16 @@ export default function Subscription() {
               <button
                 onClick={() => {
                   if (currentTier === "MIGISTUS" || currentTier === "Admin") return;
-                  handleUpgrade("elite");
+                  handleUpgrade("MIGISTUS");
                 }}
-                disabled={currentTier === "MIGISTUS" || currentTier === "Admin" || loading}
+                disabled={currentTier === "MIGISTUS" || currentTier === "Admin"}
                 className={`w-full py-4 rounded-xl font-bold transition-all ${
-                  currentTier === "MIGISTUS" || currentTier === "Admin" || loading
+                  currentTier === "MIGISTUS" || currentTier === "Admin"
                     ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
                     : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white transform hover:scale-105"
                 }`}
               >
-                {loading ? "Processing..." : currentTier === "MIGISTUS" || currentTier === "Admin" ? "Current Tier" : "Upgrade to MIGISTUS"}
+                {currentTier === "MIGISTUS" || currentTier === "Admin" ? "Current Tier" : "Upgrade to MIGISTUS"}
               </button>
             </div>
           </div>
@@ -620,8 +471,6 @@ export default function Subscription() {
           </div>
         </div>
       </div>
-      
-      <ConfirmDialog />
     </>
   );
 }

@@ -116,7 +116,7 @@ export function useSession(options: UseSessionOptions = {}): UseSessionReturn {
         localStorage.removeItem('userSession');
       }
       
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
     } catch (error) {
       console.error('Error logging out:', error);
     }

@@ -41,7 +41,8 @@ export default function LoginPage() {
         
         setUser({ ...adminResponse.user, sessionId: adminResponse.session?.sessionId || '' });
         setIsAuthenticated(true);
-        router.push("/kingdom");
+        const redirect = router.query.redirect as string;
+        router.push(redirect && redirect !== '/login' ? redirect : "/kingdom");
         return;
       } catch (adminError) {
         // Not an admin, try regular user login
@@ -70,7 +71,9 @@ export default function LoginPage() {
       // Update activity tracker
       await authAPI.updateActivity('/');
       
-      router.push("/");
+      // Redirect to original page or home
+      const redirect = router.query.redirect as string;
+      router.push(redirect && redirect !== '/login' ? redirect : "/");
     } catch (err: any) {
       // Check if error is due to unverified email
       if (err.response?.data?.code === 'EMAIL_NOT_VERIFIED') {

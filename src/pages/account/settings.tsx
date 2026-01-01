@@ -4,6 +4,8 @@ import MainNavbar from "@/components/nav/MainNavbar";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext"; // Updated import
+import { useToast } from "@/context/ToastContext";
+import { useConfirm } from "@/components/ui/ConfirmModal";
 import { UserStorage3 as UserStorage } from "@/utils/userStorage";
 import { activityTracker } from "@/utils/activityTracker";
 import { Eye, EyeOff } from "lucide-react";
@@ -102,6 +104,8 @@ const defaultSettings: UserSettings = {
 export default function AccountSettingsPage() {
   const { user, isAuthenticated, updateUser } = useAuth(); // Updated to use correct hook
   const router = useRouter();
+  const toast = useToast();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
   const [activeSection, setActiveSection] = useState('personal');
   const [saving, setSaving] = useState(false);
@@ -113,11 +117,16 @@ export default function AccountSettingsPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [newAddress, setNewAddress] = useState<any>(null);
   const [newPaymentMethod, setNewPaymentMethod] = useState<any>(null);
+  const [showPlanModal, setShowPlanModal] = useState(false);
+  const [planLoading, setPlanLoading] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingTierChange, setPendingTierChange] = useState<'Initiate' | 'Guild' | null>(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push('/login');
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
 
@@ -469,15 +478,191 @@ export default function AccountSettingsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const deleteAccount = () => {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      // In a real app, this would call an API
-      if (user) {
-        UserStorage.clearUserData(user.id);
-        localStorage.removeItem('userSession');
-        router.push('/');
+  const handlePlanUpgrade = async (planId: 'guild' | 'elite') => {
+    if (!user) return;
+    
+    setPlanLoading(true);
+    setErrors({});
+
+    try {
+      // Create or get Stripe customer
+      let customerId = user.stripeCustomerId;
+      if (!customerId) {
+        const customerResponse = await fetch('/api/subscriptions/create-customer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            email: user.email,
+            name: user.username
+          })
+        });
+
+        if (!customerResponse.ok) {
+          throw new Error('Failed to create customer');
+        }
+
+        const customerData = await customerResponse.json();
+        customerId = customerData.customerId;
       }
+
+      // Create checkout session
+      const response = await fetch('/api/subscriptions/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          tier: planId,
+          customerId: customerId
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
+
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error('Upgrade error:', err);
+      setErrors({ general: err instanceof Error ? err.message : 'Failed to start upgrade process' });
+      setPlanLoading(false);
     }
+  };
+
+  const handlePlanChange = async (targetTier: 'Initiate' | 'Guild' | 'MIGISTUS') => {
+    if (!user) return;
+
+    const currentTier = user.tier || 'Initiate';
+    const tierOrder = { 'Initiate': 0, 'Guild': 1, 'MIGISTUS': 2 };
+    const currentLevel = tierOrder[currentTier as keyof typeof tierOrder] || 0;
+    const targetLevel = tierOrder[targetTier];
+
+    // If same tier, do nothing
+    if (currentTier === targetTier) {
+      return;
+    }
+
+    // If upgrading
+    if (targetLevel > currentLevel) {
+      await handlePlanUpgrade(targetTier === 'Guild' ? 'guild' : 'elite');
+    } else {
+      // If downgrading
+      await handlePlanDowngrade(targetTier as 'Initiate' | 'Guild');
+    }
+  };
+
+  const handlePlanDowngrade = async (targetTier: 'Initiate' | 'Guild') => {
+    if (!user) return;
+
+    // Show custom confirmation modal instead of browser confirm
+    setPendingTierChange(targetTier);
+    setShowConfirmModal(true);
+  };
+
+  const confirmPlanDowngrade = async () => {
+    if (!user || !pendingTierChange) return;
+
+    setShowConfirmModal(false);
+    setPlanLoading(true);
+    setErrors({});
+
+    const targetTier = pendingTierChange;
+
+    try {
+      let subscriptionId = user.stripeSubscriptionId;
+      
+      if (!subscriptionId) {
+        const userResponse = await fetch(`/api/users/${user.id}`);
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          subscriptionId = userData.stripeSubscriptionId;
+        }
+      }
+
+      if (!subscriptionId) {
+        const response = await fetch(`/api/users/${user.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tier: targetTier }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update tier');
+        }
+
+        const sessionData = localStorage.getItem('userSession');
+        if (sessionData) {
+          const session = JSON.parse(sessionData);
+          session.user.tier = targetTier;
+          localStorage.setItem('userSession', JSON.stringify(session));
+        }
+
+        toast.success(`Tier updated to ${targetTier} successfully!`);
+        setShowPlanModal(false);
+        setPendingTierChange(null);
+        setTimeout(() => window.location.reload(), 1500);
+        return;
+      }
+
+      const response = await fetch('/api/subscriptions/cancel-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          subscriptionId: subscriptionId,
+          targetTier: targetTier,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to cancel subscription');
+      }
+
+      const data = await response.json();
+      
+      const sessionData = localStorage.getItem('userSession');
+      if (sessionData) {
+        const session = JSON.parse(sessionData);
+        session.user.tier = targetTier;
+        session.user.stripeSubscriptionStatus = 'canceling';
+        localStorage.setItem('userSession', JSON.stringify(session));
+      }
+      
+      toast.success(
+        `Subscription will be canceled at the end of your billing period${data.periodEnd ? `: ${data.periodEnd}` : ''}. You'll retain access until then.`,
+        7000
+      );
+      setShowPlanModal(false);
+      setPendingTierChange(null);
+      setTimeout(() => window.location.reload(), 2000);
+    } catch (err) {
+      console.error('Downgrade error:', err);
+      setErrors({ general: err instanceof Error ? err.message : 'Failed to cancel subscription' });
+      setPlanLoading(false);
+      setPendingTierChange(null);
+    }
+  };
+
+  const deleteAccount = () => {
+    confirm(
+      'Delete Account',
+      'Are you sure you want to delete your account? This action cannot be undone.',
+      () => {
+        if (user) {
+          UserStorage.clearUserData(user.id);
+          localStorage.removeItem('userSession');
+          toast.success('Account deleted successfully');
+          setTimeout(() => router.push('/'), 1500);
+        }
+      },
+      {
+        variant: 'danger',
+        confirmText: 'Delete Account'
+      }
+    );
   };
 
   if (!isAuthenticated || !user) {
@@ -496,6 +681,7 @@ export default function AccountSettingsPage() {
   const sections = [
     { id: 'personal', name: 'Personal Information', icon: '👤' },
     { id: 'security', name: 'Security', icon: '🔒' },
+    { id: 'subscription', name: 'Subscription', icon: '👑' },
     { id: 'privacy', name: 'Privacy & Communication', icon: '🔐' },
     { id: 'notifications', name: 'Notifications', icon: '🔔' },
     { id: 'marketing', name: 'Marketing Preferences', icon: '📧' },
@@ -516,15 +702,29 @@ export default function AccountSettingsPage() {
       <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white">
         <div className="flex flex-col lg:flex-row max-w-7xl mx-auto px-4 py-12 gap-8">
           
-          {/* Back Link */}
-          <div className="lg:hidden mb-4">
+          {/* Mobile Header with Hamburger */}
+          <div className="lg:hidden mb-4 flex items-center justify-between">
             <Link href="/account" className="text-yellow-400 hover:text-yellow-300">
               ← Back to Account
             </Link>
+            <button
+              onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+              className="bg-zinc-800 p-2 rounded-lg text-yellow-400 hover:bg-zinc-700 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMobileSidebarOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
           </div>
 
           {/* Sidebar */}
-          <aside className="lg:w-80">
+          <aside className={`lg:w-80 ${
+            isMobileSidebarOpen ? 'block' : 'hidden lg:block'
+          }`}>
             <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-6 sticky top-8">
               <div className="hidden lg:block mb-6">
                 <Link href="/account" className="text-yellow-400 hover:text-yellow-300">
@@ -538,7 +738,10 @@ export default function AccountSettingsPage() {
                 {sections.map(section => (
                   <button
                     key={section.id}
-                    onClick={() => setActiveSection(section.id)}
+                    onClick={() => {
+                      setActiveSection(section.id);
+                      setIsMobileSidebarOpen(false); // Close mobile sidebar on selection
+                    }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${
                       activeSection === section.id
                         ? 'bg-yellow-400/10 text-yellow-400 border border-yellow-400/30'
@@ -641,6 +844,180 @@ export default function AccountSettingsPage() {
                       onChange={e => updateSetting('dateOfBirth', e.target.value)}
                       className="w-full md:w-1/2 px-4 py-3 bg-zinc-800 border border-yellow-500/30 rounded-lg text-white focus:border-yellow-400 focus:outline-none"
                     />
+                  </div>
+                </div>
+              )}
+
+              {/* Subscription Management */}
+              {activeSection === 'subscription' && (
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-bold text-yellow-400 mb-6">Subscription Management</h3>
+                  
+                  {/* Current Subscription */}
+                  <div className="border border-yellow-500/30 rounded-lg p-6 bg-gradient-to-br from-yellow-900/10 to-purple-900/10">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-semibold text-white">Current Plan</h4>
+                      <span className="px-4 py-2 bg-yellow-400 text-black font-bold rounded-full">
+                        {user.tier || 'Initiate'}
+                      </span>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-4 mb-6">
+                      <div className="bg-zinc-800/50 rounded-lg p-4">
+                        <div className="text-gray-400 text-sm mb-1">Daily Votes</div>
+                        <div className="text-2xl font-bold text-white">
+                          {user.tier === 'MIGISTUS' ? '10' : user.tier === 'Guild' ? '3' : '1'}
+                        </div>
+                      </div>
+                      <div className="bg-zinc-800/50 rounded-lg p-4">
+                        <div className="text-gray-400 text-sm mb-1">Voting Power</div>
+                        <div className="text-2xl font-bold text-white">
+                          {user.tier === 'MIGISTUS' ? '5x' : user.tier === 'Guild' ? '2x' : '1x'}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {user.stripeSubscriptionStatus && (
+                      <div className="text-sm text-gray-400 mb-4">
+                        Status: <span className="text-green-400">{user.stripeSubscriptionStatus}</span>
+                      </div>
+                    )}
+                    
+                    <Link 
+                      href="/account/subscription"
+                      className="inline-block bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-6 py-3 rounded-lg transition-colors"
+                    >
+                      View All Plans & Upgrade
+                    </Link>
+                  </div>
+                  
+                  {/* Change Plan Button - Available for all tiers */}
+                  <div className="border border-zinc-700 rounded-lg p-6">
+                    <h4 className="text-lg font-semibold text-white mb-4">Manage Subscription</h4>
+                    <button
+                      onClick={() => setShowPlanModal(true)}
+                      className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-6 py-3 rounded-lg transition-colors"
+                    >
+                      {user.tier === 'Initiate' ? 'Upgrade Your Plan' : 'Change Plan'}
+                    </button>
+                  </div>
+                  
+                  {/* Billing Information */}
+                  {user.tier !== 'Initiate' && (
+                    <div className="border border-zinc-700 rounded-lg p-6">
+                      <h4 className="text-lg font-semibold text-white mb-4">Billing Information</h4>
+                      
+                      <div className="space-y-3 mb-6">
+                        <div className="flex justify-between py-2 border-b border-zinc-700">
+                          <span className="text-gray-400">Plan</span>
+                          <span className="text-white font-medium">{user.tier} Membership</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-zinc-700">
+                          <span className="text-gray-400">Price</span>
+                          <span className="text-white font-medium">
+                            {user.tier === 'MIGISTUS' ? '$29.99' : '$9.99'}/month
+                          </span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-zinc-700">
+                          <span className="text-gray-400">Next Billing Date</span>
+                          <span className="text-white font-medium">
+                            {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                          </span>
+                        </div>
+                        {user.stripeCustomerId && (
+                          <div className="flex justify-between py-2">
+                            <span className="text-gray-400">Customer ID</span>
+                            <span className="text-white font-mono text-sm">{user.stripeCustomerId.substring(0, 20)}...</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex gap-4">
+                        <button
+                          onClick={() => {
+                            confirm(
+                              'Cancel Subscription',
+                              'Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.',
+                              () => {
+                                window.location.href = '/account/subscription';
+                              },
+                              {
+                                variant: 'danger',
+                                confirmText: 'Cancel Subscription'
+                              }
+                            );
+                          }}
+                          className="w-full bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 text-red-400 font-bold px-4 py-3 rounded-lg transition-colors"
+                        >
+                          Cancel Subscription
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Subscription Benefits */}
+                  <div className="border border-zinc-700 rounded-lg p-6">
+                    <h4 className="text-lg font-semibold text-white mb-4">Your Benefits</h4>
+                    <ul className="space-y-2">
+                      {user.tier === 'Initiate' ? (
+                        <>
+                          <li className="flex items-center gap-2 text-gray-400">
+                            <span className="text-green-400">✓</span> 1 vote per day
+                          </li>
+                          <li className="flex items-center gap-2 text-gray-400">
+                            <span className="text-green-400">✓</span> Basic profile access
+                          </li>
+                          <li className="flex items-center gap-2 text-gray-400">
+                            <span className="text-green-400">✓</span> Community features
+                          </li>
+                        </>
+                      ) : user.tier === 'Guild' ? (
+                        <>
+                          <li className="flex items-center gap-2 text-white">
+                            <span className="text-green-400">✓</span> 3 votes per day
+                          </li>
+                          <li className="flex items-center gap-2 text-white">
+                            <span className="text-green-400">✓</span> 2x voting power
+                          </li>
+                          <li className="flex items-center gap-2 text-white">
+                            <span className="text-green-400">✓</span> Early product access
+                          </li>
+                          <li className="flex items-center gap-2 text-white">
+                            <span className="text-green-400">✓</span> Exclusive live drops
+                          </li>
+                          <li className="flex items-center gap-2 text-white">
+                            <span className="text-green-400">✓</span> Priority support
+                          </li>
+                          <li className="flex items-center gap-2 text-white">
+                            <span className="text-green-400">✓</span> Guild badge & flair
+                          </li>
+                        </>
+                      ) : (
+                        <>
+                          <li className="flex items-center gap-2 text-yellow-400">
+                            <span className="text-green-400">✓</span> 10 votes per day
+                          </li>
+                          <li className="flex items-center gap-2 text-yellow-400">
+                            <span className="text-green-400">✓</span> 5x voting power
+                          </li>
+                          <li className="flex items-center gap-2 text-yellow-400">
+                            <span className="text-green-400">✓</span> All Guild benefits
+                          </li>
+                          <li className="flex items-center gap-2 text-yellow-400">
+                            <span className="text-green-400">✓</span> MIGISTUS crown badge
+                          </li>
+                          <li className="flex items-center gap-2 text-yellow-400">
+                            <span className="text-green-400">✓</span> Premium monthly rewards
+                          </li>
+                          <li className="flex items-center gap-2 text-yellow-400">
+                            <span className="text-green-400">✓</span> AI-powered analytics
+                          </li>
+                          <li className="flex items-center gap-2 text-yellow-400">
+                            <span className="text-green-400">✓</span> Unlimited customization
+                          </li>
+                        </>
+                      )}
+                    </ul>
                   </div>
                 </div>
               )}
@@ -1413,6 +1790,218 @@ export default function AccountSettingsPage() {
           </main>
         </div>
       </div>
+
+      {/* Plan Change Modal */}
+      {showPlanModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-yellow-500/30 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-zinc-700 flex items-center justify-between sticky top-0 bg-zinc-900 z-10">
+              <h3 className="text-2xl font-bold text-yellow-400">Change Your Plan</h3>
+              <button
+                onClick={() => setShowPlanModal(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              {/* Initiate Plan */}
+              <div className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                user.tier === 'Initiate' 
+                  ? 'border-zinc-600 bg-zinc-800/30' 
+                  : 'border-zinc-700 hover:border-yellow-500/30 hover:bg-zinc-800/50'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h4 className="text-lg font-bold text-white">Initiate</h4>
+                      {user.tier === 'Initiate' && (
+                        <span className="px-3 py-1 bg-yellow-400 text-black text-xs font-bold rounded-full">
+                          CURRENT
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-gray-400 text-sm mb-3">Perfect for getting started</p>
+                    <div className="text-2xl font-bold text-white mb-2">FREE</div>
+                    <ul className="space-y-1 text-sm text-gray-300">
+                      <li className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span> 1 vote per day
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span> 1x voting power
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span> Basic profile access
+                      </li>
+                    </ul>
+                  </div>
+                  {user.tier !== 'Initiate' && (
+                    <button
+                      onClick={() => handlePlanChange('Initiate')}
+                      disabled={planLoading}
+                      className="ml-4 bg-zinc-700 hover:bg-zinc-600 disabled:bg-zinc-800 text-white font-bold px-6 py-2 rounded-lg transition-colors"
+                    >
+                      {planLoading ? 'Processing...' : 'Downgrade'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Guild Plan */}
+              <div className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                user.tier === 'Guild' 
+                  ? 'border-yellow-600 bg-yellow-900/10' 
+                  : 'border-zinc-700 hover:border-yellow-500/30 hover:bg-zinc-800/50'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h4 className="text-lg font-bold text-yellow-400">Guild</h4>
+                      {user.tier === 'Guild' && (
+                        <span className="px-3 py-1 bg-yellow-400 text-black text-xs font-bold rounded-full">
+                          CURRENT
+                        </span>
+                      )}
+                      <span className="px-3 py-1 bg-orange-500 text-white text-xs font-bold rounded-full">
+                        POPULAR
+                      </span>
+                    </div>
+                    <p className="text-gray-400 text-sm mb-3">For serious voters</p>
+                    <div className="text-2xl font-bold text-white mb-2">$9.99 <span className="text-sm text-gray-400">/ month</span></div>
+                    <ul className="space-y-1 text-sm text-gray-300">
+                      <li className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span> 3 votes per day
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span> 2x voting power
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span> Early product access
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span> Exclusive live drops
+                      </li>
+                    </ul>
+                  </div>
+                  {user.tier !== 'Guild' && (
+                    <button
+                      onClick={() => handlePlanChange('Guild')}
+                      disabled={planLoading}
+                      className="ml-4 bg-yellow-400 hover:bg-yellow-300 disabled:bg-yellow-600 text-black font-bold px-6 py-2 rounded-lg transition-colors"
+                    >
+                      {planLoading ? 'Processing...' : user.tier === 'Initiate' ? 'Upgrade' : 'Switch'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* MIGISTUS Plan */}
+              <div className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                user.tier === 'MIGISTUS' 
+                  ? 'border-purple-600 bg-purple-900/10' 
+                  : 'border-zinc-700 hover:border-purple-500/30 hover:bg-zinc-800/50'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h4 className="text-lg font-bold text-purple-400">MIGISTUS</h4>
+                      {user.tier === 'MIGISTUS' && (
+                        <span className="px-3 py-1 bg-yellow-400 text-black text-xs font-bold rounded-full">
+                          CURRENT
+                        </span>
+                      )}
+                      <span className="px-3 py-1 bg-purple-500 text-white text-xs font-bold rounded-full">
+                        ELITE
+                      </span>
+                    </div>
+                    <p className="text-gray-400 text-sm mb-3">Maximum influence</p>
+                    <div className="text-2xl font-bold text-white mb-2">$29.99 <span className="text-sm text-gray-400">/ month</span></div>
+                    <ul className="space-y-1 text-sm text-gray-300">
+                      <li className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span> 10 votes per day
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span> 5x voting power
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span> All Guild benefits
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span> MIGISTUS crown badge
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-green-400">✓</span> Premium rewards
+                      </li>
+                    </ul>
+                  </div>
+                  {user.tier !== 'MIGISTUS' && (
+                    <button
+                      onClick={() => handlePlanChange('MIGISTUS')}
+                      disabled={planLoading}
+                      className="ml-4 bg-purple-500 hover:bg-purple-400 disabled:bg-purple-700 text-white font-bold px-6 py-2 rounded-lg transition-colors"
+                    >
+                      {planLoading ? 'Processing...' : 'Upgrade'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Confirmation Modal */}
+      {showConfirmModal && pendingTierChange && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border-2 border-yellow-400/30 rounded-xl p-8 max-w-md w-full shadow-2xl">
+            <div className="text-center">
+              <div className="mb-4">
+                <div className="mx-auto w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+              </div>
+              
+              <h3 className="text-2xl font-bold text-yellow-400 mb-3">
+                Confirm Downgrade
+              </h3>
+              
+              <p className="text-gray-300 mb-6">
+                Are you sure you want to downgrade to <span className="text-yellow-400 font-semibold">{pendingTierChange}</span>?
+                <br />
+                <span className="text-sm text-gray-400 mt-2 block">
+                  You will lose access to higher tier features.
+                </span>
+              </p>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowConfirmModal(false);
+                    setPendingTierChange(null);
+                  }}
+                  className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmPlanDowngrade}
+                  disabled={planLoading}
+                  className="flex-1 bg-yellow-500 hover:bg-yellow-400 disabled:bg-yellow-600 text-black font-bold py-3 px-6 rounded-lg transition-colors"
+                >
+                  {planLoading ? 'Processing...' : 'Confirm'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <ConfirmDialog />
     </>
   );
 }
