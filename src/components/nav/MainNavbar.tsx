@@ -22,6 +22,7 @@ export default function MainNavbar() {
   const [mounted, setMounted] = useState(false);
   const [showNavbar, setShowNavbar] = useState(true);
   const lastScrollY = useRef(0);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Login modal states
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -226,9 +227,13 @@ export default function MainNavbar() {
       if (!target.closest('[data-dropdown="live-drops"]')) {
         setIsLiveDropsOpen(false);
       }
+      // Close user dropdown when clicking outside
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
     };
 
-    if (isLiveDropsOpen) {
+    if (isLiveDropsOpen || isDropdownOpen) {
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
     }
@@ -237,7 +242,7 @@ export default function MainNavbar() {
       // Cleanup
       delete (window as any).openAuthModal;
     };
-  }, [isLiveDropsOpen]);
+  }, [isLiveDropsOpen, isDropdownOpen]);
 
   // Load user avatar
   useEffect(() => {
@@ -625,7 +630,7 @@ export default function MainNavbar() {
                     </Link>
                     {/* Dropdown Menu */}
                     {isLiveDropsOpen && (
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-zinc-900 border border-yellow-400/30 rounded-xl shadow-xl z-50 overflow-hidden">
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-64 bg-zinc-900 border border-yellow-400/30 rounded-xl shadow-xl z-50 overflow-hidden">
                         {liveDropsItems.map((item) => (
                           <Link
                             key={item.name}
@@ -687,7 +692,7 @@ export default function MainNavbar() {
             
             {isAuthenticated ? (
               /* User Dropdown */
-              <div className="relative">
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => {
                     const newState = !isDropdownOpen;

@@ -7,6 +7,7 @@ import { ToastProvider } from "@/context/ToastContext";
 import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 import { Web3Utils } from "@/utils/web3Utils";
 import MainLayout from "@/components/layout/MainLayout";
+import BetaGuard from "@/components/BetaGuard";
 import "@/styles/globals.css";
 
 // Error boundary component
@@ -144,15 +145,17 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <ToastProvider>
-          <AnalyticsProvider>
-            <MainLayout showFooter={showFooter}>
-              {getLayout(<Component {...pageProps} />)}
-            </MainLayout>
-          </AnalyticsProvider>
-        </ToastProvider>
-      </AuthProvider>
+      <BetaGuard>
+        <AuthProvider>
+          <ToastProvider>
+            <AnalyticsProvider>
+              <MainLayout showFooter={showFooter}>
+                {getLayout(<Component {...pageProps} />)}
+              </MainLayout>
+            </AnalyticsProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </BetaGuard>
       <Analytics />
     </ErrorBoundary>
   );

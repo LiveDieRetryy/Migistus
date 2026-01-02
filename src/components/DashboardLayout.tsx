@@ -561,29 +561,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               })}
             </div>
           </div>
-        </nav>        {/* Modern Quick Actions */}
-        {!isCollapsed && (
-          <div className="relative p-4 border-t-2 border-yellow-500/20 bg-gradient-to-b from-zinc-900/30 to-zinc-900/60">
-            <h3 className="text-xs font-black text-yellow-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span className="text-lg">⚡</span>
-              Quick Actions
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
-              {QUICK_ACTIONS.map((action) => (
-                <Link
-                  key={action.id}
-                  href={action.href}
-                  className={`flex flex-col items-center gap-2 p-3 rounded-xl bg-gradient-to-r ${action.color} text-white hover:shadow-xl transition-all duration-300 hover:scale-105 group text-center border-2 border-white/10 hover:border-white/30`}
-                >
-                  <span className="text-2xl group-hover:scale-110 transition-transform drop-shadow-lg">
-                    {action.icon}
-                  </span>
-                  <span className="font-black text-xs drop-shadow">{action.title}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}        {/* Enhanced User Info Footer */}
+        </nav>
+        {/* Enhanced User Info Footer */}
         <div className="relative p-4 border-t-2 border-yellow-500/20 bg-zinc-900/50">
           {!isCollapsed ? (
             <div className="flex gap-2">

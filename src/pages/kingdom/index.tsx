@@ -55,6 +55,7 @@ export default function KingsDomainPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [liveProducts, setLiveProducts] = useState<LiveProduct[]>([]);
+  const [betaModeEnabled, setBetaModeEnabled] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     users: { total: 0, newToday: 0, active: 0, optedInMarketing: 0 },
     voting: { activePolls: 0, totalVotes: 0, pendingApproval: 0 },
@@ -73,6 +74,15 @@ export default function KingsDomainPage() {
       } else {
         setLoading(false);
         loadDashboardData();
+        
+        // Load beta mode state - default to true if not set
+        const betaModeValue = localStorage.getItem("betaModeEnabled");
+        const betaMode = betaModeValue === null ? true : betaModeValue === "true";
+        setBetaModeEnabled(betaMode);
+        // Set default value if not exists
+        if (betaModeValue === null) {
+          localStorage.setItem("betaModeEnabled", "true");
+        }
         
         // Set up auto-refresh every 30 seconds
         const interval = setInterval(loadDashboardData, 30000);
@@ -167,6 +177,18 @@ export default function KingsDomainPage() {
     }
   };
 
+  const toggleBetaMode = () => {
+    const newState = !betaModeEnabled;
+    setBetaModeEnabled(newState);
+    localStorage.setItem("betaModeEnabled", String(newState));
+    
+    // Show confirmation message
+    alert(newState 
+      ? "✅ Beta Mode ENABLED - Website is now protected with password" 
+      : "⚠️ Beta Mode DISABLED - Website is now publicly accessible"
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -233,6 +255,35 @@ export default function KingsDomainPage() {
             
             <div className="mt-6 lg:mt-0">
               <div className="flex flex-col items-end gap-3">
+                {/* Beta Mode Toggle */}
+                <div className="flex items-center gap-3 px-4 py-3 bg-zinc-800/50 border-2 border-zinc-700 rounded-xl mb-2">
+                  <div className="flex flex-col items-start">
+                    <span className="text-white font-bold text-sm">Beta Mode</span>
+                    <span className="text-gray-400 text-xs">Password protect site</span>
+                  </div>
+                  <button
+                    onClick={toggleBetaMode}
+                    className={`relative w-14 h-7 rounded-full transition-all duration-300 ${
+                      betaModeEnabled 
+                        ? 'bg-gradient-to-r from-green-500 to-green-600' 
+                        : 'bg-gray-600'
+                    }`}
+                  >
+                    <div
+                      className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-lg transition-all duration-300 ${
+                        betaModeEnabled ? 'left-7' : 'left-0.5'
+                      }`}
+                    />
+                  </button>
+                  <div className={`px-3 py-1 rounded-lg font-bold text-xs ${
+                    betaModeEnabled 
+                      ? 'bg-green-500/20 text-green-400 border border-green-500/40' 
+                      : 'bg-red-500/20 text-red-400 border border-red-500/40'
+                  }`}>
+                    {betaModeEnabled ? 'ON' : 'OFF'}
+                  </div>
+                </div>
+
                 <button
                   onClick={loadDashboardData}
                   disabled={refreshing}

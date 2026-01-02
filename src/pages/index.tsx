@@ -3,7 +3,7 @@ import Head from "next/head";
 import MainNavbar from "@/components/nav/MainNavbar";
 import Link from "next/link";
 import Image from "next/image";
-import { Crown, Users, Star, Zap, Globe, Heart, Award, TrendingUp, Target, Rocket, Sparkles, CheckCircle2, ArrowRight, ShoppingCart, Vote, Package, Shield } from "lucide-react";
+import { Crown, Users, Star, Zap, Globe, Heart, Award, TrendingUp, Target, Rocket, Sparkles, CheckCircle2, ArrowRight, ShoppingCart, Vote, Package, Shield, ChevronDown } from "lucide-react";
 
 export default function HomePage() {
   const [isVisible, setIsVisible] = useState(false);
@@ -296,19 +296,11 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
-                {stats.map((stat, index) => (
-                  <div 
-                    key={stat.label}
-                    className={`bg-zinc-900/60 backdrop-blur-sm border border-yellow-500/30 rounded-xl p-6 transition-all duration-500 hover:scale-105 hover:border-yellow-500/60 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-                    style={{ transitionDelay: `${index * 100}ms` }}
-                  >
-                    <stat.icon className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
-                    <div className="text-3xl font-bold text-yellow-400 mb-1">{stat.value}</div>
-                    <div className="text-sm text-zinc-400">{stat.label}</div>
-                  </div>
-                ))}
+              {/* Scroll Indicator */}
+              <div className="flex flex-col items-center gap-2 animate-bounce mt-12">
+                <ChevronDown className="w-6 h-6 text-yellow-400" />
+                <ChevronDown className="w-6 h-6 text-yellow-400 -mt-4" />
+                <span className="text-yellow-400 text-sm font-medium">Scroll to explore</span>
               </div>
             </div>
           </div>
