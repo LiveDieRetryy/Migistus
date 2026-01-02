@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS users (
   phone_number VARCHAR(50),
   referral_source VARCHAR(255),
   agree_to_marketing BOOLEAN DEFAULT false,
+  avatar TEXT,
   -- Financial fields
   wallet DECIMAL(10, 2) DEFAULT 0.00,
   guild_coins INTEGER DEFAULT 0,

@@ -370,7 +370,7 @@ export default function RegisterPage() {  const [form, setForm] = useState({
                       }`}>
                         {usernameMessage}
                       </p>
-                      {usernameAvailable === false && usernameAvailable !== null && (
+                      {usernameAvailable === false && usernameAvailable !== null && !usernameMessage.includes('inappropriate') && (
                         <div className="mt-2">
                           <p className="text-xs text-gray-400 mb-1">Try these instead:</p>
                           <div className="flex flex-wrap gap-2">

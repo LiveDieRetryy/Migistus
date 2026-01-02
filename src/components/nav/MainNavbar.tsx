@@ -67,6 +67,23 @@ export default function MainNavbar() {
       return;
     }
 
+    // Profanity filter
+    const profanityList = [
+      'fuck', 'shit', 'bitch', 'ass', 'damn', 'bastard', 'cunt', 'dick', 'piss', 'cock',
+      'pussy', 'fag', 'slut', 'whore', 'nigger', 'nigga', 'retard', 'rape', 'nazi', 'hitler'
+    ];
+    
+    const lowerUsername = username.toLowerCase();
+    const containsProfanity = profanityList.some(word => lowerUsername.includes(word));
+    
+    if (containsProfanity) {
+      setValidationErrors(prev => ({ 
+        ...prev, 
+        username: '❌ Username contains inappropriate language' 
+      }));
+      return;
+    }
+
     try {
       const response = await fetch('/data/users.json');
       const data = await response.json();

@@ -32,6 +32,22 @@ export function useUsernameAvailability(username: string, debounceMs: number = 5
       return;
     }
 
+    // Profanity filter
+    const profanityList = [
+      'fuck', 'shit', 'bitch', 'ass', 'damn', 'bastard', 'cunt', 'dick', 'piss', 'cock',
+      'pussy', 'fag', 'slut', 'whore', 'nigger', 'nigga', 'retard', 'rape', 'nazi', 'hitler'
+    ];
+    
+    const lowerUsername = usernameToCheck.toLowerCase();
+    const containsProfanity = profanityList.some(word => lowerUsername.includes(word));
+    
+    if (containsProfanity) {
+      setAvailable(false);
+      setMessage('❌ Username contains inappropriate language');
+      setChecking(false);
+      return;
+    }
+
     setChecking(true);
     setMessage('Checking availability...');
 
