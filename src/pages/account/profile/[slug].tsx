@@ -1307,39 +1307,39 @@ export default function UserProfilePage() {
                     </h1>
                       {/* Compact Stats Bar */}
                     <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1.5 sm:gap-2 mb-3">
-                      <div className="flex items-center gap-1 sm:gap-1.5 bg-blue-500/10 border border-blue-500/30 rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5">
+                      <div className="flex items-center gap-1 sm:gap-1.5 bg-blue-500/10 border border-blue-500/30 rounded-lg px-1.5 sm:px-2.5 py-1 sm:py-1.5">
                         <Target className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-400" />
                         <span className="text-blue-400 font-bold text-xs sm:text-sm">{liveStats.activePledges}</span>
-                        <span className="text-gray-400 text-[10px] sm:text-xs">Active</span>
+                        <span className="text-gray-400 text-[10px] sm:text-xs hidden xs:inline">Active</span>
                       </div>
-                      <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-2.5 py-1.5">
-                        <Shield className="w-3.5 h-3.5 text-green-400" />
-                        <span className="text-green-400 font-bold text-sm">{liveStats.reputation}</span>
-                        <span className="text-gray-400 text-xs">Rep</span>
+                      <div className="flex items-center gap-1 sm:gap-1.5 bg-green-500/10 border border-green-500/30 rounded-lg px-1.5 sm:px-2.5 py-1 sm:py-1.5">
+                        <Shield className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-green-400" />
+                        <span className="text-green-400 font-bold text-xs sm:text-sm">{liveStats.reputation}</span>
+                        <span className="text-gray-400 text-[10px] sm:text-xs hidden xs:inline">Rep</span>
                       </div>
-                      <div className="flex items-center gap-1.5 bg-purple-500/10 border border-purple-500/30 rounded-lg px-2.5 py-1.5">
-                        <TrendingUp className="w-3.5 h-3.5 text-purple-400" />
-                        <span className="text-purple-400 font-bold text-sm">{Math.round(liveStats.successRate)}%</span>
+                      <div className="flex items-center gap-1 sm:gap-1.5 bg-purple-500/10 border border-purple-500/30 rounded-lg px-1.5 sm:px-2.5 py-1 sm:py-1.5">
+                        <TrendingUp className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-purple-400" />
+                        <span className="text-purple-400 font-bold text-xs sm:text-sm">{Math.round(liveStats.successRate)}%</span>
                       </div>
                       
                       {/* Followers - Clickable */}
                       <button
                         onClick={() => setFollowersModal({ isOpen: true, type: 'followers' })}
-                        className="flex items-center gap-1.5 bg-pink-500/10 border border-pink-500/30 hover:border-pink-500/60 rounded-lg px-2.5 py-1.5 transition-all group"
+                        className="flex items-center gap-1 sm:gap-1.5 bg-pink-500/10 border border-pink-500/30 hover:border-pink-500/60 rounded-lg px-1.5 sm:px-2.5 py-1 sm:py-1.5 transition-all group"
                       >
-                        <UsersIcon className="w-3.5 h-3.5 text-pink-400" />
-                        <span className="text-pink-400 font-bold text-sm">{liveStats.followers}</span>
-                        <span className="text-gray-400 text-xs">Followers</span>
+                        <UsersIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-pink-400" />
+                        <span className="text-pink-400 font-bold text-xs sm:text-sm">{liveStats.followers}</span>
+                        <span className="text-gray-400 text-[10px] sm:text-xs hidden xs:inline">Followers</span>
                       </button>
                       
                       {/* Following - Clickable */}
                       <button
                         onClick={() => setFollowersModal({ isOpen: true, type: 'following' })}
-                        className="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/30 hover:border-orange-500/60 rounded-lg px-2.5 py-1.5 transition-all group"
+                        className="flex items-center gap-1 sm:gap-1.5 bg-orange-500/10 border border-orange-500/30 hover:border-orange-500/60 rounded-lg px-1.5 sm:px-2.5 py-1 sm:py-1.5 transition-all group"
                       >
-                        <Heart className="w-3.5 h-3.5 text-orange-400" />
-                        <span className="text-orange-400 font-bold text-sm">{liveStats.following}</span>
-                        <span className="text-gray-400 text-xs">Following</span>
+                        <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange-400" />
+                        <span className="text-orange-400 font-bold text-xs sm:text-sm">{liveStats.following}</span>
+                        <span className="text-gray-400 text-[10px] sm:text-xs hidden xs:inline">Following</span>
                       </button>
                     </div>
                     
@@ -1637,22 +1637,22 @@ export default function UserProfilePage() {
                     </div>
                     
                     {/* Pledge Stats Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                      <div className="bg-zinc-800/50 rounded-xl p-4 text-center border border-blue-500/20">
-                        <div className="text-2xl font-bold text-blue-400 mb-1">{liveStats.activePledges}</div>
-                        <div className="text-xs text-gray-400">Active Pledges</div>
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                      <div className="bg-zinc-800/50 rounded-xl p-3 sm:p-4 text-center border border-blue-500/20">
+                        <div className="text-xl sm:text-2xl font-bold text-blue-400 mb-1">{liveStats.activePledges}</div>
+                        <div className="text-[10px] sm:text-xs text-gray-400">Active Pledges</div>
                       </div>
-                      <div className="bg-zinc-800/50 rounded-xl p-4 text-center border border-green-500/20">
-                        <div className="text-2xl font-bold text-green-400 mb-1">{liveStats.completedPledges}</div>
-                        <div className="text-xs text-gray-400">Complete Pledges</div>
+                      <div className="bg-zinc-800/50 rounded-xl p-3 sm:p-4 text-center border border-green-500/20">
+                        <div className="text-xl sm:text-2xl font-bold text-green-400 mb-1">{liveStats.completedPledges}</div>
+                        <div className="text-[10px] sm:text-xs text-gray-400">Complete Pledges</div>
                       </div>
-                      <div className="bg-zinc-800/50 rounded-xl p-4 text-center border border-emerald-500/20">
-                        <div className="text-2xl font-bold text-emerald-400 mb-1">${liveStats.totalPledgeAmount.toFixed(0)}</div>
-                        <div className="text-xs text-gray-400">Money Saved</div>
+                      <div className="bg-zinc-800/50 rounded-xl p-3 sm:p-4 text-center border border-emerald-500/20">
+                        <div className="text-xl sm:text-2xl font-bold text-emerald-400 mb-1">${liveStats.totalPledgeAmount.toFixed(0)}</div>
+                        <div className="text-[10px] sm:text-xs text-gray-400">Money Saved</div>
                       </div>
-                      <div className="bg-zinc-800/50 rounded-xl p-4 text-center border border-purple-500/20">
-                        <div className="text-2xl font-bold text-purple-400 mb-1">{Math.round(liveStats.successRate)}</div>
-                        <div className="text-xs text-gray-400">Votes Gone Live</div>
+                      <div className="bg-zinc-800/50 rounded-xl p-3 sm:p-4 text-center border border-purple-500/20">
+                        <div className="text-xl sm:text-2xl font-bold text-purple-400 mb-1">{Math.round(liveStats.successRate)}</div>
+                        <div className="text-[10px] sm:text-xs text-gray-400">Votes Gone Live</div>
                       </div>
                     </div>
 
