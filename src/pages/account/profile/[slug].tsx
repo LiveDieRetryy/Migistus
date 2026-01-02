@@ -1081,12 +1081,12 @@ export default function UserProfilePage() {
           <div className="bg-gradient-to-br from-zinc-900/95 to-zinc-800/95 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 sm:p-5 mb-6 shadow-2xl">
             {/* Banner Editing Controls */}
             {isEditingBanner && isEditing && (
-              <div className="mb-4 bg-zinc-800/50 rounded-lg p-3 border border-yellow-500/30">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="text-yellow-400 text-xs font-bold whitespace-nowrap">🎨 Position Banner:</span>
+              <div className="mb-4 bg-zinc-800/50 rounded-lg p-2 sm:p-3 border border-yellow-500/30">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+                  <span className="text-yellow-400 text-xs font-bold whitespace-nowrap">🎨 Position:</span>
                   
                   {/* Zoom control */}
-                  <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                  <div className="flex items-center gap-2 flex-1 w-full sm:min-w-[200px]">
                     <span className="text-gray-300 text-xs">Zoom:</span>
                     <input
                       type="range"
@@ -1097,27 +1097,27 @@ export default function UserProfilePage() {
                       onChange={(e) => setBannerScale(Number(e.target.value))}
                       className="flex-1 h-2 bg-zinc-700 rounded-lg accent-yellow-500 cursor-pointer"
                     />
-                    <span className="text-yellow-400 text-xs font-mono font-bold w-12 text-right">{Math.round(bannerScale * 100)}%</span>
+                    <span className="text-yellow-400 text-xs font-mono font-bold w-10 sm:w-12 text-right">{Math.round(bannerScale * 100)}%</span>
                   </div>
                   
                   {/* Action buttons */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
                     <button
                       onClick={handleCenterBanner}
-                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all"
+                      className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] sm:text-xs font-bold transition-all"
                       title="Center the image"
                     >
-                      🎯 Center
+                      🎯 <span className="hidden xs:inline">Center</span>
                     </button>
                     <button
                       onClick={() => {
                         setBannerPosition({ x: 0, y: 0 });
                         setBannerScale(1);
                       }}
-                      className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs font-bold transition-all"
+                      className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-[10px] sm:text-xs font-bold transition-all"
                       title="Reset position and zoom"
                     >
-                      🔄 Reset
+                      🔄 <span className="hidden xs:inline">Reset</span>
                     </button>
                     <button
                       onClick={() => {
@@ -1126,15 +1126,15 @@ export default function UserProfilePage() {
                         setBannerPosition({ x: 0, y: 0 });
                         setBannerScale(1);
                       }}
-                      className="px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-xs font-bold transition-all"
+                      className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-[10px] sm:text-xs font-bold transition-all"
                     >
-                      ✕ Cancel
+                      ✕ <span className="hidden xs:inline">Cancel</span>
                     </button>
                     <button
                       onClick={handleApplyBannerPosition}
-                      className="px-3 py-1.5 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-black rounded-lg text-xs font-bold transition-all shadow-lg"
+                      className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-black rounded-lg text-[10px] sm:text-xs font-bold transition-all shadow-lg"
                     >
-                      ✓ Save
+                      ✓ <span className="hidden xs:inline">Save</span>
                     </button>
                   </div>
                 </div>
@@ -1344,9 +1344,9 @@ export default function UserProfilePage() {
                     </div>
                     
                     {/* Member Since */}
-                    <div className="flex items-center gap-2 text-gray-300 mb-4 bg-zinc-800/50 w-fit mx-auto lg:mx-0 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg border border-zinc-700">
-                      <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400" />
-                      <span className="text-xs sm:text-sm">Member since {new Date(profile.joinedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    <div className="flex items-center gap-2 text-gray-300 mb-4 bg-zinc-800/50 w-full lg:w-fit mx-auto lg:mx-0 px-3 sm:px-4 py-2 rounded-lg border border-zinc-700">
+                      <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400 flex-shrink-0" />
+                      <span className="text-[11px] sm:text-sm">Member since {new Date(profile.joinedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                     </div>
                   </div>
 
@@ -1534,52 +1534,52 @@ export default function UserProfilePage() {
             <div className="lg:col-span-2 space-y-8">
               
               {/* Profile Navigation Tabs */}
-              <div className="bg-gradient-to-r from-zinc-900/95 to-zinc-800/95 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-2 sm:p-2.5 shadow-xl">                <div className="flex gap-1.5 sm:gap-2">
+              <div className="bg-gradient-to-r from-zinc-900/95 to-zinc-800/95 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-1.5 sm:p-2.5 shadow-xl">                <div className="grid grid-cols-2 sm:flex gap-1 sm:gap-1.5">
                   <button
                     onClick={() => setActiveTab('posts')}
-                    className={`flex-1 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base ${
+                    className={`flex-1 px-2 sm:px-6 py-2.5 sm:py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base ${
                       activeTab === 'posts'
                         ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg shadow-yellow-500/30 scale-105'
                         : 'text-gray-400 hover:text-yellow-400 hover:bg-zinc-800/70'
                     }`}
                   >
-                    <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                    Posts ({posts.length})
+                    <MessageCircle className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                    <span className="hidden xs:inline">Posts</span> ({posts.length})
                   </button>
                   <button
                     onClick={() => setActiveTab('overview')}
-                    className={`flex-1 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base ${
+                    className={`flex-1 px-2 sm:px-6 py-2.5 sm:py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base ${
                       activeTab === 'overview'
                         ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg shadow-yellow-500/30 scale-105'
                         : 'text-gray-400 hover:text-yellow-400 hover:bg-zinc-800/70'
                     }`}
                   >
-                    <Target className="w-4 h-4 sm:w-5 sm:h-5" />
-                    Overview
+                    <Target className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                    <span className="hidden xs:inline">Overview</span>
                   </button>
                   {isOwnProfile && (
                     <button
                       onClick={() => setActiveTab('wishlist')}
-                      className={`flex-1 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base ${
+                      className={`flex-1 px-2 sm:px-6 py-2.5 sm:py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base ${
                         activeTab === 'wishlist'
                           ? 'bg-gradient-to-r from-pink-400 to-purple-500 text-white shadow-lg shadow-pink-500/30 scale-105'
                           : 'text-gray-400 hover:text-pink-400 hover:bg-zinc-800/70'
                       }`}
                     >
-                      <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
-                      Wishlist ({wishlist.length})
+                      <Heart className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                      <span className="hidden xs:inline">Wishlist</span> ({wishlist.length})
                     </button>
                   )}
                   <button
                     onClick={() => setActiveTab('activity')}
-                    className={`flex-1 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base ${
+                    className={`flex-1 px-2 sm:px-6 py-2.5 sm:py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-base ${
                       activeTab === 'activity'
                         ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg shadow-yellow-500/30 scale-105'
                         : 'text-gray-400 hover:text-yellow-400 hover:bg-zinc-800/70'
                     }`}
                   >
-                    <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
-                    Activity
+                    <Activity className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                    <span className="hidden xs:inline">Activity</span>
                   </button>
                 </div>
               </div>              {/* Tab Content */}
