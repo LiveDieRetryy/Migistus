@@ -197,15 +197,59 @@ export default function HomePage() {
           <div className={`relative max-w-7xl mx-auto px-6 py-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <div className="text-center">
               <h1 className="text-7xl md:text-8xl lg:text-9xl font-extrabold mb-6">
-                <span className="bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 bg-clip-text text-transparent animate-gradient drop-shadow-2xl">
+                <span className="bg-gradient-to-b from-[#FFF4A3] via-[#F4D03F] to-[#C29D0B] bg-clip-text text-transparent" style={{
+                  textShadow: `
+                    0 1px 0 #E8C547,
+                    0 2px 0 #D4AF37,
+                    0 3px 0 #C29D0B,
+                    0 4px 0 #A88B0D,
+                    0 5px 0 #8B7209,
+                    0 6px 5px rgba(0,0,0,.2),
+                    0 8px 8px rgba(0,0,0,.15),
+                    0 10px 10px rgba(0,0,0,.1),
+                    inset 0 -1px 3px rgba(139,105,20,.3),
+                    0 0 20px rgba(255,223,0,.3),
+                    0 0 40px rgba(255,215,0,.15),
+                    1px 1px 3px rgba(255,255,255,.3),
+                    -1px -1px 2px rgba(139,105,20,.4)
+                  `,
+                  WebkitTextStroke: '1px rgba(194,157,11,.3)',
+                  filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.25)) drop-shadow(0 0 20px rgba(255,215,0,0.4)) brightness(1.1) contrast(1.15)',
+                  background: 'linear-gradient(135deg, #FFF9C4 0%, #F4D03F 20%, #DAA520 40%, #B8941D 60%, #8B6914 80%, #705B07 100%)',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text'
+                }}>
                   MIGISTUS
                 </span>
               </h1>
               
               <div className="flex items-center justify-center gap-4 mb-8">
                 <div className="h-0.5 w-24 md:w-32 bg-gradient-to-r from-transparent to-yellow-400"></div>
-                <p className="text-3xl md:text-4xl text-yellow-300 font-bold tracking-wide">
-                  The Guild Marketplace
+                <p className="text-3xl md:text-4xl font-bold tracking-wide">
+                  <span className="bg-gradient-to-b from-[#FFF4A3] via-[#F4D03F] to-[#C29D0B] bg-clip-text text-transparent" style={{
+                    textShadow: `
+                      0 1px 0 #E8C547,
+                      0 2px 0 #D4AF37,
+                      0 3px 0 #C29D0B,
+                      0 4px 0 #A88B0D,
+                      0 5px 0 #8B7209,
+                      0 6px 5px rgba(0,0,0,.2),
+                      0 8px 8px rgba(0,0,0,.15),
+                      0 10px 10px rgba(0,0,0,.1),
+                      inset 0 -1px 3px rgba(139,105,20,.3),
+                      0 0 20px rgba(255,223,0,.3),
+                      0 0 40px rgba(255,215,0,.15),
+                      1px 1px 3px rgba(255,255,255,.3),
+                      -1px -1px 2px rgba(139,105,20,.4)
+                    `,
+                    WebkitTextStroke: '1px rgba(194,157,11,.3)',
+                    filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.25)) drop-shadow(0 0 20px rgba(255,215,0,0.4)) brightness(1.1) contrast(1.15)',
+                    background: 'linear-gradient(135deg, #FFF9C4 0%, #F4D03F 20%, #DAA520 40%, #B8941D 60%, #8B6914 80%, #705B07 100%)',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text'
+                  }}>
+                    The Guild Marketplace
+                  </span>
                 </p>
                 <div className="h-0.5 w-24 md:w-32 bg-gradient-to-l from-transparent to-yellow-400"></div>
               </div>
@@ -213,11 +257,6 @@ export default function HomePage() {
               {/* Animated Logo */}
               <div className="mb-8 flex justify-center">
                 <div className="relative group cursor-pointer" style={{width: 260, height: 260}}>
-                  {/* Rotating rings */}
-                  <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-4 rounded-full border-2 border-yellow-400/20 animate-spin-slow"></div>
-                    <div className="absolute inset-8 rounded-full border border-yellow-400/30 animate-spin-reverse"></div>
-                  </div>
                   {/* Pulsing glow */}
                   <div className="absolute inset-0 z-0 animate-pulse-slow" style={{
                     borderRadius: '50%',
@@ -546,6 +585,17 @@ export default function HomePage() {
                   with: "Is this good for our community?"
                 </p>
               </div>
+            </div>
+            
+            {/* Learn More Button */}
+            <div className="flex justify-center mt-12">
+              <Link
+                href="/about"
+                className="group inline-flex items-center gap-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold px-8 py-4 rounded-xl hover:from-yellow-400 hover:to-yellow-500 transition-all duration-300 shadow-lg shadow-yellow-500/25 hover:shadow-yellow-500/40 hover:scale-105"
+              >
+                <span className="text-lg">Learn More About MIGISTUS</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </div>
           </div>
         </section>

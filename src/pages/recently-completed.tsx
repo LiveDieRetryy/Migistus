@@ -195,7 +195,13 @@ export default function RecentlyCompletedPage() {
               <div className="flex justify-center mb-6">
                 <div className="relative">
                   <div className="absolute inset-0 bg-purple-400/20 blur-2xl rounded-full animate-pulse" />
-                  <Archive className="relative w-16 h-16 text-purple-400 drop-shadow-lg" />
+                  <Image
+                    src="/Icons/recently-completed-icon.png"
+                    alt="Recently Completed"
+                    width={64}
+                    height={64}
+                    className="relative drop-shadow-lg"
+                  />
                 </div>
               </div>
               

@@ -134,27 +134,19 @@ export default function MainNavbar() {
     {
       name: "Community Drops",
       href: "/community-drops",
-      icon: <img src="/Icons/communitydrops.png" alt="Community Drops" width={32} height={32} className="object-contain" />,
+      icon: <img src="/Icons/communitydrops.png" alt="Community Drops" width={40} height={40} className="object-contain" style={{width: '40px', height: '40px'}} />,
       description: "Active community drops"
     },
     {
       name: "Staff Picks", 
       href: "/staff-picks",
-      icon: (
-        <img
-          src="/Icons/subsribers.png"
-          alt="Staff Picks"
-          width={32}
-          height={32}
-          className="object-contain"
-        />
-      ),
+      icon: <img src="/Icons/subsribers.png" alt="Staff Picks" width={40} height={40} className="object-contain" style={{width: '40px', height: '40px'}} />,
       description: "Curated by our team"
     },
     {
       name: "Recently Completed",
       href: "/recently-completed", 
-      icon: <span style={{fontSize: '2rem'}}>✅</span>,
+      icon: <img src="/Icons/recently-completed-icon.png" alt="Recently Completed" width={40} height={40} className="object-contain" style={{width: '40px', height: '40px'}} />,
       description: "Past successful drops"
     }
   ];
@@ -553,8 +545,8 @@ export default function MainNavbar() {
               <Image
                 src="/images/migistus_logo.png"
                 alt="MIGISTUS"
-                width={80}
-                height={80}
+                width={40}
+                height={40}
                 className="transition-transform duration-300 hover:scale-110"
               />
             </Link>
@@ -586,22 +578,22 @@ export default function MainNavbar() {
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-yellow-400/60 to-transparent animate-pulse"></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-24">
-          {/* Logo - Centered */}
-          <div className="flex-1 flex justify-center">
+        <div className="flex items-center h-24">
+          {/* Logo - Left */}
+          <div className="flex items-center">
             <Link href="/" className="block">
               <Image
                 src="/images/migistus_logo.png"
                 alt="MIGISTUS"
-                width={220}
-                height={220}
-                className="mx-auto transition-transform duration-300 hover:scale-105"
-                style={{ maxHeight: '130px', width: 'auto', height: '130px' }}
+                width={80}
+                height={80}
+                className="transition-transform duration-300 hover:scale-105"
+                style={{ maxHeight: '80px', width: 'auto', height: '80px' }}
               />
             </Link>
           </div>
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* Desktop Navigation - Centered */}
+          <div className="hidden md:flex items-center space-x-8 flex-1 justify-center">
             {navigation.map((item, idx) => {
               if (item.isDropdown) {
                 // Live Drops Dropdown
@@ -625,8 +617,8 @@ export default function MainNavbar() {
                       <Image
                         src="/Icons/livedrops.png"
                         alt="Live Drops"
-                        width={64}
-                        height={64}
+                        width={40}
+                        height={40}
                         className="object-contain"
                       />
                       <ChevronDown className={`w-4 h-4 ml-1 transition-transform duration-200 ${isLiveDropsOpen ? 'rotate-180' : ''}`} />
@@ -675,8 +667,8 @@ export default function MainNavbar() {
                     <Image
                       src={item.iconSrc}
                       alt={item.name}
-                      width={64}
-                      height={64}
+                      width={40}
+                      height={40}
                       className="object-contain"
                     />
                   </Link>
