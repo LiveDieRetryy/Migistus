@@ -11,6 +11,7 @@ import { Upload, Edit, TrendingUp, Users, Heart, Vote, Clock, Award, Loader2, Al
 export default function AccountPage() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const router = useRouter();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
   // Use session for display info only, don't redirect
   const sessionInfo = useSession({ 
@@ -153,9 +154,39 @@ export default function AccountPage() {
 
       <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-black text-white">
         <div className="flex flex-col lg:flex-row items-start py-12 px-4 sm:px-8 max-w-7xl mx-auto gap-8">
+          
+          {/* Mobile Header with Hamburger */}
+          <div className="lg:hidden w-full mb-4 flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-yellow-400">My Account</h1>
+            <button
+              onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+              className="bg-zinc-800 p-2 rounded-lg text-yellow-400 hover:bg-zinc-700 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMobileSidebarOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {/* Mobile Sidebar Overlay */}
+          {isMobileSidebarOpen && (
+            <div 
+              className="lg:hidden fixed inset-0 bg-black/50 z-40"
+              onClick={() => setIsMobileSidebarOpen(false)}
+            />
+          )}
+
           {/* Sidebar */}
-          <aside className="w-full lg:w-80 mb-8 lg:mb-0">
-            <nav className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-2xl shadow-lg p-6 sticky top-8">
+          <aside className={`
+            w-full lg:w-80 mb-8 lg:mb-0
+            ${isMobileSidebarOpen ? 'fixed inset-y-0 left-0 z-50 w-80' : 'hidden'}
+            lg:block lg:relative lg:z-0
+          `}>
+            <nav className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-2xl shadow-lg p-6 sticky top-8 h-full lg:h-auto overflow-y-auto">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center text-2xl">
                   👤
@@ -171,6 +202,7 @@ export default function AccountPage() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
+                      onClick={() => setIsMobileSidebarOpen(false)}
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                         router.pathname === item.href
                           ? "bg-yellow-400 text-black font-semibold"
