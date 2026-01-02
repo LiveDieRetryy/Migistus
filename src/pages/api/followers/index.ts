@@ -15,36 +15,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (type === 'followers') {
         const followers = await db.getFollowers(parseInt(userId as string));
         
-        // Get online status for all followers
-        const followersWithStatus = await Promise.all(
-          followers.map(async (f) => ({
-            id: f.id,
-            username: f.username,
-            avatar: f.avatar,
-            online: await db.isUserOnline(f.id, false)
-          }))
+        // Get full user info including follower counts and tier for each follower
+        const followersWithDetails = await Promise.all(
+          followers.map(async (f) => {
+            const userFollowers = await db.getFollowers(f.id);
+            return {
+              id: f.id,
+              username: f.username,
+              avatar: f.avatar,
+              tier: f.tier || 'Initiate',
+              followers: userFollowers.length,
+              online: await db.isUserOnline(f.id, false)
+            };
+          })
         );
         
         return res.status(200).json({ 
-          followers: followersWithStatus, 
-          count: followersWithStatus.length 
+          followers: followersWithDetails, 
+          count: followersWithDetails.length 
         });
       } else if (type === 'following') {
         const following = await db.getFollowing(parseInt(userId as string));
         
-        // Get online status for all following
-        const followingWithStatus = await Promise.all(
-          following.map(async (f) => ({
-            id: f.id,
-            username: f.username,
-            avatar: f.avatar,
-            online: await db.isUserOnline(f.id, false)
-          }))
+        // Get full user info including follower counts and tier for each following
+        const followingWithDetails = await Promise.all(
+          following.map(async (f) => {
+            const userFollowers = await db.getFollowers(f.id);
+            return {
+              id: f.id,
+              username: f.username,
+              avatar: f.avatar,
+              tier: f.tier || 'Initiate',
+              followers: userFollowers.length,
+              online: await db.isUserOnline(f.id, false)
+            };
+          })
         );
         
         return res.status(200).json({ 
-          following: followingWithStatus, 
-          count: followingWithStatus.length 
+          following: followingWithDetails, 
+          count: followingWithDetails.length 
         });
       } else {
         // Get both
@@ -53,31 +63,41 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           db.getFollowing(parseInt(userId as string))
         ]);
         
-        // Get online status for all
-        const [followersWithStatus, followingWithStatus] = await Promise.all([
+        // Get full user info for all
+        const [followersWithDetails, followingWithDetails] = await Promise.all([
           Promise.all(
-            followers.map(async (f) => ({
-              id: f.id,
-              username: f.username,
-              avatar: f.avatar,
-              online: await db.isUserOnline(f.id, false)
-            }))
+            followers.map(async (f) => {
+              const userFollowers = await db.getFollowers(f.id);
+              return {
+                id: f.id,
+                username: f.username,
+                avatar: f.avatar,
+                tier: f.tier || 'Initiate',
+                followers: userFollowers.length,
+                online: await db.isUserOnline(f.id, false)
+              };
+            })
           ),
           Promise.all(
-            following.map(async (f) => ({
-              id: f.id,
-              username: f.username,
-              avatar: f.avatar,
-              online: await db.isUserOnline(f.id, false)
-            }))
+            following.map(async (f) => {
+              const userFollowers = await db.getFollowers(f.id);
+              return {
+                id: f.id,
+                username: f.username,
+                avatar: f.avatar,
+                tier: f.tier || 'Initiate',
+                followers: userFollowers.length,
+                online: await db.isUserOnline(f.id, false)
+              };
+            })
           )
         ]);
         
         return res.status(200).json({
-          followers: followersWithStatus,
-          following: followingWithStatus,
-          followersCount: followersWithStatus.length,
-          followingCount: followingWithStatus.length
+          followers: followersWithDetails,
+          following: followingWithDetails,
+          followersCount: followersWithDetails.length,
+          followingCount: followingWithDetails.length
         });
       }
     } catch (error) {
