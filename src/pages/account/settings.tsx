@@ -721,11 +721,21 @@ export default function AccountSettingsPage() {
             </button>
           </div>
 
+          {/* Mobile Sidebar Overlay */}
+          {isMobileSidebarOpen && (
+            <div 
+              className="lg:hidden fixed inset-0 bg-black/50 z-40"
+              onClick={() => setIsMobileSidebarOpen(false)}
+            />
+          )}
+
           {/* Sidebar */}
-          <aside className={`lg:w-80 ${
-            isMobileSidebarOpen ? 'block' : 'hidden lg:block'
-          }`}>
-            <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-6 sticky top-8">
+          <aside className={`
+            lg:w-80
+            ${isMobileSidebarOpen ? 'fixed inset-y-0 left-0 z-50 w-80' : 'hidden'}
+            lg:block lg:relative lg:z-0
+          `}>
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-6 sticky top-8 h-full lg:h-auto overflow-y-auto">
               <div className="hidden lg:block mb-6">
                 <Link href="/account" className="text-yellow-400 hover:text-yellow-300">
                   ← Back to Account
