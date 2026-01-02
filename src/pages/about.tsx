@@ -83,40 +83,53 @@ export default function AboutPage() {
           
           <div className={`relative max-w-7xl mx-auto px-6 py-32 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <div className="text-center">
-              <div className="flex justify-center mb-8 animate-bounce">
+              <div className="flex justify-center mb-8">
                 <div className="p-4 bg-gradient-to-br from-yellow-500/20 to-yellow-600/10 rounded-2xl backdrop-blur-sm border border-yellow-500/30">
-                  <Crown className="w-20 h-20 text-yellow-400" />
+                  <Target className="w-20 h-20 text-yellow-400" />
                 </div>
               </div>
               
               <h1 className="text-7xl md:text-8xl font-bold mb-6">
                 <span className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent animate-gradient">
-                  Welcome to MIGISTUS
+                  Our Mission
                 </span>
               </h1>
               
               <p className="text-3xl text-yellow-300 mb-6 font-semibold">
-                Where Shopping Becomes a Community Experience
+                Revolutionizing Commerce Through Community Power
               </p>
               
               <p className="text-xl text-zinc-300 max-w-4xl mx-auto leading-relaxed mb-12">
-                We're not just another marketplace. We're a movement that empowers communities to access 
-                premium products at prices that were once impossible. Together, we're stronger. Together, we save more.
+                MIGISTUS was built on a simple belief: when people unite around shared goals, they unlock 
+                unprecedented purchasing power. We're transforming the marketplace by giving communities the tools 
+                to negotiate, collaborate, and access premium products at prices previously reserved for bulk buyers.
               </p>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
-                {stats.map((stat, index) => (
-                  <div 
-                    key={stat.label}
-                    className={`bg-zinc-900/60 backdrop-blur-sm border border-yellow-500/30 rounded-xl p-6 transition-all duration-500 hover:scale-105 hover:border-yellow-500/60 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-                    style={{ transitionDelay: `${index * 100}ms` }}
-                  >
-                    <stat.icon className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
-                    <div className="text-3xl font-bold text-yellow-400 mb-1">{stat.value}</div>
-                    <div className="text-sm text-zinc-400">{stat.label}</div>
-                  </div>
-                ))}
+              {/* Core Values */}
+              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <div className={`bg-gradient-to-br from-blue-900/40 to-zinc-900/60 border border-blue-500/30 rounded-2xl p-8 transition-all duration-500 hover:scale-105 hover:border-blue-500/60 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                  <Shield className="w-12 h-12 text-blue-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-blue-300 mb-2 text-center">Transparency</h3>
+                  <p className="text-zinc-300 text-center text-sm">
+                    No hidden fees, no tricks. See exactly how pricing works and track your savings in real-time.
+                  </p>
+                </div>
+
+                <div className={`bg-gradient-to-br from-yellow-900/40 to-zinc-900/60 border border-yellow-500/30 rounded-2xl p-8 transition-all duration-500 hover:scale-105 hover:border-yellow-500/60 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: '100ms' }}>
+                  <Users className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-yellow-300 mb-2 text-center">Community First</h3>
+                  <p className="text-zinc-300 text-center text-sm">
+                    Every decision starts with: "Is this good for our community?" Your feedback shapes our roadmap.
+                  </p>
+                </div>
+
+                <div className={`bg-gradient-to-br from-green-900/40 to-zinc-900/60 border border-green-500/30 rounded-2xl p-8 transition-all duration-500 hover:scale-105 hover:border-green-500/60 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: '200ms' }}>
+                  <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-green-300 mb-2 text-center">Quality Guaranteed</h3>
+                  <p className="text-zinc-300 text-center text-sm">
+                    Every product is vetted, every supplier verified. Premium quality at unbeatable prices.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

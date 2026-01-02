@@ -95,10 +95,11 @@ export default function CommunityDropsPage() {
       let allProducts = productsData.products || [];
       allProducts = processLifecycleTransitions(allProducts, DEFAULT_LIFECYCLE_CONFIG);
       
-      // Filter only community-drops stage products
-      const communityDropProducts = allProducts.filter((p: Product) => 
-        (p.stage || 'voting') === 'community-drops'
-      );
+      // Filter only community-drops and live-drops stage products
+      const communityDropProducts = allProducts.filter((p: Product) => {
+        const stage = p.stage || 'voting';
+        return stage === 'community-drops' || stage === 'live-drops';
+      });
 
       setProducts(communityDropProducts);
       setVotes(votesData.votes || []);

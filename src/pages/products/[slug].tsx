@@ -51,7 +51,7 @@ import {
 } from "lucide-react";
 import MainNavbar from "@/components/nav/MainNavbar";
 import { useAuth } from "@/context/AuthContext";
-import { getStageInfo, getDaysInStage } from "@/utils/productLifecycle";
+import { getStageInfo, getDaysInStage, processLifecycleTransitions, DEFAULT_LIFECYCLE_CONFIG } from "@/utils/productLifecycle";
 
 interface Product {
   id: number;
@@ -320,6 +320,10 @@ export default function ProductPage() {
       
       const data = await response.json();
       let productData = data.product || data;
+      
+      // Process lifecycle transitions to ensure stage is up-to-date
+      const processedProducts = processLifecycleTransitions([productData], DEFAULT_LIFECYCLE_CONFIG);
+      productData = processedProducts[0];
       
       // Fetch verified suppliers and validate/set supplier
       try {
@@ -1540,11 +1544,142 @@ export default function ProductPage() {
   );
 
   // LIVE DROPS STAGE LAYOUT - Focus on pledges and urgency
-  const renderLiveDropsStage = () => {
-    // ...existing code for live drops will go here
-    // For now, I'll keep the current layout as the live drops default
-    return null; // Placeholder - will use main return content
-  };
+  const renderLiveDropsStage = () => (
+    <div className="space-y-12">
+      {/* Hero Section with Drop Status */}
+      <div className="relative">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Large Hero Image - Takes 3 columns */}
+          <div className="lg:col-span-3">
+            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border-4 border-green-500/30 bg-zinc-900 shadow-2xl shadow-green-500/20">
+              <Image
+                src={productImages[selectedImageIndex]}
+                alt={product.name}
+                fill
+                className="object-cover"
+                priority
+              />
+              {/* Live Drop Badge */}
+              <div className="absolute top-6 left-6">
+                <div className="relative group/badge">
+                  <div className="absolute inset-0 blur-xl bg-green-500"></div>
+                  <div className="relative px-6 py-3 rounded-xl font-bold flex items-center space-x-2 bg-gradient-to-r from-green-600 to-green-500 text-white shadow-xl">
+                    <Zap className="w-6 h-6" />
+                    <span className="text-lg uppercase tracking-wider">🔥 Live Drop</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Urgency Timer Overlay */}
+              <div className="absolute bottom-6 left-6 right-6 bg-black/80 backdrop-blur-sm border border-green-500/30 rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-green-400 text-sm font-medium mb-1">Drop Ends In</div>
+                    <div className="text-2xl font-black text-white">{7 - daysInStage} Days Left</div>
+                  </div>
+                  <Timer className="w-8 h-8 text-green-400 animate-pulse" />
+                </div>
+              </div>
+            </div>
+
+            {/* Thumbnails */}
+            {productImages.length > 1 && (
+              <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide mt-4">
+                {productImages.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`relative flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden border-2 transition-all duration-300 ${
+                      selectedImageIndex === index 
+                        ? 'border-green-400 scale-110 shadow-lg shadow-green-500/50' 
+                        : 'border-zinc-700 hover:border-zinc-500 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <Image src={image} alt={`View ${index + 1}`} fill className="object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Info Panel - Takes 2 columns */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Product Title */}
+            <div>
+              <div className="px-3 py-1 bg-green-500/10 border border-green-500/30 rounded-full w-fit mb-3">
+                <span className="text-green-400 text-sm font-bold uppercase">{product.category || 'Product'}</span>
+              </div>
+              <h1 className="text-5xl font-black text-white mb-4 leading-tight">{product.name}</h1>
+              {renderFormattedText(product.description, "text-xl")}
+            </div>
+
+            {/* Drop Progress */}
+            <div className="bg-gradient-to-br from-green-900/30 to-zinc-900/50 border border-green-500/20 rounded-2xl p-6">
+              <h3 className="text-green-400 font-bold text-lg mb-4 flex items-center">
+                <Activity className="w-5 h-5 mr-2" />
+                Drop Progress
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-zinc-400">Pledged</span>
+                    <span className="text-green-400 font-bold">{product.pledges || 0} / {product.pledgeGoal || 100}</span>
+                  </div>
+                  <div className="w-full bg-zinc-800 rounded-full h-3 overflow-hidden">
+                    <div 
+                      className="h-3 bg-gradient-to-r from-green-500 to-green-400 transition-all duration-500"
+                      style={{ width: `${Math.min(((product.pledges || 0) / (product.pledgeGoal || 100)) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Price */}
+            {product.price && (
+              <div className="bg-gradient-to-br from-zinc-900/90 to-zinc-800/90 border border-zinc-700 rounded-2xl p-6">
+                <div className="text-zinc-400 text-sm mb-2">Drop Price</div>
+                <div className="flex items-baseline space-x-3 mb-2">
+                  <div className="text-4xl font-black text-green-400">${product.price.toFixed(2)}</div>
+                  {product.originalPrice && (
+                    <div className="text-zinc-500 text-xl line-through">${product.originalPrice.toFixed(2)}</div>
+                  )}
+                </div>
+                {product.originalPrice && (
+                  <div className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full w-fit">
+                    <span className="text-green-400 text-sm font-bold">
+                      Save ${(product.originalPrice - product.price).toFixed(2)} ({Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF)
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* JOIN DROP BUTTON */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-green-600/20 blur-2xl animate-pulse"></div>
+              <button className="relative w-full py-6 px-8 rounded-2xl font-black text-xl transition-all duration-300 flex items-center justify-center space-x-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-2xl shadow-green-500/50 hover:scale-105 hover:shadow-green-500/70">
+                <Zap className="w-8 h-8" />
+                <span>JOIN THIS DROP</span>
+              </button>
+            </div>
+
+            {/* Social Actions */}
+            <div className="flex items-center justify-between p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl">
+              <button onClick={toggleWishlist} className="flex items-center space-x-2 text-zinc-400 hover:text-red-400 transition">
+                <Heart className={`w-5 h-5 ${isWishlist ? 'fill-current text-red-400' : ''}`} />
+                <span className="text-sm">Save</span>
+              </button>
+              <button onClick={handleShare} className="flex items-center space-x-2 text-zinc-400 hover:text-green-400 transition">
+                <Share2 className="w-5 h-5" />
+                <span className="text-sm">Share</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   // AVAILABLE STAGE LAYOUT - Products ready for purchase
   const renderAvailableStage = () => (
@@ -1784,17 +1919,29 @@ export default function ProductPage() {
 
   // Render different layouts based on product stage
   const renderStageSpecificContent = () => {
+    console.log('🔍 Product Stage Debug:', {
+      productName: product.name,
+      stage: product.stage,
+      stageType: typeof product.stage
+    });
+    
     switch (product.stage) {
       case 'voting':
+        console.log('✅ Rendering VOTING stage');
         return renderVotingStage();
       case 'coming-soon':
+        console.log('✅ Rendering COMING SOON stage');
         return renderComingSoonStage();
       case 'community-drops':
+      case 'live-drops': // Support both naming conventions
+        console.log('✅ Rendering LIVE DROPS stage');
         return renderLiveDropsStage();
       case 'available':
       case 'recently-completed':
+        console.log('✅ Rendering AVAILABLE stage');
         return renderAvailableStage();
       default:
+        console.log('⚠️ Unknown stage, defaulting to AVAILABLE:', product.stage);
         return renderAvailableStage(); // Default to available for purchase
     }
   };

@@ -606,11 +606,17 @@ export default function MainNavbar() {
               if (item.isDropdown) {
                 // Live Drops Dropdown
                 return (
-                  <div key="LiveDropsDropdown" className="relative flex items-center justify-center" data-dropdown="live-drops">
-                    <button
-                      onClick={() => setIsLiveDropsOpen(!isLiveDropsOpen)}
+                  <div 
+                    key="LiveDropsDropdown" 
+                    className="relative flex items-center justify-center" 
+                    data-dropdown="live-drops"
+                    onMouseEnter={() => setIsLiveDropsOpen(true)}
+                    onMouseLeave={() => setIsLiveDropsOpen(false)}
+                  >
+                    <Link
+                      href="/live-drops"
                       className={`flex items-center justify-center w-24 h-24 rounded-lg transition-all duration-200 ${
-                        isLiveDropsOpen || liveDropsItems.some(item => isActivePage(item.href))
+                        isLiveDropsOpen || liveDropsItems.some(item => isActivePage(item.href)) || isActivePage('/live-drops')
                           ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/30"
                           : "text-yellow-300 hover:text-yellow-400 hover:bg-yellow-400/5"
                       }`}
@@ -624,7 +630,7 @@ export default function MainNavbar() {
                         className="object-contain"
                       />
                       <ChevronDown className={`w-4 h-4 ml-1 transition-transform duration-200 ${isLiveDropsOpen ? 'rotate-180' : ''}`} />
-                    </button>
+                    </Link>
                     {/* Dropdown Menu */}
                     {isLiveDropsOpen && (
                       <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-zinc-900 border border-yellow-400/30 rounded-xl shadow-xl z-50 overflow-hidden">
