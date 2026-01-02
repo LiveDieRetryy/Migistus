@@ -92,16 +92,16 @@ export default function CreatePost({ onPostCreated, placeholder = "What's on you
   }
 
   return (
-    <div className="bg-zinc-900/50 border border-yellow-500/20 rounded-2xl p-6 shadow-lg">
+    <div className="bg-zinc-900/50 border border-yellow-500/20 rounded-2xl p-4 sm:p-6 shadow-lg">
       {error && (
         <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
           {error}
         </div>
       )}
       
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-3 sm:gap-4">
         {/* User Avatar */}
-        <div className="w-12 h-12 rounded-full border-2 border-yellow-400/30 overflow-hidden bg-zinc-700 flex-shrink-0">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-yellow-400/30 overflow-hidden bg-zinc-700 flex-shrink-0">
           <Image
             src="/Icons/New Member.png"
             alt="Your avatar"
@@ -112,32 +112,32 @@ export default function CreatePost({ onPostCreated, placeholder = "What's on you
         </div>
 
         {/* Post Creation Form */}
-        <form onSubmit={handleSubmit} className="flex-1">
-          <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 min-w-0">
+          <div className="space-y-3 sm:space-y-4">
             {/* Content Input */}
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder={placeholder}
-              className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-600 rounded-xl text-white placeholder-gray-400 focus:border-yellow-400 focus:outline-none resize-none"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-zinc-800/50 border border-zinc-600 rounded-xl text-white placeholder-gray-400 focus:border-yellow-400 focus:outline-none resize-none text-sm sm:text-base"
               rows={3}
               maxLength={1000}
             />
 
             {/* Image Previews */}
             {images.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                 {images.map((image, index) => (
                   <div key={index} className="relative group">
                     <img
                       src={image}
                       alt={`Upload ${index + 1}`}
-                      className="w-full h-24 object-cover rounded-lg border border-zinc-600"
+                      className="w-full h-20 sm:h-24 object-cover rounded-lg border border-zinc-600"
                     />
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-400 text-white rounded-full flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-1 right-1 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 hover:bg-red-400 text-white rounded-full flex items-center justify-center text-xs sm:text-sm opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       ×
                     </button>
@@ -147,13 +147,13 @@ export default function CreatePost({ onPostCreated, placeholder = "What's on you
             )}
 
             {/* Post Options */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {/* Image Upload */}
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-gray-300 hover:text-white transition-colors"
+                  className="p-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-gray-300 hover:text-white transition-colors text-sm sm:text-base flex-shrink-0"
                   title="Add images"
                 >
                   📷
@@ -172,20 +172,20 @@ export default function CreatePost({ onPostCreated, placeholder = "What's on you
                   <button
                     type="button"
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    className="p-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-gray-300 hover:text-white transition-colors"
+                    className="p-2 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-gray-300 hover:text-white transition-colors text-sm sm:text-base flex-shrink-0"
                     title="Add emoji"
                   >
                     😊
                   </button>
                   {showEmojiPicker && (
-                    <div className="absolute bottom-12 left-0 bg-zinc-800 border border-zinc-600 rounded-lg p-3 shadow-lg z-10">
-                      <div className="grid grid-cols-6 gap-2">
+                    <div className="absolute bottom-12 left-0 bg-zinc-800 border border-zinc-600 rounded-lg p-2 sm:p-3 shadow-lg z-10">
+                      <div className="grid grid-cols-4 sm:grid-cols-6 gap-1 sm:gap-2">
                         {['😊', '😂', '❤️', '👍', '🔥', '💯', '🚀', '⭐', '🎉', '💪', '🙌', '👏'].map(emoji => (
                           <button
                             key={emoji}
                             type="button"
                             onClick={() => insertEmoji(emoji)}
-                            className="p-2 hover:bg-zinc-700 rounded transition-colors"
+                            className="p-1.5 sm:p-2 hover:bg-zinc-700 rounded transition-colors text-sm sm:text-base"
                           >
                             {emoji}
                           </button>
@@ -200,11 +200,11 @@ export default function CreatePost({ onPostCreated, placeholder = "What's on you
                   <select
                     value={visibility}
                     onChange={(e) => setVisibility(e.target.value as any)}
-                    className="px-3 py-1 bg-zinc-700 border border-zinc-600 rounded-lg text-white text-sm focus:border-yellow-400 focus:outline-none cursor-pointer"
+                    className="px-2 sm:px-3 py-1 bg-zinc-700 border border-zinc-600 rounded-lg text-white text-xs sm:text-sm focus:border-yellow-400 focus:outline-none cursor-pointer"
                     title="Choose who can see this post"
                   >
                     <option value="public">🌍 Public</option>
-                    <option value="followers">👥 Followers Only</option>
+                    <option value="followers">👥 Followers</option>
                     <option value="private">🔒 Private</option>
                   </select>
                   
@@ -236,14 +236,14 @@ export default function CreatePost({ onPostCreated, placeholder = "What's on you
               </div>
 
               {/* Character Count & Submit */}
-              <div className="flex items-center gap-3">
-                <span className={`text-sm ${content.length > 800 ? 'text-red-400' : 'text-gray-400'}`}>
+              <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+                <span className={`text-xs sm:text-sm ${content.length > 800 ? 'text-red-400' : 'text-gray-400'}`}>
                   {content.length}/1000
                 </span>
                 <button
                   type="submit"
                   disabled={!content.trim() || isPosting}
-                  className="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 disabled:bg-gray-600 disabled:opacity-50 text-black font-semibold rounded-lg transition-colors"
+                  className="px-3 sm:px-6 py-1.5 sm:py-2 bg-yellow-500 hover:bg-yellow-400 disabled:bg-gray-600 disabled:opacity-50 text-black font-semibold rounded-lg transition-colors text-sm sm:text-base flex-shrink-0"
                 >
                   {isPosting ? 'Posting...' : 'Post'}
                 </button>
