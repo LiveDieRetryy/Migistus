@@ -678,14 +678,14 @@ export default function UserProfilePage() {
       });
       
       // Update local state with the permanent URLs
-      const updatedProfile = {
+      const updatedProfile: UserProfile = {
         ...profile,
         ...editForm,
-        avatar: finalAvatarUrl,
-        banner: finalBannerUrl
+        avatar: finalAvatarUrl || null,
+        banner: finalBannerUrl || null
       };
       
-      setEditForm(prev => ({ ...prev, avatar: finalAvatarUrl, banner: finalBannerUrl }));
+      setEditForm(prev => ({ ...prev, avatar: finalAvatarUrl || null, banner: finalBannerUrl || null }));
       setProfile(updatedProfile);
       setIsEditing(false);
       
