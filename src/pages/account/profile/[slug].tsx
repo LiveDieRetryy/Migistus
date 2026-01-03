@@ -610,18 +610,18 @@ export default function UserProfilePage() {
       // First save to localStorage
       UserStorage.setUserProfile(profile.id, editForm);
       
-      // Then save avatar to API/Vercel Blob if it changed
+      let finalAvatarUrl = editForm.avatar;
+      let finalBannerUrl = editForm.banner;
+      
+      // Upload avatar to Vercel Blob if it changed
       if (editForm.avatar && editForm.avatar.startsWith('data:')) {
         try {
-          // Convert data URL to blob
           const response = await fetch(editForm.avatar);
           const blob = await response.blob();
           
-          // Create FormData and append the avatar
           const formData = new FormData();
           formData.append('avatar', blob, `${profile.username}_avatar.png`);
           
-          // Upload to server
           const uploadResponse = await fetch('/api/upload/avatar', {
             method: 'POST',
             credentials: 'include',
@@ -630,42 +630,63 @@ export default function UserProfilePage() {
           
           if (uploadResponse.ok) {
             const uploadData = await uploadResponse.json();
-            const avatarUrl = uploadData.avatarUrl; // Use correct property name
-            
-            // Update profile in database with the new avatar URL
-            const profileResponse = await fetch('/api/users/profile', {
-              method: 'PUT',
-              credentials: 'include',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                ...editForm,
-                avatar: avatarUrl
-              })
-            });
-            
-            if (profileResponse.ok) {
-              console.log('✅ Avatar saved to database:', avatarUrl);
-              
-              // Update local state with the permanent URL
-              setEditForm(prev => ({ ...prev, avatar: avatarUrl }));
-              setProfile({ ...profile, ...editForm, avatar: avatarUrl });
-            }
+            finalAvatarUrl = uploadData.avatarUrl;
+            console.log('✅ Avatar uploaded to Vercel Blob:', finalAvatarUrl);
           }
         } catch (error) {
           console.error('❌ Failed to upload avatar:', error);
           alert('Avatar upload failed. Changes saved locally only.');
         }
-      } else {
-        // No new avatar, just save other profile data
-        await fetch('/api/users/profile', {
-          method: 'PUT',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(editForm)
-        });
       }
       
-      setProfile({ ...profile, ...editForm });
+      // Upload banner to Vercel Blob if it changed
+      if (editForm.banner && editForm.banner.startsWith('data:')) {
+        try {
+          const response = await fetch(editForm.banner);
+          const blob = await response.blob();
+          
+          const formData = new FormData();
+          formData.append('banner', blob, `${profile.username}_banner.png`);
+          
+          const uploadResponse = await fetch('/api/upload/banner', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData
+          });
+          
+          if (uploadResponse.ok) {
+            const uploadData = await uploadResponse.json();
+            finalBannerUrl = uploadData.bannerUrl;
+            console.log('✅ Banner uploaded to Vercel Blob:', finalBannerUrl);
+          }
+        } catch (error) {
+          console.error('❌ Failed to upload banner:', error);
+          alert('Banner upload failed. Changes saved locally only.');
+        }
+      }
+      
+      // Update profile in database with permanent URLs
+      await fetch('/api/users/profile', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...editForm,
+          avatar: finalAvatarUrl,
+          banner: finalBannerUrl
+        })
+      });
+      
+      // Update local state with the permanent URLs
+      const updatedProfile = {
+        ...profile,
+        ...editForm,
+        avatar: finalAvatarUrl,
+        banner: finalBannerUrl
+      };
+      
+      setEditForm(prev => ({ ...prev, avatar: finalAvatarUrl, banner: finalBannerUrl }));
+      setProfile(updatedProfile);
       setIsEditing(false);
       
       // Trigger profile update event
