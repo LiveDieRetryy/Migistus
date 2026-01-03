@@ -603,11 +603,68 @@ export default function UserProfilePage() {
     }
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     if (!profile || !isOwnProfile) return;
     
     try {
+      // First save to localStorage
       UserStorage.setUserProfile(profile.id, editForm);
+      
+      // Then save avatar to API/Vercel Blob if it changed
+      if (editForm.avatar && editForm.avatar.startsWith('data:')) {
+        try {
+          // Convert data URL to blob
+          const response = await fetch(editForm.avatar);
+          const blob = await response.blob();
+          
+          // Create FormData and append the avatar
+          const formData = new FormData();
+          formData.append('avatar', blob, `${profile.username}_avatar.png`);
+          
+          // Upload to server
+          const uploadResponse = await fetch('/api/upload/avatar', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData
+          });
+          
+          if (uploadResponse.ok) {
+            const uploadData = await uploadResponse.json();
+            const avatarUrl = uploadData.avatarUrl; // Use correct property name
+            
+            // Update profile in database with the new avatar URL
+            const profileResponse = await fetch('/api/users/profile', {
+              method: 'PUT',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ...editForm,
+                avatar: avatarUrl
+              })
+            });
+            
+            if (profileResponse.ok) {
+              console.log('✅ Avatar saved to database:', avatarUrl);
+              
+              // Update local state with the permanent URL
+              setEditForm(prev => ({ ...prev, avatar: avatarUrl }));
+              setProfile({ ...profile, ...editForm, avatar: avatarUrl });
+            }
+          }
+        } catch (error) {
+          console.error('❌ Failed to upload avatar:', error);
+          alert('Avatar upload failed. Changes saved locally only.');
+        }
+      } else {
+        // No new avatar, just save other profile data
+        await fetch('/api/users/profile', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editForm)
+        });
+      }
+      
       setProfile({ ...profile, ...editForm });
       setIsEditing(false);
       
@@ -617,6 +674,7 @@ export default function UserProfilePage() {
       }));
     } catch (error) {
       console.error('Failed to save profile:', error);
+      alert('Failed to save profile. Please try again.');
     }
   };
 
