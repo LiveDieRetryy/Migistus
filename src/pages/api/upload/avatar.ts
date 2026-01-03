@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { put } from '@vercel/blob';
+import { put, del } from '@vercel/blob';
 import formidable from 'formidable';
 import fs from 'fs';
 import { db } from '@/lib/db';
@@ -22,6 +22,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // Get current avatar URL from database to delete old one
+    const currentProfile = await db.getUserProfile(session.userId);
+    const oldAvatarUrl = currentProfile?.avatar;
+
     const form = formidable({
       maxFileSize: 5 * 1024 * 1024, // 5MB
       filter: ({ mimetype }) => mimetype?.startsWith('image/') || false,
@@ -47,6 +51,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       access: 'public',
       contentType: avatarFile.mimetype || 'image/jpeg',
     });
+
+    // Delete old avatar from Vercel Blob if it exists and is a blob URL
+    if (oldAvatarUrl && oldAvatarUrl.includes('blob.vercel-storage.com')) {
+      try {
+        await del(oldAvatarUrl);
+        console.log('✅ Deleted old avatar:', oldAvatarUrl);
+      } catch (error) {
+        console.warn('⚠️ Failed to delete old avatar:', error);
+        // Don't fail the request if deletion fails
+      }
+    }
 
     // Update user profile with new avatar URL
     await db.updateUserProfile(session.userId, {
