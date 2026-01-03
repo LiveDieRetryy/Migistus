@@ -48,7 +48,7 @@ export default async function handler(
 
   if (req.method === 'PUT') {
     try {
-      const { bio, avatar, banner, badges, titles, links, isInvisible } = req.body;
+      const { bio, avatar, banner, badges, titles, links, isInvisible, avatarEffect, profileEffect } = req.body;
 
       const profile = await db.updateUserProfile(userId, {
         bio,
@@ -57,14 +57,34 @@ export default async function handler(
         badges,
         titles,
         links,
-        isInvisible
+        isInvisible,
+        avatarEffect,
+        profileEffect
       });
 
-      // Emit socket event if avatar was updated
-      if (avatar && global.io) {
-        global.io.emit('user-avatar-updated', { 
-          userId, 
+      // Clear users list cache so changes appear immediately
+      const { appCache } = require('@/lib/cache');
+      appCache.delete('users:all');
+
+      // Emit socket event if avatar or effects were updated
+      if (global.io) {
+        if (avatar) {
+          global.io.emit('user-avatar-updated', { 
+            userId, 
+            avatar,
+            avatarEffect,
+            timestamp: Date.now()
+          });
+        }
+        
+        // Emit profile updated event for full profile refresh
+        global.io.emit('user-profile-updated', {
+          userId,
           avatar,
+          banner,
+          bio,
+          avatarEffect,
+          profileEffect,
           timestamp: Date.now()
         });
       }

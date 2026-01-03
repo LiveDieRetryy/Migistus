@@ -19,14 +19,48 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const users = await db.getAllUsers();
       console.log(`✅ Database returned ${users.length} users`);
       
+      // Fetch profiles for all users to get updated avatars, banners, effects
+      const usersWithProfiles = await Promise.all(
+        users.map(async (user) => {
+          try {
+            const profile = await db.getUserProfile(user.id);
+            if (profile) {
+              return {
+                ...user,
+                avatar: profile.avatar || user.avatar,
+                banner: profile.banner,
+                bio: profile.bio,
+                avatarEffect: profile.avatar_effect || 'none',
+                profileEffect: profile.profile_effect || 'none',
+                location: profile.location,
+                isInvisible: profile.is_invisible,
+              };
+            }
+            // No profile exists - return user with default effects
+            return {
+              ...user,
+              avatarEffect: 'none',
+              profileEffect: 'none',
+            };
+          } catch (error) {
+            console.error(`Error fetching profile for user ${user.id}:`, error);
+            return {
+              ...user,
+              avatarEffect: 'none',
+              profileEffect: 'none',
+            };
+          }
+        })
+      );
+      
       const response = {
-        users,
-        totalUsers: users.length,
+        users: usersWithProfiles,
+        totalUsers: usersWithProfiles.length,
         lastUpdated: new Date().toISOString()
       };
       
-      // Cache for 120 seconds (2 minutes)
-      cache.set(cacheKey, response, 120 * 1000);
+      // Cache for 10 seconds for faster updates
+      cache.set(cacheKey, response, 10 * 1000);
       
       return res.status(200).json(response);
     } catch (error) {

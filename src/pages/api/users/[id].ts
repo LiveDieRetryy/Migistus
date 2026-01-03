@@ -14,7 +14,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(404).json({ error: "User not found" });
       }
       
-      return res.status(200).json(user);
+      // Also fetch user profile to get effects and other profile data
+      const profile = await db.getUserProfile(userId);
+      
+      // Merge user and profile data
+      const userData = {
+        ...user,
+        bio: profile?.bio,
+        avatar: profile?.avatar || user.avatar,
+        banner: profile?.banner,
+        badges: profile?.badges,
+        titles: profile?.titles,
+        links: profile?.links,
+        avatarEffect: profile?.avatar_effect || 'none',
+        profileEffect: profile?.profile_effect || 'none',
+        location: profile?.location,
+        isInvisible: profile?.is_invisible,
+      };
+      
+      return res.status(200).json(userData);
     } catch (error) {
       console.error('Error in user GET:', error);
       return res.status(500).json({ error: "Failed to fetch user" });

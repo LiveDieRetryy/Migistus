@@ -1591,6 +1591,8 @@ export const db = {
     titles: any[];
     links: any[];
     isInvisible: boolean;
+    avatarEffect: string;
+    profileEffect: string;
   }>) {
     const updates: string[] = [];
     const values: any[] = [userId];
@@ -1623,6 +1625,14 @@ export const db = {
     if (data.isInvisible !== undefined) {
       updates.push(`is_invisible = $${paramIndex++}`);
       values.push(data.isInvisible);
+    }
+    if (data.avatarEffect !== undefined) {
+      updates.push(`avatar_effect = $${paramIndex++}`);
+      values.push(data.avatarEffect);
+    }
+    if (data.profileEffect !== undefined) {
+      updates.push(`profile_effect = $${paramIndex++}`);
+      values.push(data.profileEffect);
     }
 
     if (updates.length === 0) return null;

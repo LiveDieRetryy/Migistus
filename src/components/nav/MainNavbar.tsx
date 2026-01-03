@@ -268,29 +268,44 @@ export default function MainNavbar() {
       return;
     }
 
-    try {
-      const profile = UserStorage?.getUserProfile?.(user.id);
-      if (profile?.avatar) {
-        setAvatar(profile.avatar);
-        return;
-      }
-
-      // Fallback checks
-      const manualKey = `user_${user.id}_profile`;
-      const manualProfile = localStorage.getItem(manualKey);
-      if (manualProfile) {
-        const parsedProfile = JSON.parse(manualProfile);
-        if (parsedProfile.avatar) {
-          setAvatar(parsedProfile.avatar);
+    const loadAvatar = () => {
+      try {
+        const profile = UserStorage?.getUserProfile?.(user.id);
+        if (profile?.avatar) {
+          setAvatar(profile.avatar);
           return;
         }
-      }
 
-      setAvatar(null);
-    } catch (error) {
-      console.warn('Failed to load user avatar:', error);
-      setAvatar(null);
-    }
+        // Fallback checks
+        const manualKey = `user_${user.id}_profile`;
+        const manualProfile = localStorage.getItem(manualKey);
+        if (manualProfile) {
+          const parsedProfile = JSON.parse(manualProfile);
+          if (parsedProfile.avatar) {
+            setAvatar(parsedProfile.avatar);
+            return;
+          }
+        }
+
+        setAvatar(null);
+      } catch (error) {
+        console.warn('Failed to load user avatar:', error);
+        setAvatar(null);
+      }
+    };
+
+    loadAvatar();
+
+    // Listen for profile updates
+    const handleProfileUpdate = () => {
+      loadAvatar();
+    };
+
+    window.addEventListener('user-profile-updated', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('user-profile-updated', handleProfileUpdate);
+    };
   }, [mounted, user]);
 
   // Avatar upload handler

@@ -33,6 +33,7 @@ export default function AccountPage() {
     { label: "My Votes", href: "/account/votes", icon: "🗳️" },
     { label: "Wallet", href: "/wallet", icon: "💰" },
     { label: "View Profile", href: getProfileSlug(), icon: "👤" },
+    { label: "Edit Player Card", href: "/account/edit-player-card", icon: "🎴" },
     { label: "Account Settings", href: "/account/settings", icon: "⚙️" },
   ];
   const [profile, setProfile] = useState<any>(null);

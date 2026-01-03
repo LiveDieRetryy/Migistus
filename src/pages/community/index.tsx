@@ -12,6 +12,8 @@ import FollowButton from '@/components/FollowButton';
 import { SocialPostsStorage } from "@/utils/socialPostsStorage";
 import OnlineStatus from "@/components/OnlineStatus";
 import { useSocket } from '@/hooks/useSocket';
+import PlayerCard from '@/components/PlayerCard';
+import AvatarEffects, { AvatarEffectType } from '@/components/effects/AvatarEffects';
 
 interface User {
   id: number;
@@ -26,6 +28,8 @@ interface User {
     country?: string;
     city?: string;
   };
+  avatarEffect?: string;
+  profileEffect?: string;
   stats?: {
     followers: number;
     following: number;
@@ -95,6 +99,9 @@ export default function CommunityPage() {
   const [isGuildModalOpen, setIsGuildModalOpen] = useState(false);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   
+  // Player Card state
+  const [playerCardUser, setPlayerCardUser] = useState<{ userId: number; username: string; position: { x: number; y: number } } | null>(null);
+  
   // Live stats tracking
   const [liveStats, setLiveStats] = useState({
     countries: 0,
@@ -105,8 +112,13 @@ export default function CommunityPage() {
   useEffect(() => {
     const loadLiveStats = async () => {
       try {
-        // Fetch users for country count
-        const usersResponse = await fetch('/api/users');
+        // Fetch users for country count with cache busting
+        const usersResponse = await fetch('/api/users', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
         const usersData = await usersResponse.json();
         const users = usersData.users || [];
         
@@ -1938,29 +1950,48 @@ export default function CommunityPage() {
                       .map((member) => (
                         <div key={member.id} className="group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 bg-gradient-to-r from-zinc-800/50 to-zinc-900/50 border border-zinc-700 rounded-2xl hover:border-green-500/50 transition-all duration-300 hover:scale-[1.01] sm:hover:scale-[1.02] hover:shadow-lg hover:shadow-green-500/10">                          <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
                             <div className="relative flex-shrink-0">
-                              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-zinc-700 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-zinc-600 group-hover:ring-green-500 transition-all">
-                                <Image 
-                                  src={member.avatar || "/Icons/New Member.png"} 
-                                  alt={member.username} 
-                                  width={56} 
-                                  height={56} 
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = "/Icons/New Member.png";
-                                  }}
-                                />
-                              </div>
-                              <div className={`absolute -bottom-0.5 sm:-bottom-1 -right-0.5 sm:-right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-zinc-800 flex items-center justify-center ${
-                                member.tier === 'MIGISTUS' ? 'bg-yellow-500' :
-                                member.tier === 'Guild' ? 'bg-purple-500' : 'bg-blue-500'
-                              }`}>
-                                <Award className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
+                              {/* Add padding to allow glow effects to show */}
+                              <div className="w-12 h-12 sm:w-14 sm:h-14 p-1">
+                                <AvatarEffects effect={(member.avatarEffect as AvatarEffectType) || 'none'} size="md">
+                                  <div className="w-full h-full bg-zinc-700 rounded-full flex items-center justify-center overflow-hidden relative ring-2 ring-zinc-600 group-hover:ring-green-500 transition-all">
+                                    <Image 
+                                      src={member.avatar || "/Icons/New Member.png"} 
+                                      alt={member.username} 
+                                      width={56} 
+                                      height={56} 
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = "/Icons/New Member.png";
+                                      }}
+                                    />
+                                    {/* Tier Badge */}
+                                    <div className={`absolute -bottom-0.5 sm:-bottom-1 -right-0.5 sm:-right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-zinc-800 flex items-center justify-center ${
+                                      member.tier === 'MIGISTUS' ? 'bg-yellow-500' :
+                                      member.tier === 'Guild' ? 'bg-purple-500' : 'bg-blue-500'
+                                    }`}>
+                                      <Award className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />
+                                    </div>
+                                  </div>
+                                </AvatarEffects>
                               </div>
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 sm:gap-2">
-                                <h3 className="font-bold text-white text-base sm:text-lg group-hover:text-green-400 transition-colors truncate">{member.username}</h3>
+                                <h3 
+                                  className="font-bold text-white text-base sm:text-lg group-hover:text-green-400 transition-colors truncate cursor-pointer hover:underline"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setPlayerCardUser({
+                                      userId: member.id,
+                                      username: member.username,
+                                      position: { x: e.clientX + 10, y: e.clientY - 100 }
+                                    });
+                                  }}
+                                >
+                                  {member.username}
+                                </h3>
                                 <OnlineStatus userId={member.id} size="sm" />
                               </div>
                               <p className={`text-xs sm:text-sm font-medium ${getTierColor(member.tier)}`}>
@@ -2243,6 +2274,16 @@ export default function CommunityPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Player Card Modal */}
+      {playerCardUser && (
+        <PlayerCard
+          userId={playerCardUser.userId}
+          username={playerCardUser.username}
+          position={playerCardUser.position}
+          onClose={() => setPlayerCardUser(null)}
+        />
       )}
     </>
   );
