@@ -55,6 +55,15 @@ export default async function handler(
         isInvisible
       });
 
+      // Emit socket event if avatar was updated
+      if (avatar && global.io) {
+        global.io.emit('user-avatar-updated', { 
+          userId, 
+          avatar,
+          timestamp: Date.now()
+        });
+      }
+
       return res.status(200).json({ profile });
     } catch (error) {
       console.error('Error updating profile:', error);

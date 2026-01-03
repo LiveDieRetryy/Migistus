@@ -11,6 +11,7 @@ import { activityTracker } from "@/utils/activityTracker";
 import FollowButton from '@/components/FollowButton';
 import { SocialPostsStorage } from "@/utils/socialPostsStorage";
 import OnlineStatus from "@/components/OnlineStatus";
+import { useSocket } from "@/hooks/useSocket";
 
 interface User {
   id: number;
@@ -69,6 +70,7 @@ interface Activity {
 export default function CommunityPage() {  
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const { on, off } = useSocket();
   const [activeTab, setActiveTab] = useState<'feed' | 'members' | 'suppliers'>('feed');
   const [feedFilter, setFeedFilter] = useState<'personal' | 'local' | 'worldwide'>('personal');
 
@@ -446,6 +448,80 @@ export default function CommunityPage() {
       window.removeEventListener('newUserRegistered', handleNewUserRegistration);
     };
   }, []);
+
+  // Listen for avatar updates via socket
+  useEffect(() => {
+    const handleAvatarUpdate = async (data: { userId: number; avatar: string }) => {
+      console.log('🎨 Avatar updated for user:', data.userId);
+      
+      // Reload user data from API to get updated avatar
+      try {
+        const response = await fetch('/api/users');
+        if (response.ok) {
+          const apiData = await response.json();
+          if (apiData.users && Array.isArray(apiData.users)) {
+            // Fetch follower counts for all users
+            const followerCountsMap = new Map();
+            await Promise.all(
+              apiData.users.map(async (u: any) => {
+                try {
+                  const followerResponse = await fetch(`/api/followers?userId=${u.id}`);
+                  if (followerResponse.ok) {
+                    const followerData = await followerResponse.json();
+                    followerCountsMap.set(u.id, followerData.followers?.length || 0);
+                  }
+                } catch (error) {
+                  console.error(`Failed to fetch followers for user ${u.id}:`, error);
+                }
+              })
+            );
+
+            // Update all members with fresh data
+            const apiMembers: User[] = apiData.users
+              .filter((u: any) => !u.banned)
+              .map((u: any) => ({
+                id: u.id,
+                username: u.username,
+                email: u.email,
+                tier: u.tier || 'Initiate',
+                avatar: u.avatar,
+                bio: u.bio,
+                joinedDate: u.created_at,
+                country: u.country,
+                location: u.location ? { country: u.country, city: u.city } : undefined,
+                stats: {
+                  followers: followerCountsMap.get(u.id) || 0,
+                  following: 0,
+                  totalVotes: 0,
+                  totalPledges: 0,
+                  dropsJoined: 0
+                }
+              }));
+
+            setAllMembers(apiMembers);
+            
+            // Update suppliers list
+            const supplierMembers = apiMembers.filter(m => m.tier === 'Supplier');
+            setSuppliers(supplierMembers);
+            
+            // Update new users list
+            const recentUsers = getNewUsers();
+            setNewUsers(recentUsers);
+            
+            console.log('✅ User lists updated with new avatar');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error reloading users after avatar update:', error);
+      }
+    };
+
+    on('user-avatar-updated', handleAvatarUpdate);
+    
+    return () => {
+      off('user-avatar-updated', handleAvatarUpdate);
+    };
+  }, [on, off]);
 
   // Periodic refresh to catch any missed updates
   useEffect(() => {

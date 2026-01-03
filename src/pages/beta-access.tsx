@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Image from 'next/image';
-import { Lock, Shield, Crown } from 'lucide-react';
+import { Lock, Shield } from 'lucide-react';
 
 export default function BetaAccess() {
   const router = useRouter();
@@ -137,17 +137,12 @@ export default function BetaAccess() {
                 {loading ? 'Verifying...' : 'Enter MIGISTUS'}
               </button>
             </form>
-
-            {/* Footer */}
-            <div className="mt-8 pt-6 border-t border-zinc-800">
-              <p className="text-center text-zinc-500 text-xs">
-                <Crown className="w-3 h-3 inline mr-1" />
-                By invitation only
-              </p>
-            </div>
           </div>
         </div>
       </div>
     </>
   );
 }
+
+// Disable footer for this page
+(BetaAccess as any).showFooter = false;
