@@ -2,6 +2,11 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { db } from '@/lib/db';
 import { getSessionFromRequest } from '@/lib/session';
 
+// Extend global type to include Socket.IO
+declare global {
+  var io: any;
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

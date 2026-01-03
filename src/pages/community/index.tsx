@@ -11,7 +11,7 @@ import { activityTracker } from "@/utils/activityTracker";
 import FollowButton from '@/components/FollowButton';
 import { SocialPostsStorage } from "@/utils/socialPostsStorage";
 import OnlineStatus from "@/components/OnlineStatus";
-import { useSocket } from "@/hooks/useSocket";
+import { useSocket } from '@/hooks/useSocket';
 
 interface User {
   id: number;
